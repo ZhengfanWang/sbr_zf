@@ -11,7 +11,7 @@ create_list_for_country <- function(data){
 ### used for find combiation of definition used in "3.def_adj.R"
 find_comb_def_adj <- function(data){
   def.28wks <- data %>% filter(definition_rv == "ge28wks") %>% 
-    rename("SBR28"="SBR","nSB28"="nSB") %>% 
+    dplyr::rename("SBR28"="SBR","nSB28"="nSB") %>% 
     mutate(year = round(year)) %>% 
     select(iso,year,region,SBR28,nSB28) 
   
