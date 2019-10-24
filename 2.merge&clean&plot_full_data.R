@@ -75,7 +75,7 @@ SBR.model <- SBR.full2 %>% filter(is.na(exclusion_ratio),is.na(exclusion_notes))
 
 saveRDS(SBR.full2,"output/sbr.full.rds")
 names(SBR.full2)
-saveRDS(SBR.model,"output/modeldata_newSBR:NMR_cutoff.rds")
+saveRDS(SBR.model,"output/modeldata_newcutoff.rds")
 
 #inclusion_data_list <- create_list_for_country(SBR.model)
 #pdf_name <- paste0("fig/exploratory_plot/exploratory_data_w_exlucison.pdf")
