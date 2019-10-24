@@ -9,7 +9,6 @@ SBR.full <- readRDS("output/sbr.full.rds")
 # find combiations              # 
 #-------------------------------#
 
-
 def_adj_list_res <- find_comb_def_adj(SBR.full)
 #store each combation as a element of a list
 def_adj_list <- def_adj_list_res$dat

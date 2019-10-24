@@ -17,7 +17,7 @@ survey <- readRDS("output/survey.full.rds")
 SBR.full.ori <- rbind(admin, subnat.lr, survey,subnat.admin) # 13789 obs
 
 SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
-                             select(-c(context,definition,notes,country_idx)) %>% 
+                             dplyr::select(-c(context,definition,notes,country_idx)) %>% 
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
                                     year = round(year))
 
@@ -77,6 +77,7 @@ saveRDS(SBR.full2,"output/sbr.full.rds")
 names(SBR.full2)
 saveRDS(SBR.model,"output/modeldata_newcutoff.rds")
 
+#################### plot ##############################
 #inclusion_data_list <- create_list_for_country(SBR.model)
 #pdf_name <- paste0("fig/exploratory_plot/exploratory_data_w_exlucison.pdf")
 #pdf(pdf_name,width=12)
