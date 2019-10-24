@@ -1,0 +1,53 @@
+---
+title: "Model comp"
+author: "Zhengfan Wang"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## LOOCV
+
+```{r message=FALSE, echo=FALSE, warning=FALSE}
+library("rstanarm")
+library("bayesplot")
+library("loo")
+fit.c1 <- readRDS("rdsoutput/cubic.I1.rds")
+fit.c2.5 <- readRDS("rdsoutput/cubic.I2.5.rds")
+fit.q1 <- readRDS("rdsoutput/quad.I1.rds")
+fit.q2.5 <- readRDS("rdsoutput/quad.I2.5.rds")
+loo.c1 <- loo(fit.c1)
+loo.c2.5 <- loo(fit.c2.5)
+loo.q1 <- loo(fit.q1)
+loo.q2.5 <- loo(fit.q2.5)
+```
+
+
+```{r warnings = FALSE,message=FALSE}
+compare(loo.c2.5,loo.c1)
+```
+Here $elpd_diff-2se$ does not include zero, and the difference is postive, hence the model(cubic $I=1$) is preferred. 
+```{r warnings= FALSE, message=FALSE}
+compare(loo.c1,loo.q1)
+```
+Here $elpd_diff-2se$ does not include zero, and the difference is postive, hence the model(quadratic $I=1$) is preferred. But it seems less smooth.
+
+Pareto k diagnostic for 4 models are listed as following, where $c2.5$ means cubic splines with interval length 2.5 years, $q1$ means quadratic splines with interval length 1 year.
+```{r}
+print(loo.c2.5)
+print(loo.q2.5)
+print(loo.c1)
+print(loo.q1)
+
+
+
+plot(loo.c2.5)
+plot(loo.q2.5)
+plot(loo.c1)
+plot(loo.q1)
+
+```
+
+

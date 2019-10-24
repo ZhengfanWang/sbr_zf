@@ -1,0 +1,83 @@
+---
+title: "Cutoff based on observed SBR:NMR ratio"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exclusion based on high quality data
+
+```{r echo=FALSE, message = FALSE}
+###  SBR:NMR cutoff value study
+histplot <- function(data, breaks = 50, title, xlim, ylim){
+  h <- hist(data,plot=FALSE,breaks = breaks)
+  h$counts=h$counts/sum(h$counts)
+  plot(h,main = title,xlim= xlim, ylim = ylim, ylab = "Relative Frequency",xlab = "SBR:NMR")
+}
+title <- c("1%","2.5%","5%","7.5%","10%","15%","20%")
+
+
+library(openxlsx)
+library(tidyverse)
+hq_data <- openxlsx::read.xlsx("E:/doc/research/birth rate/SBR2018/input/High Quality LMIC data_SBR_NMR.xlsx")
+full_data <- readRDS("E:/doc/research/birth rate/SBR2018/output/sbr.full.rds")
+
+
+tb <- hq_data$lb + hq_data$sb
+sbr <- hq_data$sbr
+lb <- hq_data$lb
+nmr <- hq_data$nmr
+
+set.seed(123)
+n <- length(tb)
+S <- 1000
+ratio_s <- matrix(NA,ncol=S,nrow=n)
+for(i in 1:n){
+  sb_s <- rbinom(S,tb[i],sbr[i]/1000)
+  nm_s <- rbinom(S,lb[i],nmr[i]/1000)
+  ratio_s[i,] <- sb_s/tb[i]*1/(nm_s/lb[i])
+}
+
+
+percentile2 <- apply(ratio_s,1,quantile,na.rm = TRUE,c(0.01,0.025,0.05,0.075,0.1,0.15,0.2))
+
+
+```
+
+• one row = one probability P,
+
+• columns are minimum followed by sample percentiles 2.5%, 5%, 10%, 15%, 50%.
+```{r warning=FALSE}
+t(apply(percentile2,1,quantile,na.rm=TRUE,c(0,0.025,0.05,0.10,0.15,0.5)))
+
+ex.full.dat <- full_data %>% mutate(adj_sbr_unknown = ifelse(!is.na(adj_sbr_unknown),adj_sbr_unknown,SBR)) %>% 
+                            filter(!is.na(exclusion_notes))
+
+ftb <- ex.full.dat$nLB + ex.full.dat$nSB
+fsbr <- ex.full.dat$adj_sbr_unknown
+flb <- ex.full.dat$nLB
+fnmr <- ex.full.dat$NMR
+
+#there are lots of missings in total birth
+summary(ftb)
+summary(flb)
+summary(fsbr)
+summary(fnmr)
+
+fn <- length(ftb)
+S <- 1000
+fratio_s <- matrix(NA,ncol=S,nrow=fn)
+for(i in 1:fn){
+  sb_s <- rbinom(S,ftb[i],fsbr[i]/1000)
+  nm_s <- rbinom(S,flb[i],fnmr[i]/1000)
+  fratio_s[i,] <- sb_s/ftb[i]*1/(nm_s/flb[i])
+}
+fn # There are 2141 obs after first excluded.
+fper_upper <- apply(fratio_s,1,quantile,na.rm = TRUE,c(0.95))
+sum(is.na(fper_upper))
+sum(fper_upper < 0.3,na.rm = T)
+sum(fper_upper < 0.5,na.rm = T)
+```
+It seems that the approach works well. But the missing observation is a big problem. There are 904 missings among 2121 observations.
