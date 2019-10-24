@@ -30,7 +30,7 @@ write.csv(summ,"output/def_adj_num_paired_obs.csv")
 #    selecting only 1 def per country-year        # 
 #-------------------------------------------------#
 
-SBR.model <- readRDS("output/modeldata_newSBR:NMR_cutoff.rds")
+SBR.model <- readRDS("output/modeldata_newcutoff.rds")
 SBR.model <- SBR.model %>% filter(is.na(exclusion_notes)) %>% 
                            filter(is.na(exclusion_ratio)) %>% 
                            filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
