@@ -21,7 +21,6 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
                                     year = round(year))
 
-names(SBR.full2)
 
 
 #--------------------------------------#
