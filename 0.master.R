@@ -15,6 +15,8 @@
 Rfiles <- list.files(file.path(paste0(getwd(),"/R/")), ".R") #gets names of r files
 sapply(paste0(paste0(getwd(),"/R/"), Rfiles), source) #gets functions from file
 
+source("0.load_packages.R")
+
 #----------------------------------------------------------------------------------------#
 ############                 1. read and clean data                      #################
 #----------------------------------------------------------------------------------------#
@@ -43,10 +45,6 @@ source("1.clean_subnat&survey.R")
 source("2.merge&clean&plot_full_data.R")
 # exploratory plot for countries in fig/summaryplot.pdf
 
-#########
-#still need to re-org for Horse shoe 
-source("2.clean_covar.R")
-#########
 
 #----------------------------------------------------------------------------------------#
 #############          3. definition adjustment                      #####################

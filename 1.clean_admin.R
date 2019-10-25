@@ -91,7 +91,7 @@ definition.cleaned <-  fct_collapse(admin.full$definition,
 #table(definition.cleaned)
 #-----------------#
 #### definition.cleaned2: rename definition in same scale.
-definition.cleaned2 <- revalue(definition.cleaned,
+definition.cleaned2 <- plyr::revalue(definition.cleaned,
                               c(">30cm"="ge30cm",
                                 "x29wks"="ge29wks",
                                 "x1000g"="ge1000g",
@@ -296,7 +296,7 @@ admin.full <- admin.full %>% mutate(SE.sbr = sqrt(1000*SBR/nTB),
                                     iso = as.factor(iso)) %>% 
                              arrange(iso, year) %>% 
                              select("country","iso","region","year","source","context","definition","definition_rv",
-                                    "SBR","adj_sbr_unknown","prop_unknown","SE.logsbr","SE.sbr","nSB","nTB","nLB",
+                                    "SBR","adj_sbr_unknown","prop_unknown","SE.logsbr","SE.sbr","nSB","nTB","nLB","WPP_LB",
                                     "nNM","NMR","rSN","rSN_UN","notes","exclusion_notes") 
 
 

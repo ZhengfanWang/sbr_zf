@@ -9,12 +9,11 @@ countryRegionList <- national_covar[,c(1,2,8)] %>% distinct() %>%
                       
 
 inregion <- openxlsx::read.xlsx("input/Regional Groupings.xlsx", sheet = 1)
-
-income_region <- inregion %>% dplyr::select(ISOCode,WorldBank_IncomeGroup_June2017) %>% 
+income_region <- inregion %>% select(ISOCode,WorldBank_IncomeGroup_June2017) %>% 
                               dplyr::rename("iso" = "ISOCode", "icgroup" = "WorldBank_IncomeGroup_June2017")
 countryRegionList <- countryRegionList %>% inner_join(income_region,by="iso") %>% 
                                            mutate(lmic = ifelse(icgroup=="High income",0,1)) %>% 
-                                           dplyr::select(iso,country,shmdg2,icgroup,lmic,country_idx)
+                                           select(iso,country,shmdg2,icgroup,lmic,country_idx)
 
 
 

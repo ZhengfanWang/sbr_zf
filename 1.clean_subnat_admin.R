@@ -19,7 +19,7 @@ sub.admin.full <- subnat_admin.ori %>%  dplyr::rename("country"="Country",
   select("country","iso","year","definition","context","SBR","NMR","nSB","nTB","nLB","source","region","exclusion_notes") # 7665
 
 #levels(sub.admin.full$definition)
-levels(sub.admin.full$definition) <- c("ge1000g","ge12wks","ge20wks","ge22wks","ge500gORge22wks","ge500ORge22wks","ge26wks","ge28wks",
+levels(sub.admin.full$definition) <- c("ge1000g","ge12wks","ge20wks","ge22wks","ge500gORge22wks","ge500gORge22wks","ge26wks","ge28wks",
                                    "ge500g","ge500gORge22wks","ge20wks","ge28wks","ge800gORge26wks","any","any","not defined")
 
 levels(sub.admin.full$context) <- c("HMIS-DHIS2","VR","VR")
@@ -29,9 +29,9 @@ sub.admin.full <- sub.admin.full %>% arrange(iso, year,region) %>%
                                             rSN = SBR/NMR) %>% 
                                      mutate(SE.logsbr = SE.sbr / SBR) %>% 
                                      mutate(definition_rv=definition,adj_sbr_unknown=NA,prop_unknown=NA,
-                                            nNM = NA, rSN_UN = NA, notes = NA ) %>% 
+                                            nNM = NA, rSN_UN = NA, notes = NA, WPP_LB = NA ) %>% 
                                      select("country","iso","region","year","source","context","definition","definition_rv",
-                                    "SBR","adj_sbr_unknown","prop_unknown","SE.logsbr","SE.sbr","nSB","nTB","nLB",
+                                    "SBR","adj_sbr_unknown","prop_unknown","SE.logsbr","SE.sbr","nSB","nTB","nLB", "WPP_LB",
                                     "nNM","NMR","rSN","rSN_UN","notes","exclusion_notes") 
 
 saveRDS(sub.admin.full, "output/sub.admin.full.rds")
