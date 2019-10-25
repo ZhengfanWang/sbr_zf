@@ -1,32 +1,39 @@
-library(tidyverse)
-library(haven)
-covarMatrix <-function (covar,
-                        estyears=seq(2000,2018),
-                        dataset=covarset){
-  yearLength <- length(estyears)
-  countryRegionList <- dataset[,c(1,9,10)] %>% distinct()
-  numcoun<- length(countryRegionList$iso)
-  cMatrix<- matrix(ncol=yearLength,nrow=numcoun)
-  for (i in 1:numcoun){
-    for ( j in 1: yearLength){
-      cMatrix[i,j] <- as.numeric(dataset[dataset$iso == countryRegionList$iso[i] & dataset$year== estyears[j],covar])
-    }
-  }
-  return (cMatrix)
-}
 
-standardize <- function(x){
-  return((x-mean(x))/sd(x))
-}
+sbr2018 <- readRDS("output/modeldata_newcutoff.rds")
 
 
+### input covariates
+int_cov <- c("gni","nmr","lbw","anc4","mean_edu","exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
+                  "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
 
-###########################################function ###################################
+covarset <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')%>% 
+  select(c("iso3","year",interest_cov)) %>% 
+  dplyr::rename("iso"="iso3") %>% 
+  merge(countryRegionList,by="iso") %>% 
+  filter(year>=2000) %>% 
+  mutate(gni = log(gni),
+         nmr = log(nmr)) %>% 
+  arrange(iso,year) 
+
+### definition type
+definition_fac <- c("ge28wks","ge1000g","ge22wks","ge500g")
+
+###################bias and variance
+definition_bias <- c(0,-0.07,0.38,0.27)
+definition_var <-  c(0,0.09,0.15,0.12)
+
+sbr2018$definition_rv <-  fct_collapse(sbr2018$definition_rv,
+                             ge1000g = c("ge1000g","ge1000gANDge28wks","ge1000gORge28wks"),
+                             ge500g =  c("ge500gORge22wks","ge500g"),
+                             ge22wks = c("ge22wks"),
+                             ge20wks = c("ge20wks","ge400gORge20wks","ge500gORge20wks"),
+                             ge24wks = c("ge24wks"),
+                             ge26wks = c("ge1000gORge26wks"),
+                             ge28wks = c("ge28wks","s40wksANDge28wks"))
 
 
-sbr2018 <- readRDS("output/dataformodel.rds")
 
-unique(sbr2018[sbr2018$source=="subnat.admin",]$country)
+#unique(sbr2018[sbr2018$source=="subnat.admin",]$country)
 
 sbr2018 <- sbr2018 %>% filter(source != "subnat.admin")
 
@@ -36,45 +43,23 @@ sbr2018$source2 <- as.numeric(sbr2018$source)
 
 #definition type
 
-table(sbr2018$definition)
+sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>% 
+  filter(!is.na(SE.sbr))
 
-### definition type
 
-definition_fac <- c("ge28wks","ge1000g","ge22wks","ge500g")
 
-sbr2018_cleaned <- sbr2018 %>% filter(definition %in% definition_fac) %>% 
-  filter(!is.na(SE))
-
-dim(sbr2018_cleaned)
-
-sbr2018_cleaned$definition <- droplevels(sbr2018_cleaned$definition)
-sbr2018_cleaned$definition <- factor(sbr2018_cleaned$definition, levels = definition_fac)
+sbr2018_cleaned$definition_rv <- factor(sbr2018_cleaned$definition_rv, levels = definition_fac)
+sbr2018_cleaned$definition_rv <- droplevels(sbr2018_cleaned$definition_rv)
 
 dim(sbr2018_cleaned)
-length(sbr2018_cleaned$definition)
+table(sbr2018_cleaned$definition_rv)
 
 
-###################bias and variance
-definition_bias <- c(0,-0.07,0.38,0.27)
-definition_var <-  c(0,0.09,0.15,0.12)
-
-### input region grouping list
-national_covar <- read_dta("input/covar/national_covariates.dta",encoding='latin1')
-countryRegionList <- national_covar[,c(1,2,8)] %>% distinct() %>% 
-  dplyr::rename("iso"="iso3") %>% 
-  mutate(country_idx=as.numeric(factor(iso))) 
-
-countryRegionList
-
-sbr2018_cleaned <- merge(sbr2018_cleaned,countryRegionList,by="iso")
+sbr2018_cleaned <- merge(sbr2018_cleaned,countryRegionList,by=c("iso","country"))
 N = dim(sbr2018_cleaned)[1]
 
-getd.i <- as.numeric(sbr2018_cleaned$definition)
+getd.i <- as.numeric(sbr2018_cleaned$definition_rv)
 
-#nu <- rep(NA,length=N)
-#for(i in 1:N){
-#nu[i] <- getdf(sbr2018_cleaned$rSN_UN[i],0.33,global_expected = 0.96)
-#}
 
 deftype1.i <- ifelse(getd.i==1,1,0)
 deftype2.i <- ifelse(getd.i==2,1,0)
@@ -90,29 +75,17 @@ yearLength <- length(estyears)
 ###Basis matrix
 library(splines)
 
-source("R/GetSplines.R")
 ## order=1 means Random walk 1, degree = 3 cubic spline
-splines.data <- getSplinesData(yearLength,I=1,order=1, degree = 3)
+splines.data <- getSplinesData(yearLength,I=1,order=1, degree = 2)
 
+gett.i<- sbr2018_cleaned$year-estyears[1]+1
 
-gett.i<- sbr2018_cleaned$int.year-estyears[1]+1
-
-
-### input covariates
-covarset <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')%>% 
-  select("iso3","year","gni","nmr","lbw","anc4","mean_edu") %>% 
-  dplyr::rename("iso"="iso3") %>% 
-  merge(countryRegionList,by="iso")
-
-
-
-X1 <- log(covarMatrix("gni"))
-X2 <- log(covarMatrix("nmr"))
-X3 <- covarMatrix("lbw")
-X4 <- covarMatrix("anc4")
-X5 <- covarMatrix("mean_edu")
-
-
+covar_array <- create_covar_array(interest_cov = int_cov)
+#X1 <- covarMatrix(int_cov[1])
+#X2 <- covarMatrix(int_cov[2])
+#X3 <- covarMatrix(int_cov[3])
+#X4 <- covarMatrix(int_cov[4])
+#X5 <- covarMatrix(int_cov[5])
 
 ### source type
 
@@ -122,23 +95,32 @@ datatype4.i <- ifelse(sbr2018_cleaned$source2==4,1,0)
 
 getj.i <- sbr2018_cleaned$source2
 
-stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE^2, 
-                          X1 = X1, X2=X2, X3=X3, X4=X4, X5=X5, 
-                       Z1= standardize(X1),Z2 =standardize(X2),Z3 =standardize(X3),Z4 =standardize(X4),Z5 =standardize(X5),
-                  getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
-                  eta_d = definition_bias, phi_d = definition_var,
-                  datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
-                  deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
-                  N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears,
-                  yearLength = yearLength, d=5 , 
-                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
-                  BG_td = splines.data$BG.td,H=splines.data$H)
+#stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE^2, 
+#                          X1 = X1, X2=X2, X3=X3, X4=X4, X5=X5, 
+#                       Z1= standardize(X1),Z2 =standardize(X2),Z3 =standardize(X3),Z4 =standardize(X4),Z5 =standardize(X5),
+#                  getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
+#                  eta_d = definition_bias, phi_d = definition_var,
+#                  datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
+#                  deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
+#                  N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears,
+#                  yearLength = yearLength, d=5 , 
+#                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
+#                  BG_td = splines.data$BG.td,H=splines.data$H)
 
+stan.data<- list(Y = log(sbr2018_cleaned$adj_sbr_unknown), var_i = sbr2018_cleaned$SE.logsbr^2, covar_array = covar_array,
+                 getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
+                 eta_d = definition_bias, phi_d = definition_var,
+                 datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
+                 deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
+                 N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears, numcov = length(int_cov),
+                 yearLength = yearLength, 
+                 B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
+                 BG_td = splines.data$BG.td,H=splines.data$H)
 
 
 length(stan.data$Y)
-length(stan.data$nu)
-saveRDS(stan.data,file = "output/standata.cubic.I1.rds")
+
+saveRDS(stan.data,file = "output/standata.quad.I1.rds")
 
 
 
