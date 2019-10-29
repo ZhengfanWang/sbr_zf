@@ -1,13 +1,10 @@
-standata <- readRDS(file = "output/standata.cubic.I1.rds")             ####  data used for fit model
+standata <- readRDS(file = "output/standata.quad.I1.rds")             ####  data used for fit model
 
-fit <- readRDS(file = "rdsoutput/Ps.quad.I2.5.rds")                            ### fit result
+fit <- readRDS(file = "rdsoutput/Ps.quad.I1.rds")                            ### fit result
 
-print(fit, pars = c("beta","beta_dt","sigma_j","tau","beta_r"))
+print(fit, pars = c("beta","beta_dt","sigma_j","tau_delta","gamma_r"))
 
-
-
-########  normal base model excluding sbr/nmr ratio data
-
+standata$N
 
 
 df <- rstan::extract(fit)
@@ -55,7 +52,7 @@ for(c in 2:standata$numcountry){
 
 fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 
-write.csv(fit_result,"output/Pspline1.5.csv")
+write.csv(fit_result,"output/Pspline1.csv")
 
 ###########################################################################
 sbr2018 <- data.frame(logSBR = standata$Y )
@@ -81,19 +78,20 @@ logadjsbr <- sbr2018$logSBR - defadj - sourceadj
 
 sbr2018$logadjsbr <- logadjsbr
 definition_fac <- c("ga28wks","bw1000g","ga22wks","bw500g")
-source_fac <- c("admin","HMIS","subnat LR","survey")
+source_fac <- c("admin","HMIS","subnat.admin","subnat LR","survey")
 sbr2018$definition_name <- definition_fac[getd_i]
 sbr2018$source_name <- source_fac[getj_i]
 
 
 
 
-year.f <- c(1,2,3,4)
-logSBR.f <- rep(0,4)
-logsbradj.f <- rep(1,4)
+year.f <- c(1,2,3,4,5)
+logSBR.f <- rep(0,5)
+logsbradj.f <- rep(1,5)
 
-fake.legend <- data.frame(year=year.f,logSBR=logSBR.f,logadjsbr=logsbradj.f,source_name=source_fac,definition_name=definition_fac) %>% 
-  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,4), low = NA, muhat = NA, up = NA) %>% 
+fake.legend <- data.frame(year=year.f,logSBR=logSBR.f,logadjsbr=logsbradj.f,
+                          source_name=source_fac,definition_name=c(definition_fac,"ga28wks")) %>% 
+  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,5), low = NA, muhat = NA, up = NA) %>% 
   select(country,iso,source_name,definition_name,country_idx,logSBR,logadjsbr, year, var, low, muhat,up)
 
 
@@ -152,7 +150,7 @@ check <- function(dat.list){
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/quad.I2.5.pdf")
+pdf_name <- paste0("fig/quad.I1.pdf")
 pdf(pdf_name, width = 8, height = 5)
 point.list %>% lapply(check)
 dev.off()

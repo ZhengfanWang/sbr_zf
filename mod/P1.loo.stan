@@ -90,9 +90,8 @@ transformed parameters {
 
   for(c in 1:numcountry){
     for(t in 1:yearLength){
-      mu_ct[c,t] = sum(covar_array[,c,t]);
+      mu_ct[c,t] = sum(beta *to_row_vector(covar_array[,c,t]));
     }}
-  
 
   for(i in 1:N){
     z_i[i] = beta_dt[1]*datatype2_i[i]+

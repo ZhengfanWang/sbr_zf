@@ -1,10 +1,8 @@
-SBR.full <- readRDS("output/sbr.full.rds")
+ 
 sbr2018 <- readRDS("output/data_for_model.rds")
-names(sbr2018)
-sbr.model <- merge(SBR.full,sbr2018,by = c( "iso","country","region","year","source","lmic","definition_rv"))
+dim(sbr2018)
 
-sbr2018 <- sbr.model
-names(sbr2018)
+
 ########################################################
 table(sbr2018$definition_rv)
 dim(sbr2018)
@@ -30,29 +28,34 @@ definition_fac <- c("ge28wks","ge1000g","ge22wks","ge500g")
 definition_bias <- c(0,-0.07,0.38,0.27)
 definition_var <-  c(0,0.09,0.15,0.12)
 
-sbr2018$definition_rv <-  fct_collapse(sbr2018$definition_rv,
-                             ge1000g = c("ge1000g","ge1000gANDge28wks","ge1000gORge28wks"),
-                             ge500g =  c("ge500gORge22wks","ge500g"),
-                             ge22wks = c("ge22wks"),
-                             ge20wks = c("ge20wks","ge400gORge20wks","ge500gORge20wks"),
-                             ge24wks = c("ge24wks"),
-                             ge26wks = c("ge1000gORge26wks"),
-                             ge28wks = c("ge28wks","s40wksANDge28wks"))
+#sbr2018$definition_rv <-  fct_collapse(sbr2018$definition_rv,
+#                             ge1000g = c("ge1000g","ge1000gANDge28wks","ge1000gORge28wks"),
+#                             ge500g =  c("ge500gORge22wks","ge500g"),
+#                             ge22wks = c("ge22wks"),
+#                             ge20wks = c("ge20wks","ge400gORge20wks","ge500gORge20wks"),
+#                             ge24wks = c("ge24wks"),
+#                             ge26wks = c("ge1000gORge26wks"),
+#                             ge28wks = c("ge28wks","s40wksANDge28wks"))
+
+sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>% 
+                               filter(!is.na(SE.logsbr))
+names(sbr2018)
+
+model_data_list <- create_list_for_country(sbr2018_cleaned) 
+pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
+pdf(pdf_name,width=12)
+model_data_list %>% lapply(exploratory_plot)
+dev.off()
 
 
 
-#unique(sbr2018[sbr2018$source=="subnat.admin",]$country)
-
-#sbr2018 <- sbr2018 %>% filter(source != "subnat.admin")
-
-sbr2018$source <- droplevels(as.factor(sbr2018$source))
-sbr2018$source2 <- as.numeric(sbr2018$source)
+sbr2018_cleaned$source <- droplevels(as.factor(sbr2018_cleaned$source))
+sbr2018_cleaned$source2 <- as.numeric(sbr2018_cleaned$source)
 
 
 #definition type
 
-sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>% 
-  filter(!is.na(SE.sbr))
+
 
 
 
@@ -114,7 +117,7 @@ getj.i <- sbr2018_cleaned$source2
 #                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
 #                  BG_td = splines.data$BG.td,H=splines.data$H)
 
-stan.data<- list(Y = log(sbr2018_cleaned$adj_sbr_unknown), var_i = sbr2018_cleaned$SE.logsbr^2, covar_array = covar_array,
+stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr^2, covar_array = covar_array,
                  getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
                  eta_d = definition_bias, phi_d = definition_var,
                  datatype1_i = datatype1.i,datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,datatype5_i=datatype5.i,
@@ -123,6 +126,7 @@ stan.data<- list(Y = log(sbr2018_cleaned$adj_sbr_unknown), var_i = sbr2018_clean
                  yearLength = yearLength, numdef = length(definition_fac),
                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
                  BG_td = splines.data$BG.td,H=splines.data$H)
+saveRDS(stan.data,file = "output/stan.quad.I1.rds")
 do.validation = T
 if (!do.validation){
   # all observations are in the training set

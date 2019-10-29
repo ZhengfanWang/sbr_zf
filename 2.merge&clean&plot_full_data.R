@@ -17,7 +17,6 @@ survey <- readRDS("output/survey.full.rds")
 SBR.full.ori <- rbind(admin, subnat.lr, survey,subnat.admin) # 13789 obs
 
 
-
 #################################################
 
 SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
@@ -31,6 +30,8 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500gANDge28wks", "ge28wks"),
                                     definition_rv = replace(definition_rv, definition_rv == "ge500gORge22wks", "ge22wks"),
                                     definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
+                             mutate(exclusion_notes = replace(exclusion_notes, is.na(SE.logsbr), 
+                                                              "missing info to cal se.logsbr")) %>% 
                              mutate(exclusion_ratio = NA)
 #--------------------------------------------------------#
 #   full set                                             #  

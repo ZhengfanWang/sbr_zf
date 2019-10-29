@@ -39,11 +39,18 @@ summ <- data.frame(definition = alter.def, num_paired_obs = num_paired_obs ,
 SBR.model <- SBR.full  %>% filter(is.na(exclusion_notes)) %>% 
                            filter(is.na(exclusion_ratio)) %>% 
                            filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
-                           mutate(adj_sbr_unknown = round(adj_sbr_unknown,digits = 4)) %>% 
-                           select(iso,country,region,year,source,lmic,definition_rv,adj_sbr_unknown)
+                           mutate(adj_sbr_unknown = round(adj_sbr_unknown,digits = 4)) %>%
+                           select(iso,country,region,year,source,shmdg2,lmic,definition_rv,
+                           adj_sbr_unknown,country_idx)
+SBR.model.se <- SBR.full  %>% filter(is.na(exclusion_notes)) %>% 
+                              filter(is.na(exclusion_ratio)) %>% 
+                              filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
+                              mutate(adj_sbr_unknown = round(adj_sbr_unknown,digits = 4)) %>%
+                              select(iso,country,region,year,source,shmdg2,lmic,definition_rv,
+                              SE.logsbr,country_idx)
 
 SBR.model$definition_rv <- droplevels(SBR.model$definition_rv)
-table(SBR.model$definition_rv)
+SBR.model.se$definition_rv <- droplevels(SBR.model.se$definition_rv)
 
 
 priority.for.adj <- summ %>% filter(definition %in% levels(SBR.model$definition_rv))
@@ -52,23 +59,30 @@ priority.for.adj_vec <- priority.for.adj$definition
 SBR.wide <- SBR.model %>% pivot_wider(names_from = definition_rv, values_from = adj_sbr_unknown,
                                       values_fn = list(adj_sbr_unknown = median)) %>% 
                                       arrange(iso,year) %>% 
-                                      select(c("iso","country","region","year","source","lmic","ge28wks",
+                                      select(c(iso,country,region,year,source,lmic,shmdg2,country_idx,ge28wks,
                                                paste0(priority.for.adj_vec[priority.for.adj_vec != "ge28wks"])))
 
+SBR.wide.se <- SBR.model.se %>% pivot_wider(names_from = definition_rv, values_from = SE.logsbr,
+                                      values_fn = list(SE.logsbr = max)) %>% 
+                          arrange(iso,year) %>% 
+                          select(c(iso,country,region,year,source,lmic,shmdg2,country_idx,ge28wks,
+                          paste0(priority.for.adj_vec[priority.for.adj_vec != "ge28wks"])))
 ### if there is other source type, delete subnat
 names(SBR.wide)
 data <- SBR.wide
-
+data.se <- SBR.wide.se
 def_need_change <- levels(SBR.model$definition_rv)
 n_def <- length(def_need_change)
 n <- dim(data)[1]
 k <- dim(data)[2]
 def_need_adj <- rep(NA,n)
 SBR_need_adj <- rep(NA,n)
+se.logsbr <- rep(NA,n)
 loc <- which(names(SBR.wide)=="ge28wks")
 for(i in 1:n){
 def_need_adj[i] <- colnames(data[i,loc:k])[min(which(!is.na(data[i,loc:k])))]
 SBR_need_adj[i] <- data[[i,(loc-1+min(which(!is.na(data[i,loc:k]))))]]
+se.logsbr[i] <- data.se[[i,(loc-1+min(which(!is.na(data[i,loc:k]))))]]
 }
 def_need_adj <- as.factor(def_need_adj)
 
@@ -77,7 +91,8 @@ def_need_adj <- as.factor(def_need_adj)
 #-------------------------------------------------#
 
 SBR.model <- SBR.wide %>% mutate(definition_rv = def_need_adj,
-                                    SBR = SBR_need_adj) %>% 
+                                    SBR = SBR_need_adj,
+                                    SE.logsbr = se.logsbr) %>% 
                           select(-c(paste0(priority.for.adj_vec)))
 
 
