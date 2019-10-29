@@ -1,13 +1,21 @@
+SBR.full <- readRDS("output/sbr.full.rds")
+sbr2018 <- readRDS("output/data_for_model.rds")
+names(sbr2018)
+sbr.model <- merge(SBR.full,sbr2018,by = c( "iso","country","region","year","source","lmic","definition_rv"))
 
-sbr2018 <- readRDS("output/modeldata_newcutoff.rds")
-
-
+sbr2018 <- sbr.model
+names(sbr2018)
+########################################################
+table(sbr2018$definition_rv)
+dim(sbr2018)
 ### input covariates
 int_cov <- c("gni","nmr","lbw","anc4","mean_edu","exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
                   "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
 
+int_cov <- c("gni","nmr","lbw","anc4","mean_edu")
+
 covarset <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')%>% 
-  select(c("iso3","year",interest_cov)) %>% 
+  select(c("iso3","year",int_cov)) %>% 
   dplyr::rename("iso"="iso3") %>% 
   merge(countryRegionList,by="iso") %>% 
   filter(year>=2000) %>% 
@@ -35,7 +43,7 @@ sbr2018$definition_rv <-  fct_collapse(sbr2018$definition_rv,
 
 #unique(sbr2018[sbr2018$source=="subnat.admin",]$country)
 
-sbr2018 <- sbr2018 %>% filter(source != "subnat.admin")
+#sbr2018 <- sbr2018 %>% filter(source != "subnat.admin")
 
 sbr2018$source <- droplevels(as.factor(sbr2018$source))
 sbr2018$source2 <- as.numeric(sbr2018$source)
@@ -55,7 +63,6 @@ dim(sbr2018_cleaned)
 table(sbr2018_cleaned$definition_rv)
 
 
-sbr2018_cleaned <- merge(sbr2018_cleaned,countryRegionList,by=c("iso","country"))
 N = dim(sbr2018_cleaned)[1]
 
 getd.i <- as.numeric(sbr2018_cleaned$definition_rv)
@@ -88,11 +95,11 @@ covar_array <- create_covar_array(interest_cov = int_cov)
 #X5 <- covarMatrix(int_cov[5])
 
 ### source type
-
+datatype1.i <- ifelse(sbr2018_cleaned$source2==1,1,0)
 datatype2.i <- ifelse(sbr2018_cleaned$source2==2,1,0)
 datatype3.i <- ifelse(sbr2018_cleaned$source2==3,1,0)
 datatype4.i <- ifelse(sbr2018_cleaned$source2==4,1,0)
-
+datatype5.i <- ifelse(sbr2018_cleaned$source2==5,1,0)
 getj.i <- sbr2018_cleaned$source2
 
 #stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE^2, 
@@ -110,17 +117,33 @@ getj.i <- sbr2018_cleaned$source2
 stan.data<- list(Y = log(sbr2018_cleaned$adj_sbr_unknown), var_i = sbr2018_cleaned$SE.logsbr^2, covar_array = covar_array,
                  getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
                  eta_d = definition_bias, phi_d = definition_var,
-                 datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
+                 datatype1_i = datatype1.i,datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,datatype5_i=datatype5.i,
                  deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
                  N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears, numcov = length(int_cov),
-                 yearLength = yearLength, 
+                 yearLength = yearLength, numdef = length(definition_fac),
                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
                  BG_td = splines.data$BG.td,H=splines.data$H)
+do.validation = T
+if (!do.validation){
+  # all observations are in the training set
+  stan.data$getitrain_k <- seq(1, N)
+} else {
+  # this is one particular type of validation, 
+  # leaving out the most recent data point in all countries with at least 2 observations
+  indiceslastobs <- list()
+  for (c in 1: 195){
+    if (sum(getc.i==c)>2){
+      indiceslastobs[[c]] <- which(gett.i==max(gett.i[getc.i==c]) & getc.i==c)   
+    }
+  }
+  stan.data$getitrain_k <- seq(1,N)[!is.element(seq(1,N), unlist(indiceslastobs))]
+}
+
+stan.data$ntrain <- length(stan.data$getitrain_k)
+stan.data$getitrain_k
 
 
-length(stan.data$Y)
-
-saveRDS(stan.data,file = "output/standata.quad.I1.rds")
+saveRDS(stan.data,file = "output/stan.loo.rds")
 
 
 

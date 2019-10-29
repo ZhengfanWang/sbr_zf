@@ -55,6 +55,8 @@ source("2.merge&clean&plot_full_data.R")
 #and to summarize for which defs we need an adjustment
 source("3.def_adj.R")
 
+source("3.comp_cutoff_for_non28wks_def.R")
+
 ##### new approach may applied here
 source("3.def_adj_reg.R")
 

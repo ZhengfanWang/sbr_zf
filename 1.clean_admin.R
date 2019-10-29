@@ -289,15 +289,12 @@ admin.full[which(admin.full$iso=="ZWE"&admin.full$definition=="not defined"),]$d
 #----------------------#
 
 
-admin.full <- admin.full %>% mutate(SE.sbr = sqrt(1000*SBR/nTB),
-                                    SE.logsbr = SE.sbr / SBR,
-                                    region=NA,
-                                    exclusion_ratio = NA,
+admin.full <- admin.full %>% mutate(region=NA,
                                     iso = as.factor(iso)) %>% 
                              arrange(iso, year) %>% 
                              select("country","iso","region","year","source","context","definition","definition_rv",
-                                    "SBR","adj_sbr_unknown","prop_unknown","SE.logsbr","SE.sbr","nSB","nTB","nLB","WPP_LB",
-                                    "nNM","NMR","rSN","rSN_UN","notes","exclusion_notes") 
+                                    "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB",
+                                    "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes") 
 
 
 saveRDS(admin.full, "output/admin.full.rds")

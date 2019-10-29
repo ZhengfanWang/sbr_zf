@@ -12,10 +12,11 @@ data{
   int<lower=1,upper=yearLength> gett_i[N];       // time for given obs
   int<lower=0,upper=4> getd_i[N];                // definition type for given obs
   
-  
+  int <lower=0,upper=1> datatype1_i[N];
   int <lower=0,upper=1> datatype2_i[N];
   int <lower=0,upper=1> datatype3_i[N];
   int <lower=0,upper=1> datatype4_i[N];
+  int <lower=0,upper=1> datatype5_i[N];
   
   int <lower=0,upper=1> deftype1_i[N];
   int <lower=0,upper=1> deftype2_i[N];
@@ -65,9 +66,9 @@ parameters {
   vector[numcov] beta_tilde;
   
   //deviance part
-  vector[3] beta_dt_tilde;
+  vector[4] beta_dt_tilde;
   
-  real<lower=0,upper=5> sigma_j[3];      //source type sd 
+  real<lower=0,upper=5> sigma_j[5];      //source type sd 
   real<lower=0,upper=5> sigma_c;
   
   
@@ -83,17 +84,17 @@ transformed parameters {
   vector[numcov] beta;
   vector<lower=0>[numcov] lambda_tilde;
   real<lower=0> cc;
-  vector[3] beta_dt = beta_dt_tilde *5;
+  vector[4] beta_dt = beta_dt_tilde *5;
   matrix[numcountry,yearLength] mu_ct;
   real z_i[N];
   real sigma_i[N];
   matrix[numcountry,yearLength] delta_ct;
-  real<lower=0> var_j[3];
+  real<lower=0> var_j[5];
   
    cc = slab_scale * sqrt(caux);
    lambda_tilde = sqrt(cc^2 * square(lambda) ./ (cc^2 + tau^2 *square(lambda)));
    beta = beta_tilde .* lambda_tilde * tau;
-  for(j in 1:3){
+  for(j in 1:5){
     var_j[j]= square(sigma_j[j]);}
   
   //P spline 2 order
@@ -106,11 +107,14 @@ transformed parameters {
   for(i in 1:N){
     z_i[i] = beta_dt[1]*datatype2_i[i]+
       beta_dt[2]*datatype3_i[i]+
-      beta_dt[3]*datatype4_i[i];
+      beta_dt[3]*datatype4_i[i]+
+      beta_dt[4]*datatype5_i[i];
     
-    sigma_i[i] = sqrt(var_j[1]*datatype2_i[i]+
-                      var_j[2]*datatype3_i[i]+
-                      var_j[3]*datatype4_i[i]+
+    sigma_i[i] = sqrt(var_j[1]*datatype1_i[i]+
+                      var_j[2]*datatype2_i[i]+
+                      var_j[3]*datatype3_i[i]+
+                      var_j[4]*datatype4_i[i]+
+                      var_j[5]*datatype5_i[i]+
                       var_i[i] + phi_d[getd_i[i]]);
   }
   
@@ -143,7 +147,7 @@ model {
   //bias part
   beta_dt_tilde ~ normal(0,1);
   
-  for(j in 1:3){
+  for(j in 1:5){
     sigma_j[j] ~ normal(0,1);}
   
   //main part

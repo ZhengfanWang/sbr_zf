@@ -3,8 +3,8 @@
 #-------------------------------#
 
 #load data
-SBR.full <- readRDS("output/sbr.full.rds")
-
+SBR.full.ori <- readRDS("output/full.ratio.exc.based.28wks.rds")
+SBR.full <- SBR.full.ori 
 #-------------------------------#
 # find combiations              # 
 #-------------------------------#
@@ -52,7 +52,8 @@ priority.for.adj_vec <- priority.for.adj$definition
 SBR.wide <- SBR.model %>% pivot_wider(names_from = definition_rv, values_from = adj_sbr_unknown,
                                       values_fn = list(adj_sbr_unknown = median)) %>% 
                                       arrange(iso,year) %>% 
-                                      select(c("iso","country","region","year","source","lmic","ge28wks",paste0(head(priority.for.adj_vec,-1))))
+                                      select(c("iso","country","region","year","source","lmic","ge28wks",
+                                               paste0(priority.for.adj_vec[priority.for.adj_vec != "ge28wks"])))
 
 ### if there is other source type, delete subnat
 names(SBR.wide)
@@ -86,7 +87,7 @@ need.adj.subnat.admin <- SBR.model %>% filter(source == "subnat.admin") %>%
 
 
 SBR.model <- rbind(SBR.non.sub.admin,need.adj.subnat.admin)
-saveRDS(SBR.model,"data_for_model.rds")
+saveRDS(SBR.model,"output/data_for_model.rds")
 
 SBR.need.adj <- SBR.model %>% filter(definition_rv != "ge28wks" )
 #-------------------------------------------------#

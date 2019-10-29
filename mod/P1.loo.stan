@@ -3,15 +3,16 @@ data{
   int<lower=0> numcov; //number of preidctors
   int<lower=0> numcountry; // number of countries
   int<lower=0> numregion; // number of regions
+  int<lower=0> numdef; //number of definitions
   int<lower=0> yearLength; //number of est year
-
+  int<lower=0> ntrain;  //loo 
   int estyears[yearLength]; //vector of est years;
   real Y[N]; // vector of log sbr
   int<lower=0,upper=numcountry> getc_i[N];          // country for given obs
   int<lower=0,upper=numregion> getr_c[numcountry];  // vector of region given country
   int<lower=1,upper=yearLength> gett_i[N];       // time for given obs
   int<lower=0,upper=4> getd_i[N];                // definition type for given obs
-
+  int<lower=0> getitrain_k[ntrain];
 
   int <lower=0,upper=1> datatype1_i[N];
   int <lower=0,upper=1> datatype2_i[N];
@@ -23,8 +24,9 @@ data{
   int <lower=0,upper=1> deftype2_i[N];
   int <lower=0,upper=1> deftype3_i[N];
   int <lower=0,upper=1> deftype4_i[N];
-  vector[4] eta_d;               // definition adjustment bias
-  real<lower=0> phi_d[4];               // definition adjustment var
+  
+  vector[numdef] eta_d;               // definition adjustment bias
+  real<lower=0> phi_d[numdef];               // definition adjustment var
 
   real<lower=0> var_i[N];              // sampling error^2
 
@@ -139,13 +141,13 @@ model {
     sigma_j[j] ~ normal(0,1);}
 
   //main part
-  for(i in 1:N){
-    Y[i] ~ normal(mu_ct[getc_i[i],gett_i[i]]
-                  + z_i[i]
-                  + b_i[i]
-                  + delta_ct[getc_i[i],gett_i[i]]
+  for(k in 1:ntrain){
+    Y[getitrain_k[k]] ~ normal(mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
+                  + z_i[getitrain_k[k]]
+                  + b_i[getitrain_k[k]]
+                  + delta_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
                   ,
-                  sigma_i[i]);
+                  sigma_i[getitrain_k[k]]);
   }
   
 }

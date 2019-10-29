@@ -25,14 +25,12 @@ levels(sub.admin.full$definition) <- c("ge1000g","ge12wks","ge20wks","ge22wks","
 levels(sub.admin.full$context) <- c("HMIS-DHIS2","VR","VR")
 
 sub.admin.full <- sub.admin.full %>% arrange(iso, year,region) %>% 
-                                     mutate(SE.sbr = sqrt(1000*SBR/nTB),
-                                            rSN = SBR/NMR) %>% 
-                                     mutate(SE.logsbr = SE.sbr / SBR) %>% 
+                                     mutate(rSN = SBR/NMR) %>%  
                                      mutate(definition_rv=definition,adj_sbr_unknown=NA,prop_unknown=NA,
-                                            nNM = NA, rSN_UN = NA, notes = NA, WPP_LB = NA ) %>% 
+                                            nNM = NA, rSN_UN = NA, notes = NA, WPP_LB = NA, UN_NMR = NA ) %>% 
                                      select("country","iso","region","year","source","context","definition","definition_rv",
-                                    "SBR","adj_sbr_unknown","prop_unknown","SE.logsbr","SE.sbr","nSB","nTB","nLB", "WPP_LB",
-                                    "nNM","NMR","rSN","rSN_UN","notes","exclusion_notes") 
+                                    "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB", "WPP_LB",
+                                    "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes") 
 
 saveRDS(sub.admin.full, "output/sub.admin.full.rds")
 #write.csv(table(region.cleaned),file = "subnational_admin_Notes.on.Place.in.Country.csv")

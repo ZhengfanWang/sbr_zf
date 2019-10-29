@@ -29,3 +29,12 @@ create_def_reg_stan_data <- function(dat){
    return(stan_dat)               
 }
 
+
+### used in 3.comp_cutoff_for_non28wks_def.R
+
+def_adj_func <- function(a,b,def,bias){
+  for(i in 1:length(int.def)){
+    if(b==def[i]) {r = a + bias[i]} 
+  }
+  return(r)   
+}
