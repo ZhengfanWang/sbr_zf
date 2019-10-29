@@ -38,13 +38,11 @@ source("1.clean_subnat&survey.R")
 #                       2. merge data& Country summary plot                              #
 #----------------------------------------------------------------------------------------#
 
-#get SBR:NMR upper bound.
-#source("2.study_SBR_NMR_cutoff_value.R")
-
 ### add exclusion_ratio col
 source("2.merge&clean&plot_full_data.R")
 # exploratory plot for countries in fig/summaryplot.pdf
-
+#get SBR:NMR upper bound.
+source("2.study_SBR_NMR_cutoff_value.R")
 
 #----------------------------------------------------------------------------------------#
 #############          3. definition adjustment                      #####################
@@ -55,7 +53,7 @@ source("2.merge&clean&plot_full_data.R")
 #and to summarize for which defs we need an adjustment
 source("3.def_adj.R")
 
-source("3.comp_cutoff_for_non28wks_def.R")
+#source("3.comp_cutoff_for_non28wks_def.R")
 
 ##### new approach may applied here
 source("3.def_adj_reg.R")

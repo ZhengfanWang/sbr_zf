@@ -2,8 +2,8 @@
 
 
 # load high quality lmin data
-hq_data <- openxlsx::read.xlsx("E:/doc/research/birth rate/SBR2018/input/High Quality LMIC data_SBR_NMR.xlsx")
-full_data <- readRDS("E:/doc/research/birth rate/SBR2018/output/sbr.full.rds")
+hq_data <- openxlsx::read.xlsx("input/High Quality LMIC data_SBR_NMR.xlsx")
+full_data <- readRDS("output/sbr.full.rds")
 
 ############################# MC method to explore cut off ######################
 
@@ -71,7 +71,7 @@ SBR.full.ratio <- full_data %>% mutate(exclusion_ratio = replace(exclusion_ratio
                                                                  "missing info to cal prob")) %>% 
                                 mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  prob_i<0.05,
-                                                                 "prob < 0.05 AND ge28wks def"))
+                                                                 "prob < 0.05"))
 
 saveRDS(SBR.full.ratio,"output/full.ratio.exc.based.28wks.rds")
 ################################################################################################
