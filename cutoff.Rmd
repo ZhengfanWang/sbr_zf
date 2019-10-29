@@ -1,110 +1,128 @@
 ---
-title: "Cut off based on observed SBR:NMR ratio"
-output:
-  pdf_document: default
-  html_notebook: default
+title: "Data exclusion based SBR:NMR ratio"
+author: "ZW and LA"
+output: pdf_document
 ---
 
-```{r, include = FALSE}
-library(openxlsx)
-library(tidyverse)
-lmic_SBR_NMR <- read.xlsx("High Quality LMIC data_SBR_NMR.xlsx")
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r, echo = FALSE}
-tb <- lmic_SBR_NMR$lb + lmic_SBR_NMR$sb
-sbr <- lmic_SBR_NMR$sbr
-lb <- lmic_SBR_NMR$lb
-nmr <- lmic_SBR_NMR$nmr
-```
+# Two step approach:
+\begin{enumerate}
+\item Fit a model to the high quality data to estimate range of true ratios. 
+\begin{itemize}
+ \item Important: we need some kind of model set-up to capture ``true'' variability across ratios (ie we don't want an overall mean across settings because some settings truly have lower SBRs than others)
+ \item Candidate set-up: \\
+ For observed ratio $r_i$, assume 
+ $$\log(r_i) = \theta_i + \varepsilon_i, $$
+with
+\begin{itemize}
 
-## Section 0: uncertainty in the SBR to NMR ratio
-For an observation $i$ of the high quality dataset, and for a range of values of probability $P$, we used a monte carlo approximation to calculate value $x_i$ such that Prob(ratio $<$ x_i) = $P$, or in other words, the lower bound of the (1-2P)\% confidence interval associated with the observation. We assumed
+\item  Random error $\varepsilon_i \sim N(0, v_i)$ with variance $v_i$ calculated as per earlier approach(model details in next part)
+\item Random effect $\theta_i$, i.e. $\theta_i \sim N(\mu, \sigma^2)$, where $\sigma^2$ refers to variability across settings
+\end{itemize}
+\end{itemize}
+\item For an observed ratio $r_i$ (from full data base), check if an observed ratio is plausible or not to decide on exclusion.
+\begin{itemize}
+\item Proposal:  Calculate the probability of observing something more extreme then the observed ratio $r_i$ under the fitted model for log-ratios from step 1:
+		\begin{itemize}
+			\item Calculate $p_i = \int_{-\infty}^{\log(r_i)} \phi( r) dr$, where $\phi( r)$ is the predictive density for log(ratio) from model in step 1 using observation-specific error variance. Based on candidate model in step 1,  the predictive distribution is given by6:
+			$$N(\hat{\mu}, \hat{\delta}^2 +  \hat{\sigma}^2 + v_i), $$ where $\hat{\mu}$ is the point estimate for $\mu$ and $\hat{\delta}^2$ its posterior variance, and $\hat{\sigma}^2$ is the point estimate for the variance of the random effects.       \item Decision rule: if $p_i< 0.05$, exclude observation $i$.
+\end{itemize}
+\end{itemize}
+\end{enumerate}
 
-- independence between still births and neo deaths
+# Calculation of variance
+
+For an observation $i$, we used a monte carlo approximation to calculate value $v_i$. We assumed
+
 - stillbirths  $\sim$ Bin(total births, observed sbr),
 - neonatal deaths $\sim$ Bin(live births, observed nmr)
 
-Samples of the ratios for calculating $x_i$ were obtained as follows: 
-```{r}
-S <- 1000
+Generate $S$ random samples form above distributions. For each sample
+$$log(ratio_s) = log(\frac{SBR_s}{NMR_s})$$
+- Then get $var(log(ratio))$ of S samples $log(ratio_s),s=1,...,S$.
+
+```{r echo=FALSE}
+###  SBR:NMR cutoff value study
+
+
+# load high quality lmin data
+hq_data <- openxlsx::read.xlsx("input/High Quality LMIC data_SBR_NMR.xlsx")
+full_data <- readRDS("output/sbr.full.rds")
+############################# MC method to explore cut off ######################
+#-------------------------------#
+#     1-step: explore hq data   #
+#-------------------------------#
+
+tb <- hq_data$lb + hq_data$sb
+sbr <- hq_data$sbr
+lb <- hq_data$lb
+nmr <- hq_data$nmr
+
+set.seed(123)
+```
+
+```{r echo = FALSE, warning = FALSE, message= FALSE}
+library(tidyverse)
 n <- length(tb)
-ratio_s <- matrix(NA, n, S)
+S <- 1000  #num of MC simulation
+log.r_s <- matrix(NA,ncol=S,nrow=n)
 for(i in 1:n){
-  sb_s <- rbinom(S, tb[i], sbr[i]/1000)
-  nm_s <- rbinom(S, lb[i], nmr[i]/1000)
-  ratio_s[i,] <- sb_s/tb[i]*1/(nm_s/lb[i])
+  sb_s <- rbinom(S,tb[i],sbr[i]/1000)
+  nm_s <- rbinom(S,lb[i],nmr[i]/1000)
+  log.r_s[i,] <- log(sb_s/tb[i]*1/(nm_s/lb[i]))
 }
+sd_i <- apply(log.r_s,1,sd)
+
+stan.data.cutoff <- list(n = n, y_i = log(sbr/nmr), sd_i = sd_i)
+library("rstan")
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+fit <- stan(file= "mod/study_ratio_cutoff.stan",data=stan.data.cutoff,chains = 4,
+     control=list(adapt_delta=0.99, max_treedepth=15))
+
+print(fit,pars = c("mu","sigma"))
+fit.chain <- extract(fit)
+mu <- fit.chain$mu                  # posterior sample of overall mean of log ratio
+sigma  <- fit.chain$sigma           # posterior sample of variability across settings.
+
+mu.hat <- mean(mu)
+delta.hat.sq <- var(mu)
+sigma.hat.sq <- mean(sigma)^2
+
+#----------------------------------------#
+#   2-step: Make decision for full set   #
+#----------------------------------------#
 ```
+```{r echo = FALSE ,warning = FALSE}
+ftb <- full_data$nLB + full_data$nSB
+fsbr <- full_data$adj_sbr_unknown
+flb <- full_data$nLB
+fnmr <- ifelse(is.na(full_data$NMR),full_data$UN_NMR,full_data$NMR)
 
-## How shall we use the information from high quality data to set an exclusion criterion for SBR modeling?
+fn <- length(ftb)
+S <- 1000  #num of MC simulation
+flog.r_s <- matrix(NA,ncol=S,nrow=fn)
+for(i in 1:fn){
+  sb_s <- rbinom(S,ftb[i],fsbr[i]/1000)
+  nm_s <- rbinom(S,flb[i],fnmr[i]/1000)
+  flog.r_s[i,] <- log(sb_s/ftb[i]*1/(nm_s/flb[i]))
+}
+v_i <- apply(flog.r_s,1,var)
 
-We need to finalize an exclusion criterion for observations in the global data set based on their sbr:nmr ratios. In this section, when referring to observations, we are referring to observations in global data set. 
-
-We are working on a 2 step approach: 
-
-- Goal of 1st step: estimate of lowest "plausible" true ratio using high quality data 
-  - Problem: All observations are subject to uncertainty, so if we really want info about truth, we should take account of associated uncertainty, so focus on lower bounds of CIs. 
-  - However, some obs are very uncertain so lower bounds can get really low...
-   - Recent thought: First select observations that are not TOO uncertain, then use min of set of lower bounds. 
-   - Ongoing: how to do this, use coeff of variation?
-- Goal in 2nd step: exclude obs that are below plausible ratio
-  - Take account of unc in the obs, i.e. use upperbound of 90% CI   - see excel file for overview of 90\% upperbounds
-
-## Analysis of plausible lowest ratio based on high quality data
-
-### TO ADD INFO RELATED TO EXCLUSION HERE 
-
-<!-- For each observation $i$ in the high quality data base, and for probabilities $P$ ranging from 1\% to 20\%, we use a monte carlo approximation to calculate value $x_i$ such that Prob(ratio $<$ x_i) = $P$ (or in other words, the lower bound of the (1-2P)\% confidence interval associated with the observation). We assume -->
-
-<!-- - independence between still births and neo deaths -->
-<!-- - stillbirths  $\sim$ Bin(total births, observed sbr), -->
-<!-- - neonatal deaths $\sim$ Bin(live births, observed nmr) -->
-
-<!-- Samples of the ratios for calculating $x_i$ are obtained as follows:  -->
-<!-- ```{r} -->
-<!-- S <- 1000 -->
-<!-- n <- length(tb) -->
-<!-- ratio_s <- matrix(NA, n, S) -->
-<!-- for(i in 1:n){ -->
-<!--   sb_s <- rbinom(S, tb[i], sbr[i]/1000) -->
-<!--   nm_s <- rbinom(S, lb[i], nmr[i]/1000) -->
-<!--   ratio_s[i,] <- sb_s/tb[i]*1/(nm_s/lb[i]) -->
-<!-- } -->
-<!-- ``` -->
-
-We calculated $x_i$ for probabilities $P$ ranging from 1\% to 20\%, or equivalently, we calculated the lower bound $x_i$ of 98\%CIs to 60\% CIs. Histograms of $x_i$ for each $P$ are included at the end of this document. 
-Summaries are as follows, where
-
-- one row = one probability $P$, 
-- columns are minimum followed by sample percentiles 2.5%, 5%, 10%, 15%, 50%. 
-
-```{r, echo = FALSE}
-percentile2 <- apply(ratio_s,1,quantile,na.rm = TRUE,c(0.01,0.025,0.05,0.075,0.1,0.15,0.2))
-dim(percentile2)
-
-res <- data.frame(
-  min = round(apply(percentile2,1,min,na.rm=TRUE),2),
-  t(round(apply(percentile2,1,quantile,c(0.025, 0.05, 0.1, 0.15, 0.5), na.rm=TRUE),2)))
-res
+sigma <- sqrt(delta.hat.sq + sigma.hat.sq)
+sigma_i <- sqrt(delta.hat.sq + sigma.hat.sq + v_i)
+log.ratio_i <- log(ifelse(is.na(full_data$rSN),full_data$rSN_UN,full_data$rSN))
+prob_i <- unlist(map2(log.ratio_i,sigma_i,pnorm,mean = mu.hat))
+cutoff_bound <- exp(qnorm(0.05,mu.hat,sigma))
 ```
-
-
-
-
-Histograms:
-```{r, echo = FALSE}
-histplot <- function(data, breaks = 50, title, xlim, ylim){
-  h <- hist(data,plot=FALSE,breaks = breaks)
-  h$counts=h$counts/sum(h$counts)
-  plot(h,main = title,xlim= xlim, ylim = ylim, ylab = "Relative Frequency",xlab = "SBR:NMR")
-}
-title <- c("1%","2.5%","5%","7.5%","10%","15%","20%")
-
-#par(mfrow=c(3,3))
-for(i in 1:7){
-  histplot(percentile2[i,],breaks = 5, title = title[i], xlim = c(0,2),ylim = c(0,0.5))
-}
+The cutoff value is about 0.53 assuming $v_i = 0$. About 11.5% observation will be excluded by the approach.
+```{r}
+hist(prob_i,freq = FALSE, breaks = 20)
+round(mean(prob_i<0.05,na.rm = T),digits = 3)
+round(cutoff_bound,digits = 2)
 ```
 

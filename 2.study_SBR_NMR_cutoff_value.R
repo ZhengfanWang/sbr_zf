@@ -65,7 +65,10 @@ v_i <- apply(flog.r_s,1,var)
 sigma_i <- sqrt(v_i + delta.hat.sq + sigma.hat.sq)
 log.ratio_i <- log(ifelse(is.na(full_data$rSN),full_data$rSN_UN,full_data$rSN))
 prob_i <- unlist(map2(log.ratio_i,sigma_i,pnorm,mean = mu.hat))
-
+hist(prob_i,freq = FALSE, breaks = 20)
+summary(prob_i)
+quantile(prob_i,.05,na.rm = T)
+mean(prob_i<0.05,na.rm = T)
 SBR.full.ratio <- full_data %>% mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  is.na(prob_i),
                                                                  "missing info to cal prob")) %>% 
