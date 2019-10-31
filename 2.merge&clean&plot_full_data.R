@@ -29,7 +29,8 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                                     rSN_UN = adj_sbr_unknown/UN_NMR) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500gANDge28wks", "ge28wks"),
                                     definition_rv = replace(definition_rv, definition_rv == "ge500gORge22wks", "ge22wks"),
-                                    definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
+                                    definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks"),
+                                    definition_rv = replace(definition_rv, definition_rv == "ge1000gORge28wks", "ge1000g")) %>% 
                              mutate(exclusion_notes = replace(exclusion_notes, is.na(SE.logsbr), 
                                                               "missing info to cal se.logsbr")) %>% 
                              mutate(exclusion_ratio = NA)

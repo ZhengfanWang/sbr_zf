@@ -1,3 +1,27 @@
+### used for find combiation of definition used in "3.def_adj.R"
+find_comb_def_adj <- function(data){
+  def.28wks <- data %>% filter(definition_rv == "ge28wks") %>% 
+    rename("SBR28"="SBR","nSB28"="nSB") %>% 
+    mutate(year = round(year)) %>% 
+    select(iso,year,region,SBR28,nSB28,source) 
+  
+  def.other <- data %>% filter(definition_rv != "ge28wks") %>% 
+    mutate(year = round(year))
+  lev <- levels(def.other$definition_rv)
+  n_comb <- length(lev)
+  definition_adj_data_list <- list()
+  for(i in 1:n_comb){
+    cache <- def.other%>%
+      filter(definition_rv == levels(def.other$definition_rv)[i]) 
+    definition_adj_data_list[[i]] <- merge(cache,def.28wks,by=c("iso","year","source","region"))
+  }
+  return(list(dat = definition_adj_data_list,
+              alter.def = lev))
+}
+
+
+
+
 #used to find data set from list to do def adj
 find_data_from_list <- function(list,def){
   i=1

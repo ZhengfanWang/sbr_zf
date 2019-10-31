@@ -29,7 +29,7 @@ with
 \item Proposal:  Calculate the probability of observing something more extreme then the observed ratio $r_i$ under the fitted model for log-ratios from step 1:
 		\begin{itemize}
 			\item Calculate $p_i = \int_{-\infty}^{\log(r_i)} \phi( r) dr$, where $\phi( r)$ is the predictive density for log(ratio) from model in step 1 using observation-specific error variance. Based on candidate model in step 1,  the predictive distribution is given by6:
-			$$N(\hat{\mu}, \hat{\delta}^2 +  \hat{\sigma}^2 + v_i), $$ where $\hat{\mu}$ is the point estimate for $\mu$ and $\hat{\delta}^2$ its posterior variance, and $\hat{\sigma}^2$ is the point estimate for the variance of the random effects.       \item Decision rule: if $p_i< 0.05$, exclude observation $i$.
+			$$N(\hat{\mu}, \hat{\delta}^2 +  \hat{\sigma}^2 + v_i), $$ where $\hat{\mu}$ is the point estimate for $\mu$ and $\hat{\delta}^2$ its posterior variance, and $\hat{\sigma}^2$ is the point estimate for the variance of the random effects.       \item Decision rule: if $p_i< x$, exclude observation $i$. We set $x = 0.05$ in calculation below. 
 \end{itemize}
 \end{itemize}
 \end{enumerate}
@@ -117,12 +117,18 @@ sigma <- sqrt(delta.hat.sq + sigma.hat.sq)
 sigma_i <- sqrt(delta.hat.sq + sigma.hat.sq + v_i)
 log.ratio_i <- log(ifelse(is.na(full_data$rSN),full_data$rSN_UN,full_data$rSN))
 prob_i <- unlist(map2(log.ratio_i,sigma_i,pnorm,mean = mu.hat))
-cutoff_bound <- exp(qnorm(0.05,mu.hat,sigma))
 ```
-The cutoff value is about 0.53 assuming $v_i = 0$. About 11.5% observation will be excluded by the approach.
+
+Histogram of step 2 $p_i$s is displayed below. About 11.5% observation will be excluded if the cut-off $x$ is set to 5%.
+
 ```{r}
 hist(prob_i,freq = FALSE, breaks = 20)
 round(mean(prob_i<0.05,na.rm = T),digits = 3)
-round(cutoff_bound,digits = 2)
 ```
 
+Note that cut-off value in terms of observed SBR:NMR ratio depends on the variance of the observations $v_i$. 
+The cutoff value is about 0.53 when $v_i = 0$, i.e. for observations with negligible stochastic uncertainty, and decreases as the variance increases. 
+```{r}
+cutoff_bound <- exp(qnorm(0.05,mu.hat,sigma))
+round(cutoff_bound,digits = 2)
+```

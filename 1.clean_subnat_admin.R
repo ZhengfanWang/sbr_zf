@@ -26,6 +26,7 @@ levels(sub.admin.full$context) <- c("HMIS-DHIS2","VR","VR")
 
 sub.admin.full <- sub.admin.full %>% arrange(iso, year,region) %>% 
                                      mutate(rSN = SBR/NMR) %>%  
+                                     mutate(definition = replace(definition,is.na(definition)&country=="Bhutan","ge28wks")) %>% 
                                      mutate(definition_rv=definition,adj_sbr_unknown=NA,prop_unknown=NA,
                                             nNM = NA, rSN_UN = NA, notes = NA, WPP_LB = NA, UN_NMR = NA ) %>% 
                                      select("country","iso","region","year","source","context","definition","definition_rv",

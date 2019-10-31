@@ -71,13 +71,24 @@ quantile(prob_i,.05,na.rm = T)
 mean(prob_i<0.05,na.rm = T)
 SBR.full.ratio <- full_data %>% mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  is.na(prob_i),
-                                                                 "missing info to cal prob")) %>% 
+                                                                 "cannot cal prob")) %>% 
                                 mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  prob_i<0.05,
                                                                  "prob < 0.05"))
-
-saveRDS(SBR.full.ratio,"output/full.ratio.exc.based.28wks.rds")
+ 
+write.csv(SBR.full.ratio,"output/fullset.csv")
+saveRDS(SBR.full.ratio,"output/fullset.rds")
 ################################################################################################
+
+#--------------------------------------#
+#   exploratory plot after exclusion   # 
+#--------------------------------------#
+SBR.clean <- SBR.full.ratio %>% filter(is.na(exclusion_notes),is.na(exclusion_ratio))
+clean_data_list <- create_list_for_country(SBR.clean)
+pdf_name <- paste0("fig/exploratory_plot/exploratory_clean_data.pdf")
+pdf(pdf_name,width=12)
+clean_data_list %>% lapply(exploratory_plot)
+dev.off()
 
 
 

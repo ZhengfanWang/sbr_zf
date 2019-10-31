@@ -1,15 +1,14 @@
-standata <- readRDS(file = "output/standata.quad.I1.rds")             ####  data used for fit model
+standata <- readRDS(file = "output/stan.qi1.rds")             ####  data used for fit model
 
-fit <- readRDS(file = "rdsoutput/Ps.quad.I1.rds")                            ### fit result
+fit <- readRDS(file = "rdsoutput/qi1.rds")                            ### fit result
 
-print(fit, pars = c("beta","beta_dt","sigma_j","tau_delta","gamma_r"))
+print(fit, pars = c("beta","bias_dt","sigma_j","tau_delta","gamma_r"))
 
-standata$N
 
 
 df <- rstan::extract(fit)
-dt_bias <- c(0,round(apply(df$beta_dt,2,mean),digits = 2))             ## get data type bias from fit
-dt_variance <- c(0,round((apply(df$var_j,2,mean)),digits = 2))         ## get data type variance from fit
+dt_bias <- c(0,round(apply(df$bias_dt,2,mean),digits = 2))             ## get data type bias from fit
+dt_variance <- c(0.0025,round((apply(df$var_j,2,mean)),digits = 2))         ## get data type variance from fit
 
 mu_ct <- df$mu_ct +df$delta_ct                                  ### est mean
 getr_c <- standata$getr_c                                       
@@ -52,7 +51,7 @@ for(c in 2:standata$numcountry){
 
 fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 
-write.csv(fit_result,"output/Pspline1.csv")
+write.csv(fit_result,"output/qi1.csv")
 
 ###########################################################################
 sbr2018 <- data.frame(logSBR = standata$Y )
@@ -106,7 +105,6 @@ for(c in 1:standata$numcountry){
   
   
 }
-dat.list <-point.list[[1]]
 
 
 
@@ -139,7 +137,7 @@ check <- function(dat.list){
     theme(plot.title = element_text(hjust = 0.5, size = 30, face = 'bold'),
           axis.title.x = element_text(size=20),
           axis.title.y = element_text(size=20),
-          legend.position = "bottom",
+          legend.position = "right",
           legend.title=element_blank())
   
   yupper <- max(cis.tq$up,na.rm = T)
@@ -150,11 +148,9 @@ check <- function(dat.list){
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/quad.I1.pdf")
-pdf(pdf_name, width = 8, height = 5)
+pdf_name <- paste0("fig/qi1.pdf")
+pdf(pdf_name, width = 10, height = 5)
 point.list %>% lapply(check)
 dev.off()
 
-
-check(dat.list )
 

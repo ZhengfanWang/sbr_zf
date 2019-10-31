@@ -1,6 +1,6 @@
 
 
-fit <- readRDS(file = "rdsoutput/quad.I2.5.rds")
+fit <- readRDS(file = "rdsoutput/qi1.rds")
 fit2 <- readRDS(file = "rdsoutput/cubic.I1.rds")
 
 print(fit1, pars = c("beta","beta_dt","sigma_j","tau_delta","sigma_c"))
@@ -60,12 +60,12 @@ get_chain_result <- function(fit,smooth = TRUE){
 
 
 Pspline1_country_list <- get_chain_result(fit,smooth = TRUE)
-Pspline2_country_list <- get_chain_result(fit2,smooth = TRUE)
+Pspline2_country_list <- get_chain_result(fit,smooth = FALSE)
 
 
 ####################################################################
 
-standata <- readRDS(file = "output/standata.quad.I1.rds")
+standata <- readRDS(file = "output/stan.qi1.rds")
 
 
 
@@ -87,8 +87,8 @@ getd_i <- standata$getd_i
 defadj <- def[getd_i]
 getj_i <- standata$getj_i
 df <- extract(fit)
-dt_bias <- c(0,round(apply(df$beta_dt,2,mean),digits = 2))             ## get data type bias from fit
-dt_variance <- c(0,round((apply(df$var_j,2,mean)),digits = 2))         ## get data type variance from fit
+dt_bias <- c(0,round(apply(df$bias_dt,2,mean),digits = 4))             ## get data type bias from fit
+dt_variance <- c(0.0025,round((apply(df$var_j,2,mean)),digits = 4))         ## get data type variance from fit
 
 sourceadj <- dt_bias[getj_i]
 sbr2018$var <- standata$var_i + standata$phi_d[getd_i] + dt_variance[getj_i]
@@ -97,19 +97,19 @@ logadjsbr <- sbr2018$logSBR - defadj -sourceadj
 
 sbr2018$logadjsbr <- logadjsbr
 definition_fac <- c("ga28wks","bw1000g","ga22wks","bw500g")
-source_fac <- c("admin","HMIS","subnat LR","survey")
+source_fac <- c("admin","HMIS","subnat.admin","subnat LR","survey")
 sbr2018$definition_name <- definition_fac[getd_i]
 sbr2018$source_name <- source_fac[getj_i]
 
 
 
 
-year.f <- c(1,2,3,4)
-logSBR.f <- rep(0,4)
-logsbradj.f <- rep(1,4)
+year.f <- c(1,2,3,4,5)
+logSBR.f <- rep(0,5)
+logsbradj.f <- rep(1,5)
 
-fake.legend <- data.frame(year=year.f,logSBR=logSBR.f,logadjsbr=logsbradj.f,source_name=source_fac,definition_name=definition_fac) %>% 
-  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,4), low = NA, muhat = NA, up = NA) %>% 
+fake.legend <- data.frame(year=year.f,logSBR=logSBR.f,logadjsbr=logsbradj.f,source_name=source_fac,definition_name=c(definition_fac,"ge28wks")) %>% 
+  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,5), low = NA, muhat = NA, up = NA) %>% 
   select(country,iso,source_name,definition_name,country_idx,logSBR,logadjsbr, year, var)
 
 
@@ -143,14 +143,15 @@ compare.plot.list <- function(set1,set2,name){
                                  ) %>% 
         right_join(plot.list[[c]],by = c("year")) %>% 
         select(-country.y) %>% 
-        rename(country=country.x)
+        rename(country=country.x) %>% 
+        mutate(country = countryRegionList$country[c])
   }
   
   return(finalplot.list)
 }
 #example
-normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("quadI2.5","cubicI1"))
-
+normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("fit","cov"))
+normal_keep_ex[[1]]
 #########################################################
 
 
@@ -188,9 +189,9 @@ compare_plot <- function(dat.list){
   return(est_plot)
 }
 
+normal_keep_ex[[1]]
 
-
-pdf_name <- paste0("fig/quadI2.5_vs_cubicI1.pdf")
+pdf_name <- paste0("fig/fit_vs_cov.pdf")
 pdf(pdf_name, width = 8, height = 5)
 normal_keep_ex %>% lapply(compare_plot)
 dev.off()

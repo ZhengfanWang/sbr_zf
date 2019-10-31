@@ -1,7 +1,7 @@
  
 sbr2018 <- readRDS("output/data_for_model.rds")
 dim(sbr2018)
-
+names(sbr2018)
 
 ########################################################
 table(sbr2018$definition_rv)
@@ -10,7 +10,7 @@ dim(sbr2018)
 int_cov <- c("gni","nmr","lbw","anc4","mean_edu","exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
                   "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
 
-int_cov <- c("gni","nmr","lbw","anc4","mean_edu")
+#int_cov <- c("gni","nmr","lbw","anc4","mean_edu")
 
 covarset <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')%>% 
   select(c("iso3","year",int_cov)) %>% 
@@ -37,39 +37,28 @@ definition_var <-  c(0,0.09,0.15,0.12)
 #                             ge26wks = c("ge1000gORge26wks"),
 #                             ge28wks = c("ge28wks","s40wksANDge28wks"))
 
-sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>% 
-                               filter(!is.na(SE.logsbr))
-names(sbr2018)
-
-model_data_list <- create_list_for_country(sbr2018_cleaned) 
-pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
-pdf(pdf_name,width=12)
-model_data_list %>% lapply(exploratory_plot)
-dev.off()
+sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) 
 
 
+
+#model_data_list <- create_list_for_country(sbr2018_cleaned) 
+#pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
+#pdf(pdf_name,width=12)
+#model_data_list %>% lapply(exploratory_plot)
+#dev.off()
 
 sbr2018_cleaned$source <- droplevels(as.factor(sbr2018_cleaned$source))
 sbr2018_cleaned$source2 <- as.numeric(sbr2018_cleaned$source)
 
-
 #definition type
-
-
-
-
-
 sbr2018_cleaned$definition_rv <- factor(sbr2018_cleaned$definition_rv, levels = definition_fac)
 sbr2018_cleaned$definition_rv <- droplevels(sbr2018_cleaned$definition_rv)
 
-dim(sbr2018_cleaned)
 table(sbr2018_cleaned$definition_rv)
-
 
 N = dim(sbr2018_cleaned)[1]
 
 getd.i <- as.numeric(sbr2018_cleaned$definition_rv)
-
 
 deftype1.i <- ifelse(getd.i==1,1,0)
 deftype2.i <- ifelse(getd.i==2,1,0)
@@ -84,18 +73,17 @@ yearLength <- length(estyears)
 
 ###Basis matrix
 library(splines)
-
 ## order=1 means Random walk 1, degree = 3 cubic spline
 splines.data <- getSplinesData(yearLength,I=1,order=1, degree = 2)
 
 gett.i<- sbr2018_cleaned$year-estyears[1]+1
 
 covar_array <- create_covar_array(interest_cov = int_cov)
-#X1 <- covarMatrix(int_cov[1])
-#X2 <- covarMatrix(int_cov[2])
-#X3 <- covarMatrix(int_cov[3])
-#X4 <- covarMatrix(int_cov[4])
-#X5 <- covarMatrix(int_cov[5])
+X1 <- covarMatrix(int_cov[1])
+X2 <- covarMatrix(int_cov[2])
+X3 <- covarMatrix(int_cov[3])
+X4 <- covarMatrix(int_cov[4])
+X5 <- covarMatrix(int_cov[5])
 
 ### source type
 datatype1.i <- ifelse(sbr2018_cleaned$source2==1,1,0)
@@ -105,29 +93,29 @@ datatype4.i <- ifelse(sbr2018_cleaned$source2==4,1,0)
 datatype5.i <- ifelse(sbr2018_cleaned$source2==5,1,0)
 getj.i <- sbr2018_cleaned$source2
 
-#stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE^2, 
-#                          X1 = X1, X2=X2, X3=X3, X4=X4, X5=X5, 
-#                       Z1= standardize(X1),Z2 =standardize(X2),Z3 =standardize(X3),Z4 =standardize(X4),Z5 =standardize(X5),
-#                  getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
-#                  eta_d = definition_bias, phi_d = definition_var,
-#                  datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
-#                  deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
-#                  N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears,
-#                  yearLength = yearLength, d=5 , 
-#                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
-#                  BG_td = splines.data$BG.td,H=splines.data$H)
-
-stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr^2, covar_array = covar_array,
+stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr^2, 
+                 covar_array = covar_array, X1 = X1, X2 = X2, X3 = X3, X4 = X4, X5 = X5, 
+                 Z1 = standardize(X1), Z2 = standardize(X2), Z3 = standardize(X3), Z4 = standardize(X4), Z5 = standardize(X5),
                  getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
                  eta_d = definition_bias, phi_d = definition_var,
-                 datatype1_i = datatype1.i,datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,datatype5_i=datatype5.i,
-                 deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
-                 N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears, numcov = length(int_cov),
-                 yearLength = yearLength, numdef = length(definition_fac),
+                 datatype1_i = datatype1.i, datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,datatype5_i=datatype5.i,
+                 deftype1_i = deftype1.i, deftype2_i = deftype2.i, deftype3_i = deftype3.i, deftype4_i = deftype4.i,
+                 N = N, numcountry = max(getc.i), numregion = max(getr.c), estyears = estyears, yearLength = yearLength,
+                 numdef = length(definition_fac), numcov = length(int_cov), numsource = max(getj.i),
                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
                  BG_td = splines.data$BG.td,H=splines.data$H)
+
+#stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr^2, covar_array = covar_array,
+#                 getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
+#                 eta_d = definition_bias, phi_d = definition_var,
+#                 datatype1_i = datatype1.i,datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,datatype5_i=datatype5.i,
+#                 deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
+#                 N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears, numcov = length(int_cov),
+#                 yearLength = yearLength, numdef = length(definition_fac),
+#                 B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
+#                 BG_td = splines.data$BG.td,H=splines.data$H)
 saveRDS(stan.data,file = "output/stan.quad.I1.rds")
-do.validation = T
+do.validation = F
 if (!do.validation){
   # all observations are in the training set
   stan.data$getitrain_k <- seq(1, N)
@@ -146,8 +134,8 @@ if (!do.validation){
 stan.data$ntrain <- length(stan.data$getitrain_k)
 stan.data$getitrain_k
 
-
-saveRDS(stan.data,file = "output/stan.loo.rds")
+saveRDS(stan.data,file = "output/stan.qi1.hs.rds")
+saveRDS(stan.data,file = "output/stan.qi1..hs.loo.rds")
 
 
 

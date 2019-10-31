@@ -3,8 +3,10 @@
 #-------------------------------#
 
 #load data
-SBR.full.ori <- readRDS("output/full.ratio.exc.based.28wks.rds")
-SBR.full <- SBR.full.ori 
+SBR.full.ori <- readRDS("output/fullset.rds")
+dim(SBR.full.ori)
+SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)) %>% 
+                             filter(is.na(exclusion_ratio))
 #-------------------------------#
 # find combiations              # 
 #-------------------------------#
@@ -56,17 +58,21 @@ SBR.model.se$definition_rv <- droplevels(SBR.model.se$definition_rv)
 priority.for.adj <- summ %>% filter(definition %in% levels(SBR.model$definition_rv))
 priority.for.adj_vec <- priority.for.adj$definition
 
-SBR.wide <- SBR.model %>% pivot_wider(names_from = definition_rv, values_from = adj_sbr_unknown,
-                                      values_fn = list(adj_sbr_unknown = median)) %>% 
+SBR.wide <- SBR.model %>% pivot_wider(names_from = definition_rv, values_from = adj_sbr_unknown
+                                      ,values_fn = list(adj_sbr_unknown = median)         ## in order to avoid duplicated obs, take the median if 
+                                      ) %>%                                               ## mult observations for some country-year-source-definition
                                       arrange(iso,year) %>% 
                                       select(c(iso,country,region,year,source,lmic,shmdg2,country_idx,ge28wks,
                                                paste0(priority.for.adj_vec[priority.for.adj_vec != "ge28wks"])))
 
-SBR.wide.se <- SBR.model.se %>% pivot_wider(names_from = definition_rv, values_from = SE.logsbr,
-                                      values_fn = list(SE.logsbr = max)) %>% 
+##### The strategy here is not elegant. But it is the best way in my mind to fix a new problem based on what we have.
+SBR.wide.se <- SBR.model.se %>% pivot_wider(names_from = definition_rv, values_from = SE.logsbr
+                                            ,values_fn = list(SE.logsbr = max)
+                                      ) %>% 
                           arrange(iso,year) %>% 
                           select(c(iso,country,region,year,source,lmic,shmdg2,country_idx,ge28wks,
                           paste0(priority.for.adj_vec[priority.for.adj_vec != "ge28wks"])))
+######
 ### if there is other source type, delete subnat
 names(SBR.wide)
 data <- SBR.wide
@@ -126,7 +132,7 @@ tab <- data.frame(definition = definition, num_obs = veck, num_lmic = nobs.lmic1
 
 summ1 <- summ %>% merge(tab,by = "definition") %>% arrange(desc(num_paired_obs))
 
-write.csv(summ1,"table/def_adj_num_paired_obs.csv")
+write.csv(summ1,"table/def_adj_num_paired_obs_exclustion_strict.csv")
 
 ##############################################################
 #  plot
