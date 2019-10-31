@@ -41,11 +41,11 @@ sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac)
 
 
 
-#model_data_list <- create_list_for_country(sbr2018_cleaned) 
-#pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
-#pdf(pdf_name,width=12)
-#model_data_list %>% lapply(exploratory_plot)
-#dev.off()
+model_data_list <- create_list_for_country(sbr2018_cleaned) 
+pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
+pdf(pdf_name,width=12)
+model_data_list %>% lapply(exploratory_plot)
+dev.off()
 
 sbr2018_cleaned$source <- droplevels(as.factor(sbr2018_cleaned$source))
 sbr2018_cleaned$source2 <- as.numeric(sbr2018_cleaned$source)
@@ -135,7 +135,7 @@ stan.data$ntrain <- length(stan.data$getitrain_k)
 stan.data$getitrain_k
 
 saveRDS(stan.data,file = "output/stan.qi1.hs.rds")
-saveRDS(stan.data,file = "output/stan.qi1..hs.loo.rds")
+saveRDS(stan.data,file = "output/stan.qi1.hs.loo.rds")
 
 
 

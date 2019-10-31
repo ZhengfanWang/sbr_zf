@@ -6,7 +6,8 @@
 SBR.full.ori <- readRDS("output/fullset.rds")
 dim(SBR.full.ori)
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)) %>% 
-                             filter(is.na(exclusion_ratio))
+                             filter( is.na(exclusion_ratio) )
+table(SBR.full$exclusion_ratio)
 #-------------------------------#
 # find combiations              # 
 #-------------------------------#

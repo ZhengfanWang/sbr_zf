@@ -61,7 +61,8 @@ for(i in 1:fn){
   flog.r_s[i,] <- log(sb_s/ftb[i]*1/(nm_s/flb[i]))
 }
 v_i <- apply(flog.r_s,1,var)
-
+ftb[which(is.na(v_i))]
+fsbr[which(is.na(v_i))]
 sigma_i <- sqrt(v_i + delta.hat.sq + sigma.hat.sq)
 log.ratio_i <- log(ifelse(is.na(full_data$rSN),full_data$rSN_UN,full_data$rSN))
 prob_i <- unlist(map2(log.ratio_i,sigma_i,pnorm,mean = mu.hat))
