@@ -35,7 +35,6 @@ def_adj_name_hic <- def_adj_hic_res$alter.def
 #the alter def name
 saveRDS(def_adj_list_hic,"output/def_adj_data_hic.rds")
 
-
 #---------------------------------------------------------#
 # Overview for num paired obs and obs where need to adj   # 
 #---------------------------------------------------------#
@@ -69,7 +68,6 @@ SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","un
                            mutate(definition_rv2 = as.factor(definition_rv2),
                                   duplicates = NA)
 SBR.model$definition_rv2 <- droplevels(SBR.model$definition_rv2)
-
 
 priority.for.adj <- summ %>% filter(definition %in% levels(SBR.model$definition_rv))
 priority.for.adj_vec <- priority.for.adj$definition
@@ -131,7 +129,7 @@ se.logsbr   <- unlist(se.logsbr)
 #                   Need def adj                  # 
 #-------------------------------------------------#
 
-SBR.model <- SBR.wide %>% mutate(definition_rv2 = as.character(def_need_adj),
+SBR.model2 <- SBR.wide %>% mutate(definition_rv2 = as.character(def_need_adj),
                                     SBR = SBR_need_adj,
                                     SE.logsbr = se.logsbr) %>% 
                           select(iso,country,year,source,shmdg2,lmic,definition_rv2,
@@ -142,23 +140,23 @@ SBR.model <- SBR.wide %>% mutate(definition_rv2 = as.character(def_need_adj),
                           mutate(definition_rv = as.factor(definition_rv),
                                  definition_rv2 = as.factor(definition_rv2))%>% 
                           filter(source != "subnat.admin") 
-def <- levels(droplevels(SBR.model$definition_rv))
-levels(SBR.model$definition_rv2) <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g","ge24wks")
+def <- levels(droplevels(SBR.model2$definition_rv))
+levels(SBR.model2$definition_rv2) <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g","ge24wks")
 record <- 0
 for(c in 1:195){
   for(t in 2000:2018){
-      i<- which(SBR.model$country_idx == c&
-                  SBR.model$year == t)
+      i<- which(SBR.model2$country_idx == c&
+                  SBR.model2$year == t)
       len <- length(i)
-      dev <- as.numeric(unlist(SBR.model[i,"definition_rv2"]))
+      dev <- as.numeric(unlist(SBR.model2[i,"definition_rv2"]))
       if(len > 1)  {
-        exclude <- i[-which.min(dev)]
+        exclude <- i[-which(dev == min(dev))]
         record <- c(record,exclude)
         }    
 
   }
 }
-SBR.model <- SBR.model[-record,]     
+SBR.model <- SBR.model2[-record,]     
 
 saveRDS(SBR.model,"output/data_for_model.rds")
 

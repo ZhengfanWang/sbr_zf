@@ -8,8 +8,6 @@
 # project specific R functions are saved in the R subfolder 
 # original data are in input subfolder
 
-
-
 ## load funcs
 Rfiles <- list.files(file.path(paste0(getwd(),"/R/")), ".R") #gets names of r files
 sapply(paste0(paste0(getwd(),"/R/"), Rfiles), source) #gets functions from file

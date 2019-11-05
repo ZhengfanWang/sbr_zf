@@ -3,7 +3,7 @@
 
 
 ##read subnational admin
-subnat_admin.ori <- openxlsx::read.xlsx("input/2019_09_10_Stillbirth database. SubNat.xlsx",
+subnat_admin.ori <- openxlsx::read.xlsx("input/2019_09_10_Stillbirth database. SubNat. To use_Admin_SB_input_FINAL.xlsx",
                                         sheet =  1,startRow = 2) # read in subnation data 7786 obs
 
 sub.admin.full <- subnat_admin.ori %>%  dplyr::rename("country"="Country",
