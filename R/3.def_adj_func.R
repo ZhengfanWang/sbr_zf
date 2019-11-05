@@ -15,6 +15,8 @@ find_comb_def_adj <- function(data){
       filter(definition_rv == levels(def.other$definition_rv)[i]) 
     definition_adj_data_list[[i]] <- merge(cache,def.28wks,by=c("iso","year","source","region"))
   }
+  lev <- lev[lapply(definition_adj_data_list,nrow)>0]
+  definition_adj_data_list <- definition_adj_data_list[lapply(definition_adj_data_list,nrow)>0]
   return(list(dat = definition_adj_data_list,
               alter.def = lev))
 }

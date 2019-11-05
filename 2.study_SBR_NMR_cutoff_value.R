@@ -23,7 +23,7 @@ log.r_s <- matrix(NA,ncol=S,nrow=n)
 for(i in 1:n){
   sb_s <- rbinom(S,tb[i],sbr[i]/1000)
   nm_s <- rbinom(S,lb[i],nmr[i]/1000)
-  log.r_s[i,] <- log(sb_s/tb[i]*1/(nm_s/lb[i]))
+  log.r_s[i,] <- log((sb_s+0.5)/(tb[i]+1)*1/((nm_s+0.5)/(lb[i])+1))
 }
 sd_i <- apply(log.r_s,1,sd)
 
@@ -58,25 +58,29 @@ flog.r_s <- matrix(NA,ncol=S,nrow=fn)
 for(i in 1:fn){
   sb_s <- rbinom(S,ftb[i],fsbr[i]/1000)
   nm_s <- rbinom(S,flb[i],fnmr[i]/1000)
-  flog.r_s[i,] <- log(sb_s/ftb[i]*1/(nm_s/flb[i]))
+  flog.r_s[i,] <- log((sb_s+0.5)/(ftb[i]+1)*1/((nm_s+0.5)/(flb[i])+1))
 }
 v_i <- apply(flog.r_s,1,var)
-ftb[which(is.na(v_i))]
-fsbr[which(is.na(v_i))]
-sigma_i <- sqrt(v_i + delta.hat.sq + sigma.hat.sq)
+
+sigma <- sqrt(delta.hat.sq + sigma.hat.sq)
+sigma_i <- sqrt(delta.hat.sq + sigma.hat.sq + v_i)
+
 log.ratio_i <- log(ifelse(is.na(full_data$rSN),full_data$rSN_UN,full_data$rSN))
 prob_i <- unlist(map2(log.ratio_i,sigma_i,pnorm,mean = mu.hat))
 hist(prob_i,freq = FALSE, breaks = 20)
-summary(prob_i)
-quantile(prob_i,.05,na.rm = T)
+
+cutoff_bound <- exp(qnorm(0.05,mu.hat,sigma))
+round(cutoff_bound,digits = 2)
 mean(prob_i<0.05,na.rm = T)
 SBR.full.ratio <- full_data %>% mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  is.na(prob_i),
                                                                  "cannot cal prob")) %>% 
                                 mutate(exclusion_ratio = replace(exclusion_ratio,
-                                                                 prob_i<0.05,
-                                                                 "prob < 0.05"))
+                                                                 prob_i<0.05 & definition_rv == "ge28wks",
+                                                                 "prob < 0.05 and 28wks def")) 
+
  
+#table(SBR.full.ratio$exclusion_ratio)
 write.csv(SBR.full.ratio,"output/fullset.csv")
 saveRDS(SBR.full.ratio,"output/fullset.rds")
 ################################################################################################
@@ -103,7 +107,7 @@ dev.off()
 
 ################################################################################
 
-
+#             OOOOOOOOOOOOOOOOOOOOOOOOLD CODE                #
 ############################## Spline method to find cut off
 
 if(FALSE){

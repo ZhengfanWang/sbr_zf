@@ -6,15 +6,13 @@
 #   load data   #
 #---------------#
 
-admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20191007.xlsx", sheet = 1, startRow = 2) # read in admin data
+admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20191031.xlsx", sheet = 1, startRow = 2) # read in admin data
 
 
 #-----------------------------#
 #   fix known issues first    #
 #-----------------------------#
 
-
-admin.ori$dq_flag2019[admin.ori$Country =="Qatar" & admin.ori$dq_flag2019==6] <- 9
 
 # fill in missing nLB when we have SBR >0 and nSB
 i.miss <- which(is.na(admin.ori$lb) & !is.na(admin.ori$sb) & admin.ori$sbr_rec>0)
@@ -139,8 +137,8 @@ admin.full[which(admin.full$iso=="ALB"&admin.full$definition=="not defined"&admi
 admin.full[which(admin.full$iso=="ARM"&admin.full$definition=="not defined"),]$definition_rv <- "ge500gORge22wks"
 
 ####### Benin BEN
-#admin.full %>% filter(country_idx==notdefine.list[3])%>%
-#  arrange(iso,year)
+admin.full %>% filter(country_idx==notdefine.list[3])%>%
+  arrange(iso,year)
 admin.full[which(admin.full$iso=="BEN"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### Burkina BFA

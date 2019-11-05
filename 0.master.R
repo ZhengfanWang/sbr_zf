@@ -6,7 +6,6 @@
 # setup:
 # main steps are in this master script
 # project specific R functions are saved in the R subfolder 
-# subscripts (that eventually are to be turned into R functions) are in sub_....R
 # original data are in input subfolder
 
 

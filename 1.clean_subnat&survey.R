@@ -2,7 +2,7 @@
 # Last modified: Oct.22.2019
 
 ##read subnational lit review 
-subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_FINAL_091019.xlsx", sheet =  3, startRow = 2) # read in subnation data
+subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_2019-11-1.xlsx", sheet =  3, startRow = 2) # read in subnation data
 
 #save(subnat_lit_rv.ori,file = "input/rdata/subnat_lit_rv.ori.rdata")
 subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
@@ -36,10 +36,12 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
 
 # definitions                
 #levels(subnat.full$definition)
-levels(subnat.full$definition) <- c("ge28wks","ge1000g","ge1000gANDge28wks","ge1000gORge28wks","ge20wks","ge20wks",
-                                    "ge500gORge20wks","ge22wks","ge22wks","ge500gORge22wks","ge24wks","ge24wks",
-                                    "ge1000gORge26wks","s40wksANDge28wks","ge28wks","ge28wks","ge1000gORge28wks","ge500g",
-                                    "ge500gORge22wks","ge24wks","ge28wks","any","not defined","not defined")
+levels(subnat.full$definition) <- c("ge28wks","ge1000g","ge1000gANDge28wks","ge1000gORge28wks","ge20wks",
+                                    "ge20wks","ge500gORge20wks","ge22wks","ge22wks","ge22wks",
+                                    "ge500gORge22wks","ge24wks","ge24wks","ge1000gORge26wks","s40wksANDge28wks",
+                                    "ge28wks","ge28wks","ge1000gORge28wks","ge500g","ge500gORge22wks",
+                                    "ge24wks","ge28wks","ge28wks","any","not defined",
+                                    "not defined")
 
 
 
@@ -82,20 +84,14 @@ subnat.full <- subnat.full %>% mutate(adj_sbr_unknown = NA, prop_unknown = NA, d
                                       "UN_NMR","rSN","rSN_UN","notes","exclusion_notes") %>%
                                arrange(iso,year) # now 141 obs
 
-
 saveRDS(subnat.full, "output/subnat.lit.rv.full.rds")
-
-
 ###############################
 
 #-------------#
 #   survey    #
 #-------------#
-
-
 ##read survey data
 survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2019-10-22.xlsx", sheet = 1) # read in survey
-
 
 survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code",
                                 "year"="ReferenceDate", 

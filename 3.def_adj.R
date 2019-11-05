@@ -4,23 +4,46 @@
 
 #load data
 SBR.full.ori <- readRDS("output/fullset.rds")
-dim(SBR.full.ori)
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)) %>% 
-                             filter( is.na(exclusion_ratio) )
-table(SBR.full$exclusion_ratio)
-#-------------------------------#
-# find combiations              # 
-#-------------------------------#
+                             filter(is.na(exclusion_ratio)) %>% 
+                             mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
+                             mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
+                             mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
+                             mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
+SBR.full.lmic <- SBR.full %>% filter(lmic == 1)
+SBR.full.hic <- SBR.full %>% filter(lmic == 0)
 
-def_adj_list_res <- find_comb_def_adj(SBR.full)
+#-----------------------------------------------#
+# find combiations for Lmic country             # 
+#-----------------------------------------------#
+
+def_adj_lmic_res <- find_comb_def_adj(SBR.full.lmic)
 #store each combation as a element of a list
-def_adj_list <- def_adj_list_res$dat
+def_adj_list_lmic <- def_adj_lmic_res$dat
+def_adj_name_lmic <- def_adj_lmic_res$alter.def
 #the alter def name
-alter.def <- def_adj_list_res$alter.def
+saveRDS(def_adj_list_lmic,"output/def_adj_data_lmic.rds")
 
-saveRDS(def_adj_list,"output/def_adj_data_list.rds")
+#-----------------------------------------------#
+# find combiations for HIC country              # 
+#-----------------------------------------------#
+
+def_adj_hic_res <- find_comb_def_adj(SBR.full.hic)
+#store each combation as a element of a list
+def_adj_list_hic <- def_adj_hic_res$dat
+def_adj_name_hic <- def_adj_hic_res$alter.def
+#the alter def name
+saveRDS(def_adj_list_hic,"output/def_adj_data_hic.rds")
 
 
+#---------------------------------------------------------#
+# Overview for num paired obs and obs where need to adj   # 
+#---------------------------------------------------------#
+
+def_adj_res <- find_comb_def_adj(SBR.full)
+#store each combation as a element of a list
+def_adj_list <- def_adj_res$dat
+alter.def <- def_adj_res$alter.def
 nobs <- def_adj_list %>% sapply(dim)
 num_paired_obs <- as.vector(nobs[1,]) 
 N <- length(alter.def)
@@ -39,76 +62,104 @@ summ <- data.frame(definition = alter.def, num_paired_obs = num_paired_obs ,
 #    selecting only 1 def per country-year        # 
 #-------------------------------------------------#
 
-SBR.model <- SBR.full  %>% filter(is.na(exclusion_notes)) %>% 
-                           filter(is.na(exclusion_ratio)) %>% 
-                           filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
-                           mutate(adj_sbr_unknown = round(adj_sbr_unknown,digits = 4)) %>%
-                           select(iso,country,region,year,source,shmdg2,lmic,definition_rv,
-                           adj_sbr_unknown,country_idx)
-SBR.model.se <- SBR.full  %>% filter(is.na(exclusion_notes)) %>% 
-                              filter(is.na(exclusion_ratio)) %>% 
-                              filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
-                              mutate(adj_sbr_unknown = round(adj_sbr_unknown,digits = 4)) %>%
-                              select(iso,country,region,year,source,shmdg2,lmic,definition_rv,
-                              SE.logsbr,country_idx)
-
-SBR.model$definition_rv <- droplevels(SBR.model$definition_rv)
-SBR.model.se$definition_rv <- droplevels(SBR.model.se$definition_rv)
+SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
+                           mutate(adj_sbr_unknown = round(adj_sbr_unknown,digits = 5)) %>%
+                           select(iso,country,year,source,shmdg2,lmic,definition_rv2,
+                                 adj_sbr_unknown,country_idx,SE.logsbr) %>% 
+                           mutate(definition_rv2 = as.factor(definition_rv2),
+                                  duplicates = NA)
+SBR.model$definition_rv2 <- droplevels(SBR.model$definition_rv2)
 
 
 priority.for.adj <- summ %>% filter(definition %in% levels(SBR.model$definition_rv))
 priority.for.adj_vec <- priority.for.adj$definition
+priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g","ge20wks","ge24wks","ge37wks")
 
-SBR.wide <- SBR.model %>% pivot_wider(names_from = definition_rv, values_from = adj_sbr_unknown
-                                      ,values_fn = list(adj_sbr_unknown = median)         ## in order to avoid duplicated obs, take the median if 
-                                      ) %>%                                               ## mult observations for some country-year-source-definition
-                                      arrange(iso,year) %>% 
-                                      select(c(iso,country,region,year,source,lmic,shmdg2,country_idx,ge28wks,
-                                               paste0(priority.for.adj_vec[priority.for.adj_vec != "ge28wks"])))
+def <- levels(droplevels(SBR.model$definition_rv2))
 
-##### The strategy here is not elegant. But it is the best way in my mind to fix a new problem based on what we have.
-SBR.wide.se <- SBR.model.se %>% pivot_wider(names_from = definition_rv, values_from = SE.logsbr
-                                            ,values_fn = list(SE.logsbr = max)
-                                      ) %>% 
-                          arrange(iso,year) %>% 
-                          select(c(iso,country,region,year,source,lmic,shmdg2,country_idx,ge28wks,
-                          paste0(priority.for.adj_vec[priority.for.adj_vec != "ge28wks"])))
+for(c in 1:195){
+  for(t in 2000:2018){
+    for(d in def){
+      i<- which(SBR.model$country_idx == c&
+                SBR.model$year == t&
+                SBR.model$definition_rv2 == d)
+      len <- length(i)
+      if(len >= 1) (SBR.model[i,"duplicates"] <- 1:len)      
+    }
+  }
+}
+#-----------------------------
+### FOR check
+#table(SBR.model$duplicates)
+#c = 31
+#t = 2012
+#d = "ge22wks.m"
+#----------------------------
+
+priority_adj_vec <- paste0("adj_sbr_unknown_",priority.for.adj_vec)
+priority_se_vec <-  paste0("SE.logsbr_",priority.for.adj_vec)
+
+SBR.wide <-  SBR.model %>% filter(definition_rv2 %in% priority.for.adj_vec) %>% 
+                           pivot_wider(names_from = definition_rv2, values_from = c(adj_sbr_unknown,SE.logsbr)) %>% 
+                           arrange(iso,year) %>% 
+                           select(iso,country,year,source,shmdg2,lmic,country_idx,duplicates,
+                                  priority_adj_vec,priority_se_vec)
+
 ######
-### if there is other source type, delete subnat
 names(SBR.wide)
 data <- SBR.wide
-data.se <- SBR.wide.se
 def_need_change <- levels(SBR.model$definition_rv)
 n_def <- length(def_need_change)
-n <- dim(data)[1]
-k <- dim(data)[2]
+n <- nrow(data)
+sbr_loc <-  which(str_sub(names(data),start = 1, end = 3) == "adj")
 def_need_adj <- rep(NA,n)
 SBR_need_adj <- rep(NA,n)
 se.logsbr <- rep(NA,n)
-loc <- which(names(SBR.wide)=="ge28wks")
+
 for(i in 1:n){
-def_need_adj[i] <- colnames(data[i,loc:k])[min(which(!is.na(data[i,loc:k])))]
-SBR_need_adj[i] <- data[[i,(loc-1+min(which(!is.na(data[i,loc:k]))))]]
-se.logsbr[i] <- data.se[[i,(loc-1+min(which(!is.na(data[i,loc:k]))))]]
+  loc <- min(which(!is.na(data[i,sbr_loc])))
+  def_name <- colnames(data[,sbr_loc])[loc]
+  def_need_adj[i] <- str_sub(def_name,start = 17)
+  SBR_need_adj[i] <- data[i,def_name]
+  se.name <- paste0("SE.logsbr_",str_sub(def_name,start = 17))
+  se.logsbr[i] <- data[i,se.name]
 }
 def_need_adj <- as.factor(def_need_adj)
-
+SBR_need_adj <- unlist(SBR_need_adj)
+se.logsbr   <- unlist(se.logsbr)
 #-------------------------------------------------#
 #                   Need def adj                  # 
 #-------------------------------------------------#
 
-SBR.model <- SBR.wide %>% mutate(definition_rv = def_need_adj,
+SBR.model <- SBR.wide %>% mutate(definition_rv2 = as.character(def_need_adj),
                                     SBR = SBR_need_adj,
                                     SE.logsbr = se.logsbr) %>% 
-                          select(-c(paste0(priority.for.adj_vec)))
+                          select(iso,country,year,source,shmdg2,lmic,definition_rv2,
+                                 country_idx,duplicates,SBR,SE.logsbr) %>% 
+                          mutate(definition_rv = ifelse(str_sub(definition_rv2,start = -1)=="m",
+                                                        str_sub(definition_rv2,end = -3),
+                                                        definition_rv2)) %>% 
+                          mutate(definition_rv = as.factor(definition_rv),
+                                 definition_rv2 = as.factor(definition_rv2))%>% 
+                          filter(source != "subnat.admin") 
+def <- levels(droplevels(SBR.model$definition_rv))
+levels(SBR.model$definition_rv2) <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g","ge24wks")
+record <- 0
+for(c in 1:195){
+  for(t in 2000:2018){
+      i<- which(SBR.model$country_idx == c&
+                  SBR.model$year == t)
+      len <- length(i)
+      dev <- as.numeric(unlist(SBR.model[i,"definition_rv2"]))
+      if(len > 1)  {
+        exclude <- i[-which.min(dev)]
+        record <- c(record,exclude)
+        }    
 
+  }
+}
+SBR.model <- SBR.model[-record,]     
 
-SBR.non.sub.admin <- SBR.model %>% filter(source != "subnat.admin") 
-need.adj.subnat.admin <- SBR.model %>% filter(source == "subnat.admin") %>% 
-                          anti_join(SBR.non.sub.admin,by = c("iso","country","year","lmic"))
-
-
-SBR.model <- rbind(SBR.non.sub.admin,need.adj.subnat.admin)
 saveRDS(SBR.model,"output/data_for_model.rds")
 
 SBR.need.adj <- SBR.model %>% filter(definition_rv != "ge28wks" )

@@ -3,7 +3,7 @@
 
 
 ##read subnational admin
-subnat_admin.ori <- openxlsx::read.xlsx("input/2019_09_10_Stillbirth database. SubNat. To use_Admin_SB_input_FINAL.xlsx",
+subnat_admin.ori <- openxlsx::read.xlsx("input/2019_09_10_Stillbirth database. SubNat.xlsx",
                                         sheet =  1,startRow = 2) # read in subnation data 7786 obs
 
 sub.admin.full <- subnat_admin.ori %>%  dplyr::rename("country"="Country",
@@ -19,8 +19,10 @@ sub.admin.full <- subnat_admin.ori %>%  dplyr::rename("country"="Country",
   select("country","iso","year","definition","context","SBR","NMR","nSB","nTB","nLB","source","region","exclusion_notes") # 7665
 
 #levels(sub.admin.full$definition)
-levels(sub.admin.full$definition) <- c("ge1000g","ge12wks","ge20wks","ge22wks","ge500gORge22wks","ge500gORge22wks","ge26wks","ge28wks",
-                                   "ge500g","ge500gORge22wks","ge20wks","ge28wks","ge800gORge26wks","any","any","not defined")
+levels(sub.admin.full$definition) <- c("ge1000g","ge12wks","ge20wks","ge22wks","ge500gORge22wks",
+                                       "ge500gORge22wks","ge26wks","ge28wks","ge500g","ge500gORge22wks",
+                                       "ge20wks","ge28wks","ge800gORge26wks","any","any",
+                                       "not defined")
 
 levels(sub.admin.full$context) <- c("HMIS-DHIS2","VR","VR")
 
