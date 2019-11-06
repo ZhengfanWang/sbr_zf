@@ -4,7 +4,11 @@
 
 #load data
 SBR.full.ori <- readRDS("output/fullset.rds")
-SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)) %>% 
+SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
+                                    exclusion_notes %in% c("duplicates, use def 1000g",
+                                                           "duplicates, use VR data",
+                                                           "duplicates, use data w/o unknow obs",
+                                                           "duplicates, use ge1000gORge28wks def")) %>% 
                              filter(is.na(exclusion_ratio)) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
@@ -60,32 +64,38 @@ summ <- data.frame(definition = alter.def, num_paired_obs = num_paired_obs ,
 #-------------------------------------------------#
 #    selecting only 1 def per country-year        # 
 #-------------------------------------------------#
-
+SBR.full <- SBR.full %>% filter(is.na(exclusion_notes))
 SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
+                           filter(source != "subnat.admin") %>% 
                            mutate(adj_sbr_unknown = round(adj_sbr_unknown,digits = 5)) %>%
-                           select(iso,country,year,source,shmdg2,lmic,definition_rv2,
+                           select(iso,country,year,source,shmdg2,lmic,definition_rv,definition_rv2,
                                  adj_sbr_unknown,country_idx,SE.logsbr) %>% 
                            mutate(definition_rv2 = as.factor(definition_rv2),
+                                  source = as.factor(source),
                                   duplicates = NA)
 SBR.model$definition_rv2 <- droplevels(SBR.model$definition_rv2)
 
 priority.for.adj <- summ %>% filter(definition %in% levels(SBR.model$definition_rv))
-priority.for.adj_vec <- priority.for.adj$definition
+
 priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g","ge20wks","ge24wks","ge37wks")
 
 def <- levels(droplevels(SBR.model$definition_rv2))
-
+source <- levels(droplevels(SBR.model$source))
 for(c in 1:195){
   for(t in 2000:2018){
     for(d in def){
+      for(s in source){
       i<- which(SBR.model$country_idx == c&
                 SBR.model$year == t&
-                SBR.model$definition_rv2 == d)
+                SBR.model$definition_rv2 == d&
+                SBR.model$source == s)
       len <- length(i)
-      if(len >= 1) (SBR.model[i,"duplicates"] <- 1:len)      
+      if(len > 1) (SBR.model[i,"duplicates"] <- 1:len)    
+      }
     }
   }
 }
+
 #-----------------------------
 ### FOR check
 #table(SBR.model$duplicates)
@@ -100,7 +110,7 @@ priority_se_vec <-  paste0("SE.logsbr_",priority.for.adj_vec)
 SBR.wide <-  SBR.model %>% filter(definition_rv2 %in% priority.for.adj_vec) %>% 
                            pivot_wider(names_from = definition_rv2, values_from = c(adj_sbr_unknown,SE.logsbr)) %>% 
                            arrange(iso,year) %>% 
-                           select(iso,country,year,source,shmdg2,lmic,country_idx,duplicates,
+                           select(iso,country,year,source,shmdg2,lmic,country_idx,duplicates,definition_rv,
                                   priority_adj_vec,priority_se_vec)
 
 ######
@@ -138,10 +148,13 @@ SBR.model2 <- SBR.wide %>% mutate(definition_rv2 = as.character(def_need_adj),
                                                         str_sub(definition_rv2,end = -3),
                                                         definition_rv2)) %>% 
                           mutate(definition_rv = as.factor(definition_rv),
-                                 definition_rv2 = as.factor(definition_rv2))%>% 
+                                 definition_rv2 = droplevels(as.factor(definition_rv2)))%>% 
                           filter(source != "subnat.admin") 
-def <- levels(droplevels(SBR.model2$definition_rv))
-levels(SBR.model2$definition_rv2) <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g","ge24wks")
+
+def <- levels(SBR.model2$definition_rv2)
+SBR.model2$definition_rv2 <- factor(SBR.model2$definition_rv2,
+                                    levels = c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g",
+                                               "ge24wks","ge20wks","ge37wks"))
 record <- 0
 for(c in 1:195){
   for(t in 2000:2018){
@@ -156,7 +169,7 @@ for(c in 1:195){
 
   }
 }
-SBR.model <- SBR.model2[-record,]     
+SBR.model <- SBR.model2[-record,] 
 
 saveRDS(SBR.model,"output/data_for_model.rds")
 
@@ -183,6 +196,12 @@ tab <- data.frame(definition = definition, num_obs = veck, num_lmic = nobs.lmic1
 summ1 <- summ %>% merge(tab,by = "definition") %>% arrange(desc(num_paired_obs))
 
 write.csv(summ1,"table/def_adj_num_paired_obs_exclustion_strict.csv")
+
+#-------------------------------------------------#
+#summary duplicates obs                           #
+#-------------------------------------------------#
+duplicates_obs <- SBR.model %>% filter(duplicates >=1)
+write.csv(duplicates_obs,"output/duplicates.csv")
 
 ##############################################################
 #  plot
