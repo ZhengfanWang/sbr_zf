@@ -23,13 +23,14 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
                              rSN_UN = NA,
                              region = NA,
                              source="subnat.LR",
-                             exclusion_notes=NA) %>% 
+                             exclusion_notes=NA,
+                             uniqueID = paste0("subLR",1:nrow(subnat_lit_rv.ori))) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,!is.na(exclude),"exclude by exclude col")) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
                       mutate(NMR = ifelse(is.na(NMR),nNM/nLB*1000,NMR)) %>% 
                       mutate(rSN = SBR/NMR) %>%
-                      select("country","iso","region","year","source","context","definition","SBR",
+                      select("uniqueID","country","iso","region","year","source","context","definition","SBR",
                              "nSB","nTB","nLB","nNM","NMR","rSN","rSN_UN",
                              "notes","source_name","exclusion_notes") # now 164 obs
 
@@ -79,7 +80,7 @@ levels(subnat.full$context) <- c("HF min bias","pop based","pop based")
 
 # exclude the rest of not defined
 subnat.full <- subnat.full %>% mutate(adj_sbr_unknown = NA, prop_unknown = NA, definition_rv = definition, WPP_LB = NA, UN_NMR= NA) %>% 
-                               select("country","iso","region","year","source","context","definition","definition_rv",
+                               select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                       "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","nNM","NMR",
                                       "UN_NMR","rSN","rSN_UN","notes","exclusion_notes") %>%
                                arrange(iso,year) # now 141 obs
@@ -98,7 +99,8 @@ survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code"
                                 "context"="Surveytype", 
                                 "notes"="DataCollection", 
                                 "NMR"="ES_NMR") %>%
-                              mutate(definition = ifelse(is.na(ES_7pMonths),"ge24wks","ge28wks"),
+                              mutate(uniqueID = paste0("survey",1:nrow(survey.ori)),
+                                     definition = ifelse(is.na(ES_7pMonths),"ge24wks","ge28wks"),
                                      SE.sbr = ifelse(is.na(ES_7pMonths),SE_6pMonths,SE_7pMonths),
                                      nSB = ifelse(is.na(ES_7pMonths),ES_NSB_6pMonths,ES_NSB_7pMonths),
                                      nTB = ifelse(is.na(ES_7pMonths),ES_Totpreg6m,ES_Totpreg7m),
@@ -108,7 +110,7 @@ survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code"
                                      WPP_LB = NA, UN_NMR = NA ) %>%
                               mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
                               mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
-                              select("country","iso","region","year","source","context","definition","definition_rv",
+                              select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                      "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","nNM","NMR","UN_NMR","rSN","rSN_UN",
                                      "notes","exclusion_notes") 
 
