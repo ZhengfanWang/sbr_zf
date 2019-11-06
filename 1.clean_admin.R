@@ -61,7 +61,7 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                             mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, inclusion.U5MR == 0, "excluded by U5MR")) %>% 
                             mutate(exclusion_notes = replace(exclusion_notes, prop_unknown > 0.5, "prop of unknown sb > 0.5")) %>% 
-                             select("iso","country","year","source","context","definition",
+                             select("uniqueID","iso","country","year","source","context","definition",
                                      "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","LB_frac",
                                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes") 
 
@@ -289,32 +289,32 @@ admin.full[which(admin.full$iso=="ZWE"&admin.full$definition=="not defined"),]$d
 
 admin.full <- admin.full %>% mutate(region=NA,
                                     iso = as.factor(iso)) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              context == "Birth or Death Registry"&year==2014&iso=="DEU",
-                                                              "duplicates, use VR data")) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              context == "Birth or Death Registry"&year==2001&iso=="HRV",
-                                                              "duplicates, use VR data")) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              context == "Birth or Death Registry"&year%in%c(2011,2014)&iso=="POL",
-                                                              "duplicates, use VR data")) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              context == "Birth or Death Registry"&year%in% 2005:2017&iso=="GEO",
-                                                              "duplicates, use VR data")) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              context == "Birth or Death Registry"&year%in% c(2002,2005)&iso=="NLD",
-                                                              "duplicates, use VR data")) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              year%in% 2000:2016 & iso=="SRB" & is.na(adj_sbr_unknown),
-                                                              "duplicates, use data w/o unknow obs")) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              year%in% 2000:2016 & iso=="CHE" & definition_rv != "ge1000gORge28wks",
-                                                              "duplicates, use ge1000gORge28wks def")) %>%
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              iso=="OMN" & definition != "ge1000g",
-                                                              "duplicates, use def 1000g")) %>% 
+                            #mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  context == "Birth or Death Registry"&year==2014&iso=="DEU",
+                            #                                  "duplicates, use VR data")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  context == "Birth or Death Registry"&year==2001&iso=="HRV",
+                            #                                  "duplicates, use VR data")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  context == "Birth or Death Registry"&year%in%c(2011,2014)&iso=="POL",
+                            #                                  "duplicates, use VR data")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  context == "Birth or Death Registry"&year%in% 2005:2017&iso=="GEO",
+                            #                                  "duplicates, use VR data")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  context == "Birth or Death Registry"&year%in% c(2002,2005)&iso=="NLD",
+                            #                                  "duplicates, use VR data")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  year%in% 2000:2016 & iso=="SRB" & is.na(adj_sbr_unknown),
+                            #                                  "duplicates, use data w/o unknow obs")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  year%in% 2000:2016 & iso=="CHE" & definition_rv != "ge1000gORge28wks",
+                            #                                  "duplicates, use ge1000gORge28wks def")) %>%
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                  iso=="OMN" & definition != "ge1000g",
+                            #                                  "duplicates, use def 1000g")) %>% 
                              arrange(iso, year) %>% 
-                             select("country","iso","region","year","source","context","definition","definition_rv",
+                             select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                     "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB",
                                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes") 
 
