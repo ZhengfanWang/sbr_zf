@@ -6,7 +6,7 @@
 #   load data   #
 #---------------#
 
-admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20191031.xlsx", sheet = 1, startRow = 2) # read in admin data
+admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20191107.xlsx", sheet = 1, startRow = 2) # read in admin data
 
 
 #-----------------------------#
@@ -49,7 +49,7 @@ admin.ori$sbr_rec[i.miss4] <- admin.ori$sb[i.miss4]/(admin.ori$sb[i.miss4]+admin
 # Note: exclusions applied in reverse order from above b/c most recent overwrites exclusion_notes
 
 admin.full <- admin.ori %>% dplyr::rename("country"="Country",
-                                          "iso"="iso3","definition"="Definition_SB",
+                                          "iso"="iso3","definition"="definition_rv",
                                           "year"="Reference_year", "context"="Context",
                                           "SBR"="sbr_rec",
                                           "nSB"="sb", 
@@ -144,50 +144,51 @@ nd.data <- admin.full %>%  filter(definition=="not defined")
 notdefine.list <- unique(nd.data$country_idx)
 
 #-----------------#
+### FROM ANU: I COMMENTED THIS SECTION OUT SINCE I'VE IMPLEMENTED THESE IN THE DATABASE
 ###hard code 
 ####### ALB Albania
 #admin.full %>% filter(country_idx==notdefine.list[1])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="ALB"&admin.full$definition=="not defined"&admin.full$year==2010),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="ALB"&admin.full$definition=="not defined"&admin.full$year==2010),]$definition_rv <- "ge28wks"
 
 ####### ARM armenia
 #admin.full %>% filter(country_idx==notdefine.list[2])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="ARM"&admin.full$definition=="not defined"),]$definition_rv <- "ge500gORge22wks"
+#admin.full[which(admin.full$iso=="ARM"&admin.full$definition=="not defined"),]$definition_rv <- "ge500gORge22wks"
 
 ####### Benin BEN
-admin.full %>% filter(country_idx==notdefine.list[3])%>%
-  arrange(iso,year)
-admin.full[which(admin.full$iso=="BEN"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full %>% filter(country_idx==notdefine.list[3])%>%
+#  arrange(iso,year)
+#admin.full[which(admin.full$iso=="BEN"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### Burkina BFA
 #admin.full %>% filter(country_idx==notdefine.list[4])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="BFA"&admin.full$definition=="not defined"),]$definition_rv <- "ge22wks"
+#admin.full[which(admin.full$iso=="BFA"&admin.full$definition=="not defined"),]$definition_rv <- "ge22wks"
 
 ####### Bangladesh BGD
 #admin.full %>% filter(country_idx==notdefine.list[5])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="BGD"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="BGD"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### Belize BLZ
 #admin.full %>% filter(country_idx==notdefine.list[6])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="BLZ"&admin.full$definition=="not defined"),]$definition_rv <- "ge22wks"
+#admin.full[which(admin.full$iso=="BLZ"&admin.full$definition=="not defined"),]$definition_rv <- "ge22wks"
 ####### Bhutan BTN missing SBR
 #admin.full %>% filter(country_idx==notdefine.list[7])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="BTN"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="BTN"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### Germany DEU
 #admin.full %>% filter(country_idx==notdefine.list[8])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="DEU"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="DEU"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### Djibouti DJI
 #admin.full %>% filter(country_idx==notdefine.list[9])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="DJI"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="DJI"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### Iraq IRQ do not need to change. It has 28wks definition already
 #admin.full %>% filter(country_idx==notdefine.list[10])%>%
@@ -196,17 +197,17 @@ admin.full[which(admin.full$iso=="DJI"&admin.full$definition=="not defined"),]$d
 ####### Kenya KEN
 #admin.full %>% filter(country_idx==notdefine.list[11])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="KEN"&admin.full$definition=="not defined"),]$definition_rv <- "ge1000gORge28wks"
+#admin.full[which(admin.full$iso=="KEN"&admin.full$definition=="not defined"),]$definition_rv <- "ge1000gORge28wks"
 
 ####### LCA Saint
 #admin.full %>% filter(country_idx==notdefine.list[12])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="LCA"&admin.full$definition=="not defined"),]$definition_rv <- "ge1000gORge28wks"
+#admin.full[which(admin.full$iso=="LCA"&admin.full$definition=="not defined"),]$definition_rv <- "ge1000gORge28wks"
 
 ####### LKA Sri Lanka
 #admin.full %>% filter(country_idx==notdefine.list[13])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="LKA"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="LKA"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### LTU Lithuania 
 #admin.full %>% filter(country_idx==notdefine.list[14])%>%
@@ -215,7 +216,7 @@ admin.full[which(admin.full$iso=="LKA"&admin.full$definition=="not defined"),]$d
 ####### MAR Morocco
 #admin.full %>% filter(country_idx==notdefine.list[15])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="MAR"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="MAR"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### MCO  Monaco: small country, missing source, not change definition
 #admin.full %>% filter(country_idx==notdefine.list[16])%>%
@@ -232,12 +233,12 @@ admin.full[which(admin.full$iso=="MAR"&admin.full$definition=="not defined"),]$d
 ####### SAU Saudi Arabia
 #admin.full %>% filter(country_idx==notdefine.list[19])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="SAU"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="SAU"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### SDN   Sudan
 #admin.full %>% filter(country_idx==notdefine.list[20])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="SDN"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="SDN"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### SEN Senegal
 #admin.full %>% filter(country_idx==notdefine.list[21])%>%
@@ -246,17 +247,17 @@ admin.full[which(admin.full$iso=="SDN"&admin.full$definition=="not defined"),]$d
 ####### SWZ Swaziland
 #admin.full %>% filter(country_idx==notdefine.list[22])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="SWZ"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="SWZ"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### TCD    Chad
 #admin.full %>% filter(country_idx==notdefine.list[23])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="TCD"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="TCD"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### TGO    Togo
 #admin.full %>% filter(country_idx==notdefine.list[24])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="TGO"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="TGO"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 
 ####### TKM Turkmenistan
 #admin.full %>% filter(country_idx==notdefine.list[25])%>%
@@ -269,7 +270,7 @@ admin.full[which(admin.full$iso=="TGO"&admin.full$definition=="not defined"),]$d
 ####### TUR  Turkey
 #admin.full %>% filter(country_idx==notdefine.list[27])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="TUR"&admin.full$definition=="not defined"),]$definition_rv <- "ge500gORge22wks"
+#admin.full[which(admin.full$iso=="TUR"&admin.full$definition=="not defined"),]$definition_rv <- "ge500gORge22wks"
 
 ####### URY Uruguay
 #admin.full %>% filter(country_idx==notdefine.list[28])%>%
@@ -282,7 +283,7 @@ admin.full[which(admin.full$iso=="TUR"&admin.full$definition=="not defined"),]$d
 ####### ZWE Zimbabwe
 #admin.full %>% filter(country_idx==notdefine.list[30])%>%
 #  arrange(iso,year)
-admin.full[which(admin.full$iso=="ZWE"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
+#admin.full[which(admin.full$iso=="ZWE"&admin.full$definition=="not defined"),]$definition_rv <- "ge28wks"
 ##### ARM Armenia: Two time serises available: ge1000gORge28wks and ge500gORge22wks. Observations with not define def
 # are close to ge500gORge22wks. Change "not defined" to ge500gORge22wks.
 ##### Bangladesh: The differences between not defined(source:HMIS-DHIS2) and ge28wks(Sample VR) are large.
