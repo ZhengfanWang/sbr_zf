@@ -12,11 +12,12 @@ sub.admin.full <- subnat_admin.ori %>%  dplyr::rename("country"="Country",
                                               "region"="Region_name_eng",
                                               "nLB"="lb",
                                               "nSB"="sb") %>% 
-  mutate(source="subnat.admin",nTB=nLB+nSB,definition=as.factor(Definition_SB),SBR=as.numeric(paste(sbr)),
+  mutate(uniqueID = paste0("subadm",1:nrow(subnat_admin.ori)),
+         source="subnat.admin",nTB=nLB+nSB,definition=as.factor(Definition_SB),SBR=as.numeric(paste(sbr)),
          context=as.factor(Context)) %>% 
   merge(countryRegionList,by = "country") %>% 
   mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
-  select("country","iso","year","definition","context","SBR","NMR","nSB","nTB","nLB","source","region","exclusion_notes") # 7665
+  select("uniqueID","country","iso","year","definition","context","SBR","NMR","nSB","nTB","nLB","source","region","exclusion_notes") # 7665
 
 #levels(sub.admin.full$definition)
 levels(sub.admin.full$definition) <- c("ge1000g","ge12wks","ge20wks","ge22wks","ge500gORge22wks",
@@ -31,7 +32,7 @@ sub.admin.full <- sub.admin.full %>% arrange(iso, year,region) %>%
                                      mutate(definition = replace(definition,is.na(definition)&country=="Bhutan","ge28wks")) %>% 
                                      mutate(definition_rv=definition,adj_sbr_unknown=NA,prop_unknown=NA,
                                             nNM = NA, rSN_UN = NA, notes = NA, WPP_LB = NA, UN_NMR = NA ) %>% 
-                                     select("country","iso","region","year","source","context","definition","definition_rv",
+                                     select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                     "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB", "WPP_LB",
                                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes") 
 
