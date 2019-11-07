@@ -1,0 +1,17 @@
+"","uniqueID","iso","country","year","source","shmdg2","lmic","definition_rv","definition_rv2","definition_raw","definition","adj_sbr_unknown","country_idx","SE.logsbr","duplicates","SBR"
+"1","subLR302","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",34.3903528360875,16,0.113960576459638,1,34.3903528360875
+"2","subLR303","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",15.5170417261744,16,0.0498754668053817,2,15.5170417261744
+"3","subLR301","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",39.8406374501992,16,0.105409255338946,3,39.8406374501992
+"4","subLR298","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",24.3553008595988,16,0.140028008402801,4,24.3553008595988
+"5","subLR299","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",33.6250575771534,16,0.117041147196131,5,33.6250575771534
+"6","subLR300","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",36.4536453645365,16,0.111111111111111,6,36.4536453645365
+"7","subLR297","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",24.8803827751196,16,0.138675049056307,7,24.8803827751196
+"8","subLR111","BGD","Bangladesh",2012,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",20.9120327565711,16,0.0125659479359425,8,20.9120327565711
+"9","subLR97","CHN","China",2010,"subnat.LR",2,1,"ge22wks","ge22wks","ge22wks","ge22wks",3.93617195028337,33,0.0644156626400831,1,3.93617195028337
+"10","subLR115","CHN","China",2010,"subnat.LR",2,1,"ge22wks","ge22wks","ge22wks","ge22wks",3.93617195028337,33,0.0644156626400831,2,3.93617195028337
+"11","subLR339","IND","India",2014,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",37.6,79,0.0260168078747084,1,37.6
+"12","subLR340","IND","India",2014,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",22.3,79,0.0353930660544906,2,22.3
+"13","subLR194","PAK","Pakistan",2014,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",37.8,136,0.0384826299901926,1,37.8
+"14","subLR193","PAK","Pakistan",2014,"subnat.LR",3,1,"ge28wks","ge28wks","ge28wks","ge28wks",42.8,136,0.0287469761657948,2,42.8
+"15","survey330","PER","Peru",2010,"survey",2,1,"ge28wks","ge28wks","ge28wks","ge28wks",6.5755303650611,138,0.130997754766194,1,6.5755303650611
+"16","survey331","PER","Peru",2010,"survey",2,1,"ge28wks","ge28wks","ge28wks","ge28wks",8.69768256377328,138,0.081923192051904,2,8.69768256377328

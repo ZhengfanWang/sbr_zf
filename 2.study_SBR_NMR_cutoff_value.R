@@ -61,7 +61,7 @@ for(i in 1:fn){
   flog.r_s[i,] <- log((sb_s+0.5)/(ftb[i]+1)*1/((nm_s+0.5)/(flb[i])+1))
 }
 v_i <- apply(flog.r_s,1,var)
-
+v_i[is.na(v_i)] <- 0
 sigma <- sqrt(delta.hat.sq + sigma.hat.sq)
 sigma_i <- sqrt(delta.hat.sq + sigma.hat.sq + v_i)
 
@@ -74,7 +74,7 @@ round(cutoff_bound,digits = 2)
 mean(prob_i<0.05,na.rm = T)
 SBR.full.ratio <- full_data %>% mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  is.na(prob_i),
-                                                                 "cannot cal prob")) %>% 
+                                                                 "missing NMR to cal prob")) %>% 
                                 mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  prob_i<0.05 & definition_rv == "ge28wks",
                                                                  "prob < 0.05 and 28wks def")) 

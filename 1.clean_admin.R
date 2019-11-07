@@ -319,7 +319,7 @@ admin.full <- admin.full %>% mutate(region=NA,
                                                              context == "Vital Registration"&year%in% 2005:2017&iso=="GEO",
                                                              "duplicates, use BDR data")) %>% 
                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                             context == "Vital Registration"&year%in% c(2002,2005)&iso=="NLD",
+                                                             context == "Vital Registration"&year%in% 2000:2015&iso=="NLD",
                                                              "duplicates, use BDR data")) %>% 
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                              year%in% 2000:2016 & iso=="SRB" & definition_rv == "ge1000g",
