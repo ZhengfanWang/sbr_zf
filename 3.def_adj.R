@@ -119,7 +119,7 @@ SBR.model2 <- SBR.model %>% mutate(SBR = adj_sbr_unknown)
 SBR.model.f <- SBR.model2[-record,]
 
 saveRDS(SBR.model.f,"output/data_for_model.rds")
-
+write.csv(SBR.model.f,"output/data_for_model.csv")
 SBR.need.adj <- SBR.model.f %>% filter(definition_rv != "ge28wks" )
 #-------------------------------------------------#
 #                  summary table                  # 

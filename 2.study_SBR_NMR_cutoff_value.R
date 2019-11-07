@@ -50,36 +50,76 @@ sigma.hat.sq <- mean(sigma)^2
 ftb <- full_data$nLB + full_data$nSB
 fsbr <- full_data$adj_sbr_unknown
 flb <- full_data$nLB
-fnmr <- ifelse(is.na(full_data$NMR),full_data$UN_NMR,full_data$NMR)
+fnmr_obs <- full_data$NMR
+fnmr_un <- full_data$UN_NMR
 
 fn <- length(ftb)
 S <- 1000  #num of MC simulation
 flog.r_s <- matrix(NA,ncol=S,nrow=fn)
 for(i in 1:fn){
   sb_s <- rbinom(S,ftb[i],fsbr[i]/1000)
-  nm_s <- rbinom(S,flb[i],fnmr[i]/1000)
-  flog.r_s[i,] <- log((sb_s+0.5)/(ftb[i]+1)*1/((nm_s+0.5)/(flb[i])+1))
+  nm_s_obs <- rbinom(S,flb[i],fnmr_obs[i]/1000)
+  nm_s_un <- rbinom(S,flb[i],fnmr_un[i]/1000)
+  flog.r_s_obs[i,] <- log((sb_s+0.5)/(ftb[i]+1)*1/((nm_s_obs+0.5)/(flb[i])+1))
+  flog.r_s_un[i,] <- log((sb_s+0.5)/(ftb[i]+1)*1/((nm_s_un+0.5)/(flb[i])+1))
 }
-v_i <- apply(flog.r_s,1,var)
-v_i[is.na(v_i)] <- 0
+v_i_obs <- apply(flog.r_s_obs,1,var)
+v_i_un <- apply(flog.r_s_un,1,var)
+v_i_obs[is.na(v_i_obs)] <- 0
+v_i_un[is.na(v_i_un)] <- 0
+v_i <- ifelse(is.na(v_i_obs),v_i_un,v_i_obs)
+
 sigma <- sqrt(delta.hat.sq + sigma.hat.sq)
+sigma_i_obs <- sqrt(delta.hat.sq + sigma.hat.sq + v_i_obs)
+sigma_i_un <- sqrt(delta.hat.sq + sigma.hat.sq + v_i_un)
 sigma_i <- sqrt(delta.hat.sq + sigma.hat.sq + v_i)
 
+log.ratio_i_obs <- log(full_data$rSN)
+log.ratio_i_un <- log(full_data$rSN_UN)
 log.ratio_i <- log(ifelse(is.na(full_data$rSN),full_data$rSN_UN,full_data$rSN))
+
+prob_i_obs <- unlist(map2(log.ratio_i_obs,sigma_i_obs,pnorm,mean = mu.hat))
+prob_i_un <- unlist(map2(log.ratio_i_un,sigma_i_un,pnorm,mean = mu.hat))
 prob_i <- unlist(map2(log.ratio_i,sigma_i,pnorm,mean = mu.hat))
-hist(prob_i,freq = FALSE, breaks = 20)
+
+hist(prob_i_obs,freq = FALSE, breaks = 20)
+hist(prob_i_un,freq = FALSE, breaks = 20)
 
 cutoff_bound <- exp(qnorm(0.05,mu.hat,sigma))
 round(cutoff_bound,digits = 2)
-mean(prob_i<0.05,na.rm = T)
-SBR.full.ratio <- full_data %>% mutate(exclusion_ratio = replace(exclusion_ratio,
+mean(prob_i_obs<0.05,na.rm = T)
+mean(prob_i_un<0.05,na.rm = T)
+SBR.full.ratio <- full_data %>% rename(exclude_based_on_obssbrnmr_ratio = exclusion_ratio) %>% 
+                                mutate(prob_based_on_obssbrnmr = prob_i_obs,
+                                       v_based_on_obssbrnmr = v_i_obs,
+                                       prob_based_on_sbrunnmr = prob_i_un,
+                                       v_based_on_sbrunnmr = v_i_un,
+                                       exclude_based_on_obssbrnmr_ratio = replace(exclude_based_on_obssbrnmr_ratio,
+                                                                                  prob_i_obs <= 0.05&definition_rv == "ge28wks",
+                                                                                  "TRUE"),
+                                       exclude_based_on_obssbrnmr_ratio = replace(exclude_based_on_obssbrnmr_ratio,
+                                                                                  prob_i_obs > 0.05&definition_rv == "ge28wks",
+                                                                                  "FALSE"),
+                                       exclude_based_on_obssbrnmr_ratio = replace(exclude_based_on_obssbrnmr_ratio,
+                                                                                  is.na(prob_i_obs),
+                                                                                  "missing obs NMR")) %>% 
+                                mutate(exclude_based_on_sbrUNnmr_ratio = NA) %>% 
+                                mutate(exclude_based_on_sbrUNnmr_ratio = replace(exclude_based_on_sbrUNnmr_ratio,
+                                                                                 prob_i_un <= 0.05&definition_rv == "ge28wks",
+                                                                                 "TRUE"),
+                                       exclude_based_on_sbrUNnmr_ratio = replace(exclude_based_on_sbrUNnmr_ratio,
+                                                                                 prob_i_un > 0.05&definition_rv == "ge28wks",
+                                                                                 "FALSE"),
+                                       exclude_based_on_sbrUNnmr_ratio = replace(exclude_based_on_sbrUNnmr_ratio,
+                                                                                  is.na(prob_i_un),
+                                                                                  "missing UN NMR")) %>% 
+                                mutate(exclusion_ratio = NA) %>% 
+                                mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  is.na(prob_i),
-                                                                 "missing NMR to cal prob")) %>% 
+                                                                 "missing nmr and un nmr")) %>% 
                                 mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  prob_i<0.05 & definition_rv == "ge28wks",
                                                                  "prob < 0.05 and 28wks def")) 
-
- 
 #table(SBR.full.ratio$exclusion_ratio)
 write.csv(SBR.full.ratio,"output/fullset.csv")
 saveRDS(SBR.full.ratio,"output/fullset.rds")
