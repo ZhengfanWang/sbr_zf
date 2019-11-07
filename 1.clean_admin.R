@@ -73,6 +73,9 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                    !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation"), 
                                                    "low coverage")) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes,
+                                                             country=="Cyprus" & notes == "national public sector only", 
+                                                             "Cyprus public sector only")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, prop_unknown > 0.5, "prop of unknown sb > 0.5")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
                              select("uniqueID","iso","country","year","source","context","definition",
