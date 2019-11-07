@@ -24,7 +24,7 @@ SBR.full.ori$nTB[i.miss4] <- (SBR.full.ori$nSB+SBR.full.ori$nLB)[i.miss4]
 
 
 SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
-                             select(-c(context,definition,notes)) %>% 
+                             select(-notes) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
                                     year = round(year),
@@ -32,16 +32,20 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                                     SE.logsbr = SE.sbr / adj_sbr_unknown,
                                     rSN = adj_sbr_unknown/NMR,
                                     rSN_UN = adj_sbr_unknown/UN_NMR,
-                                    definition_rv2 = as.character(definition_rv)) %>% 
-                             mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500gANDge28wks", "ge28wks.m"),
-                                    definition_rv2 = replace(definition_rv2, definition_rv == "ge500gORge22wks", "ge22wks.m"),
-                                    definition_rv2 = replace(definition_rv2, definition_rv == "ge1000gORge28wks", "ge1000g.m")) %>% 
-                             mutate(definition_rv = replace(definition_rv, definition_rv == "ge500gANDge28wks", "ge28wks"),
-                                    definition_rv = replace(definition_rv, definition_rv == "ge500gORge22wks", "ge22wks"),
-                                    definition_rv = replace(definition_rv, definition_rv == "ge1000gORge28wks", "ge1000g")) %>% 
+                                    definition_rv2 = as.character(definition_rv),
+                                    definition_raw = definition_rv) %>% 
+                             mutate(definition_rv2 = replace(definition_rv2, definition_raw == "ge500gANDge28wks", "ge28wks.m"),
+                                    definition_rv2 = replace(definition_rv2, definition_raw == "ge500gORge22wks", "ge22wks.m"),
+                                    definition_rv2 = replace(definition_rv2, definition_raw == "ge1000gORge28wks", "ge1000g.m")) %>% 
+                             mutate(definition_rv = replace(definition_rv, definition_raw == "ge500gANDge28wks", "ge28wks"),
+                                    definition_rv = replace(definition_rv, definition_raw == "ge500gORge22wks", "ge22wks"),
+                                    definition_rv = replace(definition_rv, definition_raw == "ge1000gORge28wks", "ge1000g")) %>% 
                              mutate(exclusion_notes = replace(exclusion_notes, is.na(SE.logsbr), 
                                                               "missing info to cal se.logsbr")) %>% 
-                             mutate(exclusion_ratio = NA)
+                             mutate(exclusion_ratio = NA) %>% 
+                             select(uniqueID,iso,country,region,year,source,context,definition_rv,definition_rv2,definition_raw,
+                                    definition,SBR,adj_sbr_unknown,SE.sbr,SE.logsbr,prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
+                                    UN_NMR,rSN,rSN_UN,shmdg2,icgroup,lmic,country_idx,exclusion_notes,exclusion_ratio)
 
 i.miss5 <- which(is.na(SBR.full$nLB) & !is.na(SBR.full$adj_sbr_unknown * SBR.full$nTB))
 SBR.full$nLB[i.miss5] <- (SBR.full$adj_sbr_unknown * SBR.full$nTB/1000)[i.miss5]
