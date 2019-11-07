@@ -22,6 +22,15 @@ admin.ori$lb[i.miss] <- admin.ori$sb[i.miss]*(1000-admin.ori$sbr_rec[i.miss])/ad
 i.miss2 <- which(is.na(admin.ori$lb) & is.na(admin.ori$sb) & !is.na(admin.ori$tb) & admin.ori$sbr_rec>0)
 admin.ori$lb[i.miss2] <- admin.ori$tb[i.miss2]*(1000-admin.ori$sbr_rec[i.miss2])/1000
 
+# fill in missing SBR -- for now (includes some unknown def)
+# not sure if we also need to change adj_sbr_unknown?
+i.miss3 <- which(is.na(admin.ori$sbr_rec) & 
+                   !is.na(admin.ori$sb) & !is.na(admin.ori$tb))
+admin.ori$sbr_rec[i.miss3] <- admin.ori$sb[i.miss3]/admin.ori$tb[i.miss3]*1000
+
+i.miss4 <- which(is.na(admin.ori$sbr_rec) & 
+                   !is.na(admin.ori$sb) & !is.na(admin.ori$lb))
+admin.ori$sbr_rec[i.miss4] <- admin.ori$sb[i.miss4]/(admin.ori$sb[i.miss4]+admin.ori$lb[i.miss4])*1000
 
 #-----------------------------------------------#
 #   first pass = exclude:                       #
@@ -49,18 +58,23 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                               "inclusion.U5MR"="Inclusion.VR.U5MR") %>% 
                             mutate(source="admin", LB_frac = nLB/WPP_LB, rSN = SBR/NMR, rSN_UN = SBR/UN_NMR,exclusion_notes=NA) %>%
                             mutate(source = replace(source,context=="HMIS-DHIS2","HMIS")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,country=="Belgium" & year==2004 & source_name=="EURO-PERISTAT project",
-                                   "duplicate observation")) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes,country=="Cuba" & year==2003 & definition=="x500g" & source_name=="National Statistical Office",
-                                   "duplicate observation")) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
-
-                            mutate(exclusion_notes = replace(exclusion_notes,source_name == "PAHO/WHO (2018). Health Situation in the Americas: Core Indicators 2018.",
-                                    "PAHO/WHO data")) %>% 
+                            mutate(exclusion_notes = replace(exclusion_notes,
+                                                             country=="Belgium" & year==2004 & source_name=="EURO-PERISTAT project",
+                                                            "duplicate observation")) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes,
+                                                             country=="Cuba" & year==2003 & definition=="x500g" & source_name=="National Statistical Office",
+                                                            "duplicate observation")) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes,
+                                                             source_name == "PAHO/WHO (2018). Health Situation in the Americas: Core Indicators 2018.",
+                                                             "PAHO/WHO data")) %>% 
                             mutate(exclusion_notes = replace(exclusion_notes,dq_flag %in% c(3,9,12),"dq_flag in 3,9,12")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, inclusion.U5MR == 0, "excluded by U5MR")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes, prop_unknown > 0.5, "prop of unknown sb > 0.5")) %>% 
+                            mutate(exclusion_notes = replace(exclusion_notes,
+                                                   !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation"), 
+                                                   "low coverage")) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes, prop_unknown > 0.5, "prop of unknown sb > 0.5")) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
                              select("uniqueID","iso","country","year","source","context","definition",
                                      "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","LB_frac",
                                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes") 
