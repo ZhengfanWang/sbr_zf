@@ -17,10 +17,32 @@ survey <- readRDS("output/survey.full.rds")
 SBR.full.ori <- rbind(admin, subnat.lr, survey,subnat.admin) # 13789 obs
 
 #################################################
-i.miss3 <- which(is.na(SBR.full.ori$nLB)& (!is.na(SBR.full.ori$nTB-SBR.full.ori$nSB)))
-SBR.full.ori$nLB[i.miss3] <- (SBR.full.ori$nTB-SBR.full.ori$nSB)[i.miss3]
-i.miss4 <- which(is.na(SBR.full.ori$nTB)& (!is.na(SBR.full.ori$nSB+SBR.full.ori$nLB)))
-SBR.full.ori$nTB[i.miss4] <- (SBR.full.ori$nSB+SBR.full.ori$nLB)[i.miss4]
+
+# fill in missing nLB when we have nTB and nSB
+i.miss1 <- which(is.na(SBR.full.ori$nLB)& (!is.na(SBR.full.ori$nTB-SBR.full.ori$nSB)))
+SBR.full.ori$nLB[i.miss1] <- (SBR.full.ori$nTB-SBR.full.ori$nSB)[i.miss1]
+# fill in missing nTB when we have nLB and nSB
+i.miss2 <- which(is.na(SBR.full.ori$nTB)& (!is.na(SBR.full.ori$nSB+SBR.full.ori$nLB)))
+SBR.full.ori$nTB[i.miss2] <- (SBR.full.ori$nSB+SBR.full.ori$nLB)[i.miss2]
+
+# fill in missing nLB when we have SBR >0 and nSB
+i.miss3 <- which(is.na(SBR.full.ori$nLB) & !is.na(SBR.full.ori$nSB) & SBR.full.ori$SBR>0)
+SBR.full.ori$nLB[i.miss3] <- SBR.full.ori$nSB[i.miss3]*(1000-SBR.full.ori$SBR[i.miss3])/SBR.full.ori$SBR[i.miss3]
+
+# fill in missing nLB when we have SBR >0 and nTB but no nSB
+i.miss4 <- which(is.na(SBR.full.ori$nLB) & is.na(SBR.full.ori$nSB) & !is.na(SBR.full.ori$nTB) & SBR.full.ori$SBR>0)
+SBR.full.ori$nLB[i.miss4] <- SBR.full.ori$nTB[i.miss4]*(1000-SBR.full.ori$SBR[i.miss4])/1000
+
+# fill in missing SBR -- for now (includes some unknown def)
+# not sure if we also need to change adj_sbr_unknown?
+i.miss5 <- which(is.na(SBR.full.ori$SBR) & 
+                   !is.na(SBR.full.ori$nSB) & !is.na(SBR.full.ori$nTB))
+SBR.full.ori$SBR[i.miss5] <- SBR.full.ori$nSB[i.miss5]/SBR.full.ori$nTB[i.miss5]*1000
+
+i.miss6 <- which(is.na(SBR.full.ori$SBR) & 
+                   !is.na(SBR.full.ori$nSB) & !is.na(SBR.full.ori$nLB))
+SBR.full.ori$SBR[i.miss6] <- SBR.full.ori$nSB[i.miss6]/(SBR.full.ori$nSB[i.miss6]+SBR.full.ori$nLB[i.miss6])*1000
+
 
 
 SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 

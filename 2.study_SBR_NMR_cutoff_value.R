@@ -35,7 +35,7 @@ fit <- stan(file= "mod/study_ratio_cutoff.stan",data=stan.data.cutoff,chains = 4
      control=list(adapt_delta=0.99, max_treedepth=15))
 
 print(fit,pars = c("mu","sigma"))
-fit.chain <- extract(fit)
+fit.chain <- rstan::extract(fit)
 mu <- fit.chain$mu                  # posterior sample of overall mean of log ratio
 sigma  <- fit.chain$sigma           # posterior sample of variability across settings.
 
@@ -55,7 +55,8 @@ fnmr_un <- full_data$UN_NMR
 
 fn <- length(ftb)
 S <- 1000  #num of MC simulation
-flog.r_s <- matrix(NA,ncol=S,nrow=fn)
+flog.r_s_obs <- matrix(NA,ncol=S,nrow=fn)
+flog.r_s_un <- matrix(NA,ncol=S,nrow=fn)
 for(i in 1:fn){
   sb_s <- rbinom(S,ftb[i],fsbr[i]/1000)
   nm_s_obs <- rbinom(S,flb[i],fnmr_obs[i]/1000)
@@ -90,9 +91,9 @@ round(cutoff_bound,digits = 2)
 mean(prob_i_obs<0.05,na.rm = T)
 mean(prob_i_un<0.05,na.rm = T)
 SBR.full.ratio <- full_data %>% rename(exclude_based_on_obssbrnmr_ratio = exclusion_ratio) %>% 
-                                mutate(prob_based_on_obssbrnmr = prob_i_obs,
+                                mutate(prob_based_on_obssbrnmr = round(prob_i_obs,digit=4),
                                        v_based_on_obssbrnmr = v_i_obs,
-                                       prob_based_on_sbrunnmr = prob_i_un,
+                                       prob_based_on_sbrunnmr = round(prob_i_un,digit=4),
                                        v_based_on_sbrunnmr = v_i_un,
                                        exclude_based_on_obssbrnmr_ratio = replace(exclude_based_on_obssbrnmr_ratio,
                                                                                   prob_i_obs <= 0.05&definition_rv == "ge28wks",
