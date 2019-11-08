@@ -100,20 +100,24 @@ SBR.full.ratio <- full_data %>% rename(exclude_based_on_obssbrnmr_ratio = exclus
                                                                                   "TRUE"),
                                        exclude_based_on_obssbrnmr_ratio = replace(exclude_based_on_obssbrnmr_ratio,
                                                                                   prob_i_obs > 0.05&definition_rv == "ge28wks",
-                                                                                  "FALSE"),
-                                       exclude_based_on_obssbrnmr_ratio = replace(exclude_based_on_obssbrnmr_ratio,
-                                                                                  is.na(prob_i_obs),
-                                                                                  "missing obs NMR")) %>% 
+                                                                                  "FALSE")
+                                       #,
+                                       #exclude_based_on_obssbrnmr_ratio = replace(exclude_based_on_obssbrnmr_ratio,
+                                       #                                            is.na(prob_i_obs),
+                                       #                                            "missing obs NMR")
+                                       ) %>% 
                                 mutate(exclude_based_on_sbrUNnmr_ratio = NA) %>% 
                                 mutate(exclude_based_on_sbrUNnmr_ratio = replace(exclude_based_on_sbrUNnmr_ratio,
                                                                                  prob_i_un <= 0.05&definition_rv == "ge28wks",
                                                                                  "TRUE"),
                                        exclude_based_on_sbrUNnmr_ratio = replace(exclude_based_on_sbrUNnmr_ratio,
                                                                                  prob_i_un > 0.05&definition_rv == "ge28wks",
-                                                                                 "FALSE"),
-                                       exclude_based_on_sbrUNnmr_ratio = replace(exclude_based_on_sbrUNnmr_ratio,
-                                                                                  is.na(prob_i_un),
-                                                                                  "missing UN NMR")) %>% 
+                                                                                 "FALSE")
+                                       #,
+                                       #exclude_based_on_sbrUNnmr_ratio = replace(exclude_based_on_sbrUNnmr_ratio,
+                                       #                                            is.na(prob_i_un),
+                                       #                                            "missing UN NMR")
+                                       ) %>% 
                                 mutate(exclusion_ratio = NA) %>% 
                                 mutate(exclusion_ratio = replace(exclusion_ratio,
                                                                  is.na(prob_i),

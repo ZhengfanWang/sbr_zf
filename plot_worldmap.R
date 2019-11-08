@@ -1,15 +1,61 @@
 library(rworldmap)
-vignette('rworldmap')
+#vignette('rworldmap')
 
-library(haven)
-library(tidyverse)
+library(classInt)
+library(RColorBrewer)
 
-#my data
+source("1.iso.R")
+#### world map for data availability
+dat <- readRDS("output/data_for_model.rds")
+
+names(dat)
+countryExData <- dat %>% group_by(iso) %>% 
+                         summarise(n=n()) %>% 
+                         right_join(countryRegionList,by = "iso")  %>% 
+                         mutate(n = replace(n, is.na(n),0)) %>% 
+                         rename(iso3 = iso)
+
+
+#getting smallexample data and joining to a map
+
+sPDF <- joinCountryData2Map(countryExData
+                            ,joinCode = "ISO3"
+                            ,nameJoinColumn = "iso3"
+)
+
+#getting class intervals
+#classInt <- classIntervals( sPDF[["n"]]
+#                            ,n=5, style = "jenks")
+
+#catMethod = round(classInt[["brks"]])
+
+catMethod = c(1,2,5,10,15,20)
+#getting colours
+colourPalette <- brewer.pal(5,'RdPu')
+
+#plot map
+mapDevice() #create world map shaped window
+mapParams <- mapCountryData(sPDF
+                            ,nameColumnToPlot="n"
+                            ,addLegend=FALSE
+                            ,catMethod = catMethod
+                            ,mapTitle = "Data availability"
+                            ,colourPalette=colourPalette )
+
+do.call(addMapLegend
+        ,c(mapParams
+           ,legendLabels="all"
+           ,legendWidth=0.5
+           ,legendIntervals="data"
+           ,legendMar = 2))
+
+
+
+#-------------------------------------------------------------------------------
+#### world map for estimates
 
 dat <- readRDS("rdsoutput/Pspline1.rds")
 
-
-source("R/iso.R")
 
 fitchain <- rstan::extract(dat)
 df <- fitchain
@@ -42,8 +88,7 @@ countryExData <- data.frame(iso3 =iso3,SBR) %>% mutate(iso3 = iso)
 dim(countryExData)
 #### 
 
-library(classInt)
-library(RColorBrewer)
+
 #getting smallexample data and joining to a map
 
 sPDF <- joinCountryData2Map(countryExData

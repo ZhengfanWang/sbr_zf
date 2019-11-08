@@ -51,11 +51,12 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
                                     year = round(year),
                                     SE.sbr = sqrt(1000*adj_sbr_unknown/nTB),
-                                    SE.logsbr = SE.sbr / adj_sbr_unknown,
                                     rSN = adj_sbr_unknown/NMR,
                                     rSN_UN = adj_sbr_unknown/UN_NMR,
                                     definition_rv2 = as.character(definition_rv),
                                     definition_raw = definition_rv) %>% 
+                             mutate(SE.sbr = ifelse(is.na(SE.sbr),sqrt(1000*adj_sbr_unknown/(nSB+WPP_LB)),SE.sbr),
+                                    SE.logsbr = SE.sbr / adj_sbr_unknown) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_raw == "ge500gANDge28wks", "ge28wks.m"),
                                     definition_rv2 = replace(definition_rv2, definition_raw == "ge500gORge22wks", "ge22wks.m"),
                                     definition_rv2 = replace(definition_rv2, definition_raw == "ge1000gORge28wks", "ge1000g.m")) %>% 
