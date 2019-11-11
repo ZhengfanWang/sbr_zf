@@ -4,13 +4,12 @@ dim(sbr2018)
 names(sbr2018)
 
 ########################################################
-table(sbr2018$definition_rv)
-dim(sbr2018)
-### input covariates
-int_cov <- c("gni","nmr","lbw","anc4","mean_edu","exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
-                  "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
 
-#int_cov <- c("gni","nmr","lbw","anc4","mean_edu")
+### input covariates
+#int_cov <- c("gni","nmr","lbw","anc4","mean_edu","exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
+#                  "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
+
+int_cov <- c("gni","nmr","lbw","anc4","mean_edu")
 
 covarset <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')%>% 
   select(c("iso3","year",int_cov)) %>% 
@@ -28,14 +27,6 @@ definition_fac <- c("ge28wks","ge1000g","ge22wks","ge500g")
 definition_bias <- c(0,-0.07,0.38,0.27)
 definition_var <-  c(0,0.09,0.15,0.12)
 
-#sbr2018$definition_rv <-  fct_collapse(sbr2018$definition_rv,
-#                             ge1000g = c("ge1000g","ge1000gANDge28wks","ge1000gORge28wks"),
-#                             ge500g =  c("ge500gORge22wks","ge500g"),
-#                             ge22wks = c("ge22wks"),
-#                             ge20wks = c("ge20wks","ge400gORge20wks","ge500gORge20wks"),
-#                             ge24wks = c("ge24wks"),
-#                             ge26wks = c("ge1000gORge26wks"),
-#                             ge28wks = c("ge28wks","s40wksANDge28wks"))
 
 sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) 
 
@@ -114,7 +105,7 @@ stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr
 #                 yearLength = yearLength, numdef = length(definition_fac),
 #                 B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
 #                 BG_td = splines.data$BG.td,H=splines.data$H)
-saveRDS(stan.data,file = "output/stan.quad.I1.rds")
+#saveRDS(stan.data,file = "output/stan.quad.I1.rds")
 do.validation = F
 if (!do.validation){
   # all observations are in the training set
@@ -134,8 +125,8 @@ if (!do.validation){
 stan.data$ntrain <- length(stan.data$getitrain_k)
 stan.data$getitrain_k
 
-saveRDS(stan.data,file = "output/stan.qi1.hs.rds")
-saveRDS(stan.data,file = "output/stan.qi1.hs.loo.rds")
+saveRDS(stan.data,file = "output/stan.qi1.rds")
+saveRDS(stan.data,file = "output/stan.qi1.loo.rds")
 
 
 
