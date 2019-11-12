@@ -25,8 +25,9 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
                              source="subnat.LR",
                              exclusion_notes=NA) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
-                      mutate(exclusion_notes = replace(exclusion_notes,!is.na(exclude),"exclude by exclude col")) %>% 
+                      #mutate(exclusion_notes = replace(exclusion_notes,!is.na(exclude),"exclude by exclude col")) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
+                      mutate(exclusion_notes = replace(exclusion_notes,model_include==0,"survey exclusion variable")) %>% 
                       mutate(NMR = ifelse(is.na(NMR),nNM/nLB*1000,NMR)) %>% 
                       mutate(rSN = SBR/NMR) %>%
                       select("uniqueID","country","iso","region","year","source","context","definition","SBR",
