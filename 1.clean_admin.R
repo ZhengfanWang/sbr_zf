@@ -60,19 +60,19 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                               "inclusion.U5MR"="Inclusion.VR.U5MR") %>% 
                             mutate(source="admin", LB_frac = nLB/WPP_LB, rSN = SBR/NMR, rSN_UN = SBR/UN_NMR,exclusion_notes=NA) %>%
                             mutate(source = replace(source,context=="HMIS-DHIS2","HMIS")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,
-                                                             country=="Belgium" & year==2004 & source_name=="EURO-PERISTAT project",
-                                                            "duplicate observation")) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes,
-                                                             country=="Cuba" & year==2003 & definition=="x500g" & source_name=="National Statistical Office",
-                                                            "duplicate observation")) %>%
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                country=="Belgium" & year==2004 & source_name=="EURO-PERISTAT project",
+                            #                               "duplicate observation")) %>%
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                country=="Cuba" & year==2003 & definition=="x500g" & source_name=="National Statistical Office",
+                            #                                "duplicate observation")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, 
                                                              country=="Cyprus" & notes == "national public sector only",
                                                              "Cyprus public sector only")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, inclusion.U5MR == 0, "excluded by U5MR")) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes, 
-                                                            country=="Germany" & year==2014 & Definition_SB == "not defined", 
-                                                            "duplicates, use BDR data")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes, 
+                            #                                country=="Germany" & year==2014 & Definition_SB == "not defined", 
+                            #                                "duplicates, use BDR data")) %>% 
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                             !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation"), 
                                                             "low coverage")) %>%
