@@ -18,9 +18,8 @@ data{
   //source type indicator variable
   int <lower=0,upper=1> datatype1_i[N];        // admin
   int <lower=0,upper=1> datatype2_i[N];        // hmis 
-  int <lower=0,upper=1> datatype3_i[N];        //subnat.admin
-  int <lower=0,upper=1> datatype4_i[N];        //subnat.lr
-  int <lower=0,upper=1> datatype5_i[N];        //survey
+  int <lower=0,upper=1> datatype3_i[N];        //subnat.lr
+  int <lower=0,upper=1> datatype4_i[N];        //survey
   
   //def type indicator variable
   int <lower=0,upper=1> deftype1_i[N];
@@ -106,14 +105,12 @@ transformed parameters {
   for(i in 1:N){
     bias_dt_i[i] = bias_dt[1]*datatype2_i[i]+
                    bias_dt[2]*datatype3_i[i]+
-                   bias_dt[3]*datatype4_i[i]+
-                   bias_dt[4]*datatype5_i[i];
+                   bias_dt[3]*datatype4_i[i];
 
     sigma_i[i] = sqrt(  0.0025*datatype1_i[i]+
                       var_j[1]*datatype2_i[i]+
                       var_j[2]*datatype3_i[i]+
                       var_j[3]*datatype4_i[i]+
-                      var_j[4]*datatype5_i[i]+
                       var_i[i] + phi_d[getd_i[i]]);
   }
   for(c in 1:numcountry){
@@ -160,10 +157,16 @@ model {
 
 generated quantities{
   vector[N] log_lik;
+  vector[N] prep;
 for (i in 1:N) log_lik[i] = normal_lpdf(Y[i] | mu_ct[getc_i[i],gett_i[i]]
                   + bias_dt_i[i]
                   + bias_def_i[i]
                   + delta_ct[getc_i[i],gett_i[i]], 
                   sigma_i[i]);
+for (i in 1:N) prep[i] = normal_rng(mu_ct[getc_i[i],gett_i[i]]
+                  + bias_dt_i[i]
+                  + bias_def_i[i]
+                  + delta_ct[getc_i[i],gett_i[i]], 
+                  sigma_i[i]);   
 }
 

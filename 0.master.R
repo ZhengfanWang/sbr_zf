@@ -64,6 +64,9 @@ source("fit_model")
 #############          5. model check and others                              ############
 #----------------------------------------------------------------------------------------#
 
+#res plot
+source("5.check_res_plot.R")
+
 #country plot
 source("plot_country_est.R")
 

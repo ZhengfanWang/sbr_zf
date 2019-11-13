@@ -1,37 +1,44 @@
 data{
-  int<lower=0> N;           //number of observations
-  int<lower=0> numcov;      //number of preidctors
-  int<lower=0> numcountry;  // number of countries
-  int<lower=0> numregion;   // number of regions
-  int<lower=0> yearLength;  //number of est year
-  int<lower=0> numdef;      // num of def
+  int<lower=0> N; //number of observations
+  int<lower=0> numcov; //number of preidctors
+  int<lower=0> numcountry; // number of countries
+  int<lower=0> numregion; // number of regions
+  int<lower=0> yearLength; //number of est year
+
   int estyears[yearLength]; //vector of est years;
-  real Y[N];                // vector of log sbr
+  real Y[N]; // vector of log sbr
   int<lower=0,upper=numcountry> getc_i[N];          // country for given obs
   int<lower=0,upper=numregion> getr_c[numcountry];  // vector of region given country
-  int<lower=1,upper=yearLength> gett_i[N];          // time for given obs
-  int<lower=0,upper=4> getd_i[N];                   // definition type for given obs
+  int<lower=1,upper=yearLength> gett_i[N];       // time for given obs
+  int<lower=0,upper=4> getd_i[N];                // definition type for given obs
 
 
-  int <lower=0,upper=1> datatype1_i[N];           //admin
-  int <lower=0,upper=1> datatype2_i[N];           //HMIS
-  int <lower=0,upper=1> datatype3_i[N];           //subnat admin
-  int <lower=0,upper=1> datatype4_i[N];           
+  int <lower=0,upper=1> datatype1_i[N];
+  int <lower=0,upper=1> datatype2_i[N];
+  int <lower=0,upper=1> datatype3_i[N];
+  int <lower=0,upper=1> datatype4_i[N];
   int <lower=0,upper=1> datatype5_i[N];
 
   int <lower=0,upper=1> deftype1_i[N];
   int <lower=0,upper=1> deftype2_i[N];
   int <lower=0,upper=1> deftype3_i[N];
   int <lower=0,upper=1> deftype4_i[N];
-  vector[numdef] eta_d;                 // definition adjustment bias
-  real<lower=0> phi_d[numdef];          // definition adjustment var
+  vector[4] eta_d;               // definition adjustment bias
+  real<lower=0> phi_d[4];               // definition adjustment var
 
   real<lower=0> var_i[N];              // sampling error^2
-  real covar_array[numcov,numcountry,yearLength];
+
+   real covar_array[numcov,numcountry,yearLength];
   //input data about spline
+
   int<lower=0> K;                  //number of basis
+
   int<lower=0> H;
-  matrix[yearLength,H] Z_th;
+
+    matrix[yearLength,H] Z_th;
+
+  // real
+
 }
 
 transformed data{
