@@ -4,7 +4,7 @@
 
 #load data
 SBR.full.ori <- readRDS("output/fullset.rds")
-hq.lmic.def.ori <- openxlsx::read.xlsx("C:/Users/anmishra/Desktop/sbr_zf-master/input/High Quality LMIC data_Definition.xlsx",sheet=1) ## high quality LMIC data
+hq.lmic.def.ori <- openxlsx::read.xlsx("input/High Quality LMIC data_Definition.xlsx",sheet=1) ## high quality LMIC data
 
 
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
