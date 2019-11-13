@@ -49,7 +49,7 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                              select(-notes) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
-                                    year = round(year),
+                                    year = floor(year),
                                     SE.sbr = sqrt(1000*adj_sbr_unknown/nTB),
                                     rSN = adj_sbr_unknown/NMR,
                                     rSN_UN = adj_sbr_unknown/UN_NMR,
