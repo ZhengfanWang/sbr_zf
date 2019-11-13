@@ -4,6 +4,9 @@
 
 #load data
 SBR.full.ori <- readRDS("output/fullset.rds")
+hq.lmic.def.ori <- openxlsx::read.xlsx("C:/Users/anmishra/Desktop/sbr_zf-master/input/High Quality LMIC data_Definition.xlsx",sheet=1) ## high quality LMIC data
+
+
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                                     exclusion_notes %in% c("duplicates, use def 1000g",
                                                            "duplicates, use BDR data",
@@ -16,14 +19,31 @@ SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 SBR.full.lmic <- SBR.full %>% filter(lmic == 1) %>% 
                               filter(source != "survey")
+#SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>% 
+#                             filter(source != "survey")
 SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>% 
-                             filter(source != "survey")
+                             filter(source %in% c("admin","subnat.admin")) ## change to exclude HMIS or subnational literatuer as well 
+                                                                            ## (though don't think there duplicates there)
 
 #-----------------------------------------------#
 # find combiations for Lmic country             # 
 #-----------------------------------------------#
 
-def_adj_lmic_res <- find_comb_def_adj(SBR.full.lmic)
+#def_adj_lmic_res <- find_comb_def_adj(SBR.full.lmic)
+# Read in high quality LMIC data (Database 6) and re-arrange and relable HQ data so looks like output of find_comb_def_adj() function
+hq.lmic.def <- hq.lmic.def.ori %>% mutate(definition_rv = "ge22wks",definition_rv2 = "ge22wks",
+                                          definition_raw = "ge22wks", definition= "ge22wks",
+                                          ori_def28 = "ge28wks", nSB28 = "sb28wks",SBR28 = "sbr28wks",
+                                          SBR = sbr_22wks, nSB = sb_22wks, nLB =lb, source = seriesname) %>%
+                                   mutate(nTB = nLB + nSB) %>%  
+                                   rename("iso" = "iso3","year"="reference_year") %>%
+                                   select(country,iso,year,definition_rv,nSB,SBR,lb,end,enmr,nnd,nmr,definition_raw,
+                                          definition_rv, definition_rv2, definition_raw,definition,source)
+hq.lmic.def <- hq.lmic.def[order(hq.lmic.def$country,hq.lmic.def$year, hq.lmic.def$definition_rv),]
+def_adj_lmic_res <- list(dat = hq.lmic.def,
+                              alter.def = "ge22wks")
+
+
 #store each combation as a element of a list
 def_adj_list_lmic <- def_adj_lmic_res$dat
 def_adj_name_lmic <- def_adj_lmic_res$alter.def
