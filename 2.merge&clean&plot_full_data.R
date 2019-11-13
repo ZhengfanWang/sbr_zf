@@ -45,7 +45,7 @@ SBR.full.ori$SBR[i.miss6] <- SBR.full.ori$nSB[i.miss6]/(SBR.full.ori$nSB[i.miss6
 
 
 
-SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
+SBR.full2 <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
                              select(-notes) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
@@ -55,7 +55,11 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                                     rSN_UN = adj_sbr_unknown/UN_NMR,
                                     definition_rv2 = as.character(definition_rv),
                                     definition_raw = definition_rv) %>% 
-                             mutate(SE.sbr = ifelse(is.na(SE.sbr),sqrt(1000*adj_sbr_unknown/(nSB+WPP_LB)),SE.sbr),
+                             mutate(SE.sbr = ifelse(is.na(SE.sbr),sqrt(1000*adj_sbr_unknown/(nSB+WPP_LB)),SE.sbr)) 
+
+SE.sbr.max <- sapply(SBR.full2$source,function(x) max(SBR.full2$SE.sbr[SBR.full2$source==x],na.rm = T))
+
+SBR.full <- SBR.full2 %>%    mutate(SE.sbr = ifelse(is.na(SE.sbr),SE.sbr.max,SE.sbr),
                                     SE.logsbr = SE.sbr / adj_sbr_unknown) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_raw == "ge500gANDge28wks", "ge28wks.m"),
                                     definition_rv2 = replace(definition_rv2, definition_raw == "ge500gORge22wks", "ge22wks.m"),
@@ -63,8 +67,6 @@ SBR.full <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %
                              mutate(definition_rv = replace(definition_rv, definition_raw == "ge500gANDge28wks", "ge28wks"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge500gORge22wks", "ge22wks"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge1000gORge28wks", "ge1000g")) %>% 
-                             mutate(exclusion_notes = replace(exclusion_notes, is.na(SE.logsbr), 
-                                                              "missing info to cal se.logsbr")) %>% 
                              mutate(exclusion_ratio = NA) %>% 
                              select(uniqueID,iso,country,region,year,source,context,definition_rv,definition_rv2,definition_raw,
                                     definition,SBR,adj_sbr_unknown,SE.sbr,SE.logsbr,prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
