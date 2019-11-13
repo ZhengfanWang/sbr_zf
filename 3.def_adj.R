@@ -14,8 +14,10 @@ SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
-SBR.full.lmic <- SBR.full %>% filter(lmic == 1)
-SBR.full.hic <- SBR.full %>% filter(lmic == 0)
+SBR.full.lmic <- SBR.full %>% filter(lmic == 1) %>% 
+                              filter(source != "survey")
+SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>% 
+                             filter(source != "survey")
 
 #-----------------------------------------------#
 # find combiations for Lmic country             # 
@@ -65,7 +67,7 @@ summ <- data.frame(definition = alter.def, num_paired_obs = num_paired_obs ,
 #    selecting only 1 def per country-year        # 
 #-------------------------------------------------#
 SBR.full <- SBR.full %>% filter(is.na(exclusion_notes))
-SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","unknownGA","ge1000gANDge28wks"))) %>% 
+SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
                            filter(source != "subnat.admin") %>% 
                            select(uniqueID,iso,country,year,source,shmdg2,lmic,definition_rv,definition_rv2,definition_raw,definition,
                                  adj_sbr_unknown,country_idx,SE.logsbr) %>% 
@@ -75,10 +77,12 @@ SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","un
 SBR.model$definition_rv2 <- droplevels(SBR.model$definition_rv2)
 
 priority.for.adj <- summ %>% filter(definition %in% levels(SBR.model$definition_rv)) %>% 
-                             filter(!(definition %in% c("unknownGA","ge1000gANDge28wks","any")))
+                             filter(!(definition %in% c("unknownGA","any")))
 
 #### the following vector is decided by where we can do def adj(priority.for.adj) and where we need adj(SBR.model$definition_rv2)
-priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g","ge1000g.m","ge500g","ge20wks","ge24wks","ge37wks")
+priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g",
+                          "ge1000g.m","ge500g","ge20wks","ge24wks","ge37wks",
+                          "ge1000gANDge28wks","ge400gORge20wks","ge500gORge20wks")
 
 SBR.model <- SBR.model %>% filter(definition_rv2 %in% priority.for.adj_vec)
 SBR.model$definition_rv2 <- droplevels(SBR.model$definition_rv2)
