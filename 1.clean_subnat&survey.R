@@ -2,7 +2,7 @@
 # Last modified: Oct.22.2019
 
 ##read subnational lit review 
-subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_2019-11-1.xlsx", sheet =  3, startRow = 2) # read in subnation data
+subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_2019-11-12.xlsx", sheet =  3, startRow = 2) # read in subnation data
 
 #save(subnat_lit_rv.ori,file = "input/rdata/subnat_lit_rv.ori.rdata")
 subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
@@ -16,11 +16,11 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
                                             "nTB"="tb",
                                             "nNM"="nnd",
                                             "notes"="comments",
-                                            "source_name"="source_1") %>%
+                                            "source_name"="source_1",
+                                            "UN_NMR"="UNIGME2019_NMR") %>%
                       mutate(NMR = as.numeric(paste(nmr)),
                              definition = as.factor(def_revised),
                              context=as.factor(Context.grouped),
-                             rSN_UN = NA,
                              region = NA,
                              source="subnat.LR",
                              exclusion_notes=NA) %>% 
@@ -28,9 +28,10 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
                       mutate(exclusion_notes = replace(exclusion_notes,!is.na(exclude),"exclude by exclude col")) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
                       mutate(NMR = ifelse(is.na(NMR),nNM/nLB*1000,NMR)) %>% 
-                      mutate(rSN = SBR/NMR) %>%
+                      mutate(rSN = SBR/NMR,
+                             rSN_UN = SBR/UN_NMR) %>%
                       select("uniqueID","country","iso","region","year","source","context","definition","SBR",
-                             "nSB","nTB","nLB","nNM","NMR","rSN","rSN_UN",
+                             "nSB","nTB","nLB","nNM","NMR","rSN","rSN_UN","UN_NMR",
                              "notes","source_name","exclusion_notes") # now 164 obs
 
 
@@ -78,7 +79,7 @@ definition.cleaned2 <- plyr::revalue(subnat.full$definition,
 levels(subnat.full$context) <- c("HF min bias","pop based","pop based")
 
 # exclude the rest of not defined
-subnat.full <- subnat.full %>% mutate(adj_sbr_unknown = NA, prop_unknown = NA, definition_rv = definition, WPP_LB = NA, UN_NMR= NA) %>% 
+subnat.full <- subnat.full %>% mutate(adj_sbr_unknown = NA, prop_unknown = NA, definition_rv = definition, WPP_LB = NA) %>% 
                                select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                       "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","nNM","NMR",
                                       "UN_NMR","rSN","rSN_UN","notes","exclusion_notes") %>%
@@ -91,24 +92,25 @@ saveRDS(subnat.full, "output/subnat.lit.rv.full.rds")
 #   survey    #
 #-------------#
 ##read survey data
-survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2019-11-04.xlsx", sheet = 1) # read in survey
+survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2019-11-12.xlsx", sheet = 1) # read in survey
 
 survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code",
                                 "year"="ReferenceDate", 
                                 "context"="Surveytype", 
                                 "notes"="DataCollection", 
-                                "NMR"="ES_NMR") %>%
+                                "NMR"="ES_NMR",
+                                "UN_NMR"="UNIGME2019_NMR") %>%
                               mutate(definition = ifelse(is.na(ES_7pMonths),"ge24wks","ge28wks"),
                                      SE.sbr = ifelse(is.na(ES_7pMonths),SE_6pMonths,SE_7pMonths),
                                      nSB = ifelse(is.na(ES_7pMonths),ES_NSB_6pMonths,ES_NSB_7pMonths),
                                      nTB = ifelse(is.na(ES_7pMonths),ES_Totpreg6m,ES_Totpreg7m),
                                      SBR = ifelse(is.na(ES_7pMonths),ES_6pMonths,ES_7pMonths)) %>% 
-                              mutate(source="survey", definition_rv = definition, nNM=NA, rSN_UN=NA, exclusion_notes = NA,exclusion_ratio = NA,
+                              mutate(source="survey", definition_rv = definition, nNM=NA, rSN_UN= SBR/UN_NMR, exclusion_notes = NA,exclusion_ratio = NA,
                                      adj_sbr_unknown=NA,prop_unknown=NA, region = NA, nLB = nTB - nSB, rSN = SBR/NMR,
-                                     WPP_LB = NA, UN_NMR = NA ) %>%
+                                     WPP_LB = NA) %>%
                               mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
                               mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
-                              mutate(exclusion_notes = replace(exclusion_notes,model_inclusion==0,"U5MR model exclude")) %>% 
+                              mutate(exclusion_notes = replace(exclusion_notes,model_include==0,"U5MR model exclude")) %>% 
                               select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                      "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","nNM","NMR","UN_NMR","rSN","rSN_UN",
                                      "notes","exclusion_notes") 
