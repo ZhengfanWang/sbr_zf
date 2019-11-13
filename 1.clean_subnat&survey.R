@@ -108,6 +108,7 @@ survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code"
                                      WPP_LB = NA, UN_NMR = NA ) %>%
                               mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
                               mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
+                              mutate(exclusion_notes = replace(exclusion_notes,model_inclusion==0,"U5MR model exclude")) %>% 
                               select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                      "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","nNM","NMR","UN_NMR","rSN","rSN_UN",
                                      "notes","exclusion_notes") 
