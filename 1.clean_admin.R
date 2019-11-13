@@ -337,7 +337,7 @@ admin.full <- admin.full %>% mutate(region=NA,
                                                               "duplicates, use def 1000g")) %>% 
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                              iso == "SRB" & definition == "ge500gORge28wks",
-                                                             "duplicates, use def 500g"))
+                                                             "duplicates, use def 500g")) %>% 
                              arrange(iso, year) %>% 
                              select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                     "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB",

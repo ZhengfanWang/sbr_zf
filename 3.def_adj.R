@@ -150,7 +150,7 @@ write.csv(summ1,"table/def_adj_num_paired_obs_exclustion_strict.csv")
 #-------------------------------------------------#
 #summary duplicates obs                           #
 #-------------------------------------------------#
-duplicates_obs <- SBR.model.f %>% filter(duplicates >=1)
+duplicates_obs <- SBR.model.f %>% filter(duplicates >=1) %>% filter(source == "admin")
 write.csv(duplicates_obs,"table/duplicates.csv")
 
 ##############################################################

@@ -1,5 +1,5 @@
 "","definition","num_paired_obs","nobs_paired_lmic","nobs_paired_hic","num_obs","num_lmic","num_hic"
-"1","ge22wks",2992,2618,374,172,118,54
+"1","ge22wks",2972,2598,374,156,102,54
 "2","ge1000g",439,0,439,91,0,91
 "3","ge500g",257,0,257,16,0,16
 "4","ge1000gANDge28wks",105,20,85,4,3,1

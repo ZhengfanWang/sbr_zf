@@ -1,5 +1,7 @@
+#####OOOOOOLLLLDDDDD CODE 
 
 
+if(false){
 SBR.full <- readRDS("output/sbr.full.rds")
 
 ##not sure whether we need to exclude data when def adj. Exclude here.
@@ -287,7 +289,7 @@ definition_log_ratio_aginist_region_plot(definition_adj_data_reg[[14]])
 ##-------------------------------------------------------##
 ##                         definition plot               ##
 ##-------------------------------------------------------##
-
+}
 
 #pdf_name <- paste0("fig/logratioSBR28.pdf")
 #pdf(pdf_name,width=12)
