@@ -70,9 +70,9 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                                                              country=="Cyprus" & notes == "national public sector only",
                                                              "Cyprus public sector only")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, inclusion.U5MR == 0, "excluded by U5MR")) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes, 
-                                                            country=="Germany" & year==2014 & Definition_SB == "not defined", 
-                                                            "not defined makes duplicate")) %>% 
+                            #mutate(exclusion_notes = replace(exclusion_notes, 
+                            #                                country=="Germany" & year==2014 & Definition_SB == "not defined", 
+                            #                                "not defined makes duplicate")) %>% 
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                             !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation"), 
                                                             "low coverage")) %>%
@@ -338,6 +338,10 @@ admin.full <- admin.full %>% mutate(region=NA,
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                              iso == "SRB" & definition == "ge500gORge28wks",
                                                              "duplicates, use def 500g")) %>% 
+                            mutate(exclusion_notes = replace(exclusion_notes, 
+                                                            iso=="DEU" & year==2014 & definition_rv == "ge28wks" & 
+                                                            context == "Vital Registration", 
+                                                            "duplicates, use BDR data")) %>% 
                              arrange(iso, year) %>% 
                              select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                     "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB",
