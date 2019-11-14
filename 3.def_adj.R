@@ -33,13 +33,14 @@ SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>%
 # Read in high quality LMIC data (Database 6) and re-arrange and relable HQ data so looks like output of find_comb_def_adj() function
 hq.lmic.def <- hq.lmic.def.ori %>% mutate(definition_rv = "ge22wks",definition_rv2 = "ge22wks",
                                           definition_raw = "ge22wks", definition= "ge22wks",
-                                          ori_def28 = "ge28wks", nSB28 = "sb28wks",SBR28 = "sbr28wks",
+                                          ori_def28 = "ge28wks", nSB28 = sb_28wks,SBR28 = sbr_28wks,
                                           SBR = sbr_22wks, nSB = sb_22wks, nLB =lb, source = seriesname) %>%
                                    mutate(nTB = nLB + nSB) %>%  
                                    rename("iso" = "iso3","year"="reference_year") %>%
-                                   select(country,iso,year,definition_rv,nSB,SBR,lb,end,enmr,nnd,nmr,definition_raw,
-                                          definition_rv, definition_rv2, definition_raw,definition,source)
-hq.lmic.def <- hq.lmic.def[order(hq.lmic.def$country,hq.lmic.def$year, hq.lmic.def$definition_rv),]
+                                   select(country,iso,year,nSB,SBR,nSB28,SBR28, nLB,
+                                          definition_rv, definition_rv2, definition_raw,definition,ori_def28, source)%>%
+                                    arrange(country, year)
+
 def_adj_lmic_res <- list(dat = hq.lmic.def,
                               alter.def = "ge22wks")
 
