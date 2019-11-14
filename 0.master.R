@@ -52,7 +52,7 @@ source("3.def_adj.R")
 #source("3.comp_cutoff_for_non28wks_def.R")
 
 ##### new approach may applied here
-source("3.def_adj_reg.R")
+source("3.def_adj_reg.R")  ### it is old approach
 
 #----------------------------------------------------------------------------------------#
 #############          4. Process  model  fit                          ###################

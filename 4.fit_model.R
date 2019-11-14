@@ -1,7 +1,7 @@
 
 
 
-stan.data<-readRDS("output/stan_data/stan.qi1.hs.rds")
+stan.data<-readRDS("output/stan.qi1.rds")
 stan.data$ntrain
 library(rstan)
 options(mc.cores = parallel::detectCores())

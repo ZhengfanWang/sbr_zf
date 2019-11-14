@@ -140,7 +140,9 @@ for(c in 1:195){
 }
 
 SBR.model2 <- SBR.model %>% mutate(SBR = adj_sbr_unknown)
-SBR.model.f <- SBR.model2[-record,]
+SBR.model.f <- SBR.model2[-record,] %>% filter(definition_rv != "ge500gORge20wks") 
+## apply new exclusion rule, there is one observation with def "ge500gORge20wks" in Brazil 2010 from subnat lit Rv database. 
+# In condition that we already have time-series HMIS data in that country-year. I think we can exclude the obs with def "ge500gORge20wks".
 
 saveRDS(SBR.model.f,"output/data_for_model.rds")
 write.csv(SBR.model.f,"output/data_for_model.csv")
@@ -171,8 +173,9 @@ write.csv(summ1,"table/def_adj_num_paired_obs_exclustion_strict.csv")
 #summary duplicates obs                           #
 #-------------------------------------------------#
 duplicates_obs <- SBR.model.f %>% filter(duplicates >=1) %>% filter(source == "admin")
+if(nrow(duplicates_obs)>0){
 write.csv(duplicates_obs,"table/duplicates.csv")
-
+}
 ##############################################################
 #  plot
 ############################################################

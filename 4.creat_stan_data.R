@@ -1,24 +1,32 @@
  
 sbr2018 <- readRDS("output/data_for_model.rds")
+sbr2018$definition_rv <- droplevels(sbr2018$definition_rv)
+table(sbr2018$definition_rv)
 dim(sbr2018)
 names(sbr2018)
 
 ########################################################
 
+hs <- FALSE
+do.validation <- F
 ### input covariates
-#int_cov <- c("gni","nmr","lbw","anc4","mean_edu","exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
-#                 "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
 
 int_cov <- c("gni","nmr","lbw","anc4","mean_edu")
+if(hs == TRUE){
+int_cov <- c(int_cov,"exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
+                 "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
+}
 
-covarset <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')%>% 
-  select(c("iso3","year",int_cov)) %>% 
-  dplyr::rename("iso"="iso3") %>% 
-  merge(countryRegionList,by="iso") %>% 
-  filter(year>=2000) %>% 
-  mutate(gni = log(gni),
-         nmr = log(nmr)) %>% 
-  arrange(iso,year) 
+covarset.raw <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')
+covarset.nmr <- read.csv("input/covar/mcee_covariates_20191113.csv")
+ 
+covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>% 
+                             dplyr::rename("iso"="iso3") %>% 
+                             merge(countryRegionList,by="iso") %>% 
+                             filter(year>=2000) %>% 
+                             mutate(gni = log(gni),
+                             nmr = log(nmr)) %>% 
+                             arrange(iso,year) 
 
 ### definition type
 definition_fac <- c("ge28wks","ge1000g","ge22wks","ge500g")
@@ -28,7 +36,8 @@ definition_bias <- c(0,-0.07,0.38,0.27)
 definition_var <-  c(0,0.09,0.15,0.12)
 
 
-sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) 
+sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>% 
+                               filter(!is.na(SE.logsbr))
 
 
 
@@ -43,7 +52,6 @@ sbr2018_cleaned$source2 <- as.numeric(sbr2018_cleaned$source)
 
 #definition type
 sbr2018_cleaned$definition_rv <- factor(sbr2018_cleaned$definition_rv, levels = definition_fac)
-sbr2018_cleaned$definition_rv <- droplevels(sbr2018_cleaned$definition_rv)
 
 table(sbr2018_cleaned$definition_rv)
 
@@ -69,27 +77,35 @@ splines.data <- getSplinesData(yearLength,I=1,order=1, degree = 2)
 
 gett.i<- sbr2018_cleaned$year-estyears[1]+1
 
+#covarset.nmr <- covarset.nmr %>% filter(year >= 2000) %>% 
+#                                 select(iso3,year,nmr) %>% 
+#                                 rename(iso = iso3)
+#covarset.nmr %>% filter(iso == "CHN")
+#summary(covarset.nmr)
+#covarMatrix("nmr",dataset = covarset.nmr)
+
 covar_array <- create_covar_array(interest_cov = int_cov)
-X1 <- covarMatrix(int_cov[1])
-X2 <- covarMatrix(int_cov[2])
-X3 <- covarMatrix(int_cov[3])
-X4 <- covarMatrix(int_cov[4])
-X5 <- covarMatrix(int_cov[5])
+#X1 <- covarMatrix(int_cov[1])
+#X2 <- covarMatrix(int_cov[2])
+#X3 <- covarMatrix(int_cov[3])
+#X4 <- covarMatrix(int_cov[4])
+#X5 <- covarMatrix(int_cov[5])
 
 ### source type
-datatype1.i <- ifelse(sbr2018_cleaned$source2==1,1,0)
-datatype2.i <- ifelse(sbr2018_cleaned$source2==2,1,0)
-datatype3.i <- ifelse(sbr2018_cleaned$source2==3,1,0)
-datatype4.i <- ifelse(sbr2018_cleaned$source2==4,1,0)
-datatype5.i <- ifelse(sbr2018_cleaned$source2==5,1,0)
+datatype1.i <- ifelse(sbr2018_cleaned$source2==1,1,0)   # admin
+datatype2.i <- ifelse(sbr2018_cleaned$source2==2,1,0)   # HMIS
+datatype3.i <- ifelse(sbr2018_cleaned$source2==3,1,0)   # subnat.lr
+datatype4.i <- ifelse(sbr2018_cleaned$source2==4,1,0)   # survey
+
 getj.i <- sbr2018_cleaned$source2
 
 stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr^2, 
-                 covar_array = covar_array, X1 = X1, X2 = X2, X3 = X3, X4 = X4, X5 = X5, 
-                 Z1 = standardize(X1), Z2 = standardize(X2), Z3 = standardize(X3), Z4 = standardize(X4), Z5 = standardize(X5),
-                 getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
+                 covar_array = covar_array, 
+                 #X1 = X1, X2 = X2, X3 = X3, X4 = X4, X5 = X5, 
+                 #Z1 = standardize(X1), Z2 = standardize(X2), Z3 = standardize(X3), Z4 = standardize(X4), Z5 = standardize(X5),
+                 getj_i = getj.i, getd_i = getd.i, gett_i = gett.i, getc_i = getc.i,getr_c = getr.c,
                  eta_d = definition_bias, phi_d = definition_var,
-                 datatype1_i = datatype1.i, datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,datatype5_i=datatype5.i,
+                 datatype1_i = datatype1.i, datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
                  deftype1_i = deftype1.i, deftype2_i = deftype2.i, deftype3_i = deftype3.i, deftype4_i = deftype4.i,
                  N = N, numcountry = max(getc.i), numregion = max(getr.c), estyears = estyears, yearLength = yearLength,
                  numdef = length(definition_fac), numcov = length(int_cov), numsource = max(getj.i),
@@ -106,7 +122,7 @@ stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr
 #                 B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
 #                 BG_td = splines.data$BG.td,H=splines.data$H)
 #saveRDS(stan.data,file = "output/stan.quad.I1.rds")
-do.validation = F
+
 if (!do.validation){
   # all observations are in the training set
   stan.data$getitrain_k <- seq(1, N)
