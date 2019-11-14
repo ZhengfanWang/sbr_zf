@@ -53,29 +53,30 @@ fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 ###########################################################################
 def <- standata$eta_d
 definition_fac <- c("ga28wks","bw1000g","ga22wks","bw500g")
-source_fac <- c("admin","HMIS","subnat.admin","subnat LR","survey")
+source_fac <- c("admin","HMIS","subnat LR","survey")
 sbr2018 <- data.frame(logSBR = standata$Y )
 sbr2018$getj_i <- standata$getj_i
 sbr2018$getd_i <- standata$getd_i
 sbr2018$year <- standata$gett_i + 1999
 sbr2018$country_idx <- standata$getc_i
 sbr2018$source_name <- source_fac[sbr2018$getj_i]
-sbr2018$definition_name <- definition_fac[getd_i]
+sbr2018$definition_name <- definition_fac[sbr2018$getd_i]
 sbr2018$var <- standata$var_i + standata$phi_d[sbr2018$getd_i] + dt_variance[sbr2018$getj_i]
 sbr2018$logadjsbr <- sbr2018$logSBR - def[sbr2018$getd_i] - dt_bias[sbr2018$getj_i]
 sbr2018 <- merge(sbr2018,countryRegionList,by=c("country_idx"))
-
+which(sbr2018$var>1)
+sbr2018[which(sbr2018$var>10),]
 ################################################
 
 ####################################################
 
-year.f <- c(1,2,3,4,5)
-logSBR.f <- rep(0,5)
-logsbradj.f <- rep(1,5)
+year.f <- c(1,2,3,4)
+logSBR.f <- rep(0,4)
+logsbradj.f <- rep(1,4)
 
 fake.legend <- data.frame(year=year.f,logSBR=logSBR.f,logadjsbr=logsbradj.f,
-                          source_name=source_fac,definition_name=c(definition_fac,"ga28wks")) %>% 
-  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,5), low = NA, muhat = NA, up = NA) %>% 
+                          source_name=source_fac,definition_name=definition_fac) %>% 
+  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,4), low = NA, muhat = NA, up = NA) %>% 
   select(country,iso,source_name,definition_name,country_idx,logSBR,logadjsbr, year, var, low, muhat,up)
 
 
@@ -121,15 +122,15 @@ check <- function(dat.list){
           legend.position = "right",
           legend.title=element_blank())
   
-  yupper <- max(cis.tq$up,na.rm = T)
-  ylower <- min(cis.tq$low,na.rm = T)
+  yupper <- max(point_dat$upunc,na.rm = T)
+  ylower <- min(point_dat$lowunc,na.rm = T)
   ave <- mean(cis.tq$muhat,na.rm=T)
- if(yupper-ylower>100){
-    est_plot <- est_plot + coord_cartesian(ylim= c(0,ave+150),expand = FALSE)
+ if(yupper-ylower>20){
+    est_plot <- est_plot + coord_cartesian(ylim= c(max(0,ave-15),ave+15), xlim = c(1999.5,2018.5),expand = FALSE)
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/qi1.pdf")
+pdf_name <- paste0("fig/qi1_v2.pdf")
 pdf(pdf_name, width = 10, height = 5)
 point.list %>% lapply(check)
 dev.off()
