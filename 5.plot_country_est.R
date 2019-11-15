@@ -7,7 +7,7 @@ print(fit, pars = c("beta","bias_dt","sigma_j","tau_delta","gamma_r"))
 df <- rstan::extract(fit)
 dt_bias <- c(0,round(apply(df$bias_dt,2,mean),digits = 4))             ## get data type bias from fit
 dt_variance <- c(0.0025,round((apply(df$var_j,2,mean)),digits = 4))         ## get data type variance from fit
-sqrt(dt_variance)
+
 mu_ct <- df$mu_ct +df$delta_ct                                  ### est mean
 getr_c <- standata$getr_c                                       
 
