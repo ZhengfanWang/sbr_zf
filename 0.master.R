@@ -36,9 +36,14 @@ source("1.clean_subnat&survey.R")
 
 ### add exclusion_ratio col
 source("2.merge&clean&plot_full_data.R")
-# exploratory plot for countries in fig/summaryplot.pdf
-#get SBR:NMR upper bound.
+
+# get SBR:NMR upper bound.
 source("2.study_SBR_NMR_cutoff_value.R")
+# this is done once only, using high quality HMIC data
+# so updted only if those data are updated
+
+# exclusion based on SBR:NMR ratio 
+source("2b.apply_SBR_NMR_cutoff_def28.R")
 
 #----------------------------------------------------------------------------------------#
 #############          3. definition adjustment                      #####################
