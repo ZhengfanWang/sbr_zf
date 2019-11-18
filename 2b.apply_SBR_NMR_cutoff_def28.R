@@ -11,9 +11,9 @@ cutoff_bound_zerovar <- exp(qnorm(cutoff_prob,params_cutoff$mu.hat,
                             
                             
 # for observed nmr
-ftb <- full_data$nLB + full_data$nSB
 fsbr <- full_data$adj_sbr_unknown
 flb <- full_data$nLB
+ftb <- full_data$nLB + full_data$nSB
 fnmr_obs <- full_data$NMR
 prob_obs_i <- get_probs_sbrnmr(ftb = ftb, fsbr = fsbr, 
                                fnmr = fnmr_obs, 
@@ -23,7 +23,8 @@ exclude_sbrnmr_obs_i <- (prob_obs_i < cutoff_prob)
                             
 # now same for UN nmr for selected obs
 fnmr_un <- full_data$UN_NMR
-flb_un <- full_data$nLB # LA: THIS SHOULD BE UPDATED TO ALL LIVE BIRTHS. ZW: WPP_LB is available in full_data, use it if missing nLB?
+flb_un <- full_data$WPP_LB # LA: THIS SHOULD BE UPDATED TO ALL LIVE BIRTHS. ZW: WPP_LB is available in full_data, use it if missing nLB?
+                           # AM: Think this should just be WPP_LB
 prob_un_i <- get_probs_sbrnmr(ftb = ftb, 
                               fsbr = fsbr, 
                               fnmr = fnmr_un,
@@ -32,15 +33,20 @@ prob_un_i <- get_probs_sbrnmr(ftb = ftb,
 exclude_sbrnmr_un_i <- (prob_un_i < cutoff_prob)
                      
 
+## AM: Would it make more sense to just use min(prob_un_i, prob_obs_i)? If we use the max NMR we are making
+## it harder to exclude, so equivlanet to using smaller probability. Also, not sure which is appropriate
+## LB to use when using max(NMR,UN_NMR), since the context changes. ZF what do you think?
+prob_min_i <- min(prob_obs_i,prob_un_i)
+
 # use the max(NMR, UN_NMR) for selected obs
-fnmr_max <- unlist(map2(full_data$UN_NMR,full_data$NMR,max,na.rm = TRUE))
-flb_un <- full_data$nLB #LA: THIS SHOULD BE UPDATED TO ALL LIVE BIRTHS. ZW: WPP_LB is available in full_data, use it if missing nLB?
-prob_max_i <- get_probs_sbrnmr(ftb = ftb, 
-                              fsbr = fsbr, 
-                              fnmr = fnmr_max,
-                              flb = flb_un, 
-                              params_cutoff)
-exclude_sbrnmr_max_i <- (prob_max_i < cutoff_prob)
+#fnmr_max <- unlist(map2(full_data$UN_NMR,full_data$NMR,max,na.rm = TRUE))
+#flb_un <- full_data$nLB #LA: THIS SHOULD BE UPDATED TO ALL LIVE BIRTHS. ZW: WPP_LB is available in full_data, use it if missing nLB?
+#prob_max_i <- get_probs_sbrnmr(ftb = ftb, 
+#                              fsbr = fsbr, 
+#                              fnmr = fnmr_max,
+#                              flb = flb_un, 
+#                              params_cutoff)
+exclude_sbrnmr_max_i <- (prob_min_i < cutoff_prob)
 
 
 # some exploratory analysis 
@@ -62,10 +68,21 @@ SBR.full.ratio <- full_data %>% rename(exclude_sbrnmr_max = exclusion_ratio ) %>
                                 mutate(exclude_sbrnmr_max = exclude_sbrnmr_max_i) %>% 
                                 mutate(exclude_sbrnmr_obs = exclude_sbrnmr_obs_i) %>% 
                                 mutate(exclude_sbrnmr_un = exclude_sbrnmr_un_i) %>% 
-                                mutate(prob_max = prob_max_i) %>% 
+                                mutate(prob_min_i = prob_min_i) %>% 
                                 mutate(prob_obs = prob_obs_i) %>%
                                 mutate(prob_un = prob_un_i)  
                                
+### Overwrite exclusion for small countries ## 
+## if we observe 0 SBR & non-zero NMR country exclude_sbrnmr_obs_i= TRUE, since log(fsbr/fnmr)=0, 
+## if we observe 0 SBR & 0 NMR country exclude_sbrnmr_obs_i==NA since log(fsbr/fnmr) will be NaN 
+##                                     but  exclude_sbrnmr_un_i=TRUE and exclude_sbrnmr_max_i=TRUE since NMR=0
+
+#in these cases apply the small country exclusion, to overwrite these probabilities as "FALSE" 
+SBR.full.ratio <- SBR.full.ratio %>% mutate(exclude_sbrnmr_max= replace(exclude_sbrnmr_max,exclude_sbrnmr_max==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
+                                            exclude_sbrnmr_obs = replace(exclude_sbrnmr_obs,exclude_sbrnmr_obs==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
+                                            exclude_sbrnmr_un = replace(exclude_sbrnmr_un,exclude_sbrnmr_un==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE))
+
+
 #table(SBR.full.ratio$exclusion_ratio)
 write.csv(SBR.full.ratio,"output/fullset.csv")
 saveRDS(SBR.full.ratio,"output/fullset.rds")
