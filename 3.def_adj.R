@@ -5,22 +5,21 @@
 #load data
 SBR.full.ori <- readRDS("output/fullset.rds")
 hq.lmic.def.ori <- openxlsx::read.xlsx("input/High Quality LMIC data_Definition.xlsx",sheet=1) ## high quality LMIC data
-
+SBR.full.ori$lmic[SBR.full.ori$iso == "COK"] <- 1
 
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                                     exclusion_notes %in% c("duplicates, use def 1000g",
                                                            "duplicates, use BDR data",
                                                            "duplicates, use ge1000gORge28wks def",
                                                            "duplicates, use ge500gANDge28wks def")) %>% 
-                             filter(is.na(exclusion_ratio)) %>% 
+                             filter(exclude_sbrnmr_max==FALSE) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 SBR.full.lmic <- SBR.full %>% filter(lmic == 1) %>% 
                               filter(source != "survey")
-#SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>% 
-#                             filter(source != "survey")
+
 SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>% 
                              filter(source %in% c("admin","subnat.admin")) ## change to exclude HMIS or subnational literatuer as well 
                                                                             ## (though don't think there duplicates there)
@@ -98,12 +97,12 @@ SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","un
 SBR.model$definition_rv2 <- droplevels(SBR.model$definition_rv2)
 
 priority.for.adj <- summ %>% filter(definition %in% levels(SBR.model$definition_rv)) %>% 
-                             filter(!(definition %in% c("unknownGA","any")))
+                             filter(!(definition %in% c("unknownGA","any","not defined")))
 
 #### the following vector is decided by where we can do def adj(priority.for.adj) and where we need adj(SBR.model$definition_rv2)
 priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g",
-                          "ge1000g.m","ge500g","ge20wks","ge24wks","ge37wks",
-                          "ge1000gANDge28wks","ge400gORge20wks","ge500gORge20wks")
+                          "ge1000g.m","ge20wks","ge500g","ge24wks","ge37wks",
+                          "ge1000gANDge28wks")
 
 SBR.model <- SBR.model %>% filter(definition_rv2 %in% priority.for.adj_vec)
 SBR.model$definition_rv2 <- droplevels(SBR.model$definition_rv2)
@@ -141,7 +140,7 @@ for(c in 1:195){
 }
 
 SBR.model2 <- SBR.model %>% mutate(SBR = adj_sbr_unknown)
-SBR.model.f <- SBR.model2[-record,] %>% filter(definition_rv != "ge500gORge20wks") 
+SBR.model.f <- SBR.model2[-record,] 
 ## apply new exclusion rule, there is one observation with def "ge500gORge20wks" in Brazil 2010 from subnat lit Rv database. 
 # In condition that we already have time-series HMIS data in that country-year. I think we can exclude the obs with def "ge500gORge20wks".
 
