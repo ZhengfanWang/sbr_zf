@@ -23,8 +23,7 @@ exclude_sbrnmr_obs_i <- (prob_obs_i < cutoff_prob)
                             
 # now same for UN nmr for selected obs
 fnmr_un <- full_data$UN_NMR
-flb_un <- full_data$WPP_LB # LA: THIS SHOULD BE UPDATED TO ALL LIVE BIRTHS. ZW: WPP_LB is available in full_data, use it if missing nLB?
-                           # AM: Think this should just be WPP_LB
+flb_un <- full_data$WPP_LB 
 prob_un_i <- get_probs_sbrnmr(ftb = ftb, 
                               fsbr = fsbr, 
                               fnmr = fnmr_un,
@@ -32,31 +31,14 @@ prob_un_i <- get_probs_sbrnmr(ftb = ftb,
                               params_cutoff)
 exclude_sbrnmr_un_i <- (prob_un_i < cutoff_prob)
                      
-
-## AM: Would it make more sense to just use min(prob_un_i, prob_obs_i)? If we use the max NMR we are making
-## it harder to exclude, so equivlanet to using smaller probability. Also, not sure which is appropriate
-## LB to use when using max(NMR,UN_NMR), since the context changes. ZF what do you think?
-prob_min_i <- min(prob_obs_i,prob_un_i)
-
-# use the max(NMR, UN_NMR) for selected obs
-#fnmr_max <- unlist(map2(full_data$UN_NMR,full_data$NMR,max,na.rm = TRUE))
-#flb_un <- full_data$nLB #LA: THIS SHOULD BE UPDATED TO ALL LIVE BIRTHS. ZW: WPP_LB is available in full_data, use it if missing nLB?
-#prob_max_i <- get_probs_sbrnmr(ftb = ftb, 
-#                              fsbr = fsbr, 
-#                              fnmr = fnmr_max,
-#                              flb = flb_un, 
-#                              params_cutoff)
+prob_min_i <- unlist(map2(prob_un_i,prob_obs_i,min,na.rm=T))
 exclude_sbrnmr_max_i <- (prob_min_i < cutoff_prob)
-
-
 # some exploratory analysis 
 #hist(prob_i_obs,freq = FALSE, breaks = 20)
 #hist(prob_i_un,freq = FALSE, breaks = 20)
                             
 #mean(prob_i_obs < cutoff_prob,na.rm = T)
 #mean(prob_i_un < cutoff_prob,na.rm = T)
-                    
-
 
 ############################        
 # process is to add prob_i columns to the data set (to have it for analysis) 
@@ -64,11 +46,11 @@ exclude_sbrnmr_max_i <- (prob_min_i < cutoff_prob)
 # NOTE: the exclusion conslusions are based on assuming all def are 28wks. 
 #        There is another round excludsion after def adj 
                             
-SBR.full.ratio <- full_data %>% rename(exclude_sbrnmr_max = exclusion_ratio ) %>% 
+SBR.full.ratio <- full_data %>% rename(exclude_sbrnmr = exclusion_ratio ) %>% 
                                 mutate(exclude_sbrnmr_max = exclude_sbrnmr_max_i) %>% 
                                 mutate(exclude_sbrnmr_obs = exclude_sbrnmr_obs_i) %>% 
                                 mutate(exclude_sbrnmr_un = exclude_sbrnmr_un_i) %>% 
-                                mutate(prob_min_i = prob_min_i) %>% 
+                                mutate(prob_min = prob_min_i) %>% 
                                 mutate(prob_obs = prob_obs_i) %>%
                                 mutate(prob_un = prob_un_i)  
                                
@@ -91,7 +73,7 @@ saveRDS(SBR.full.ratio,"output/fullset.rds")
 #--------------------------------------#
 #   exploratory plot after exclusion   # 
 #--------------------------------------#
-SBR.clean <- SBR.full.ratio %>% filter(is.na(exclusion_notes),is.na(exclusion_ratio))
+SBR.clean <- SBR.full.ratio %>% filter(is.na(exclusion_notes),exclude_sbrnmr_max==FALSE)
 clean_data_list <- create_list_for_country(SBR.clean)
 pdf_name <- paste0("fig/exploratory_plot/exploratory_clean_data.pdf")
 pdf(pdf_name,width=12)
