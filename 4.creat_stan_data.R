@@ -104,7 +104,7 @@ datatype4.i <- ifelse(sbr2018_cleaned$source2==4,1,0)   # survey
 getj.i <- sbr2018_cleaned$source2
 
 stan.data<- list(Y = Y, var_i = var_i, unadj_Y = log(sbr2018_cleaned$SBR),
-                 covar_array = covar_array, 
+                 covar_array = covar_array, definition_rv = sbr2018_cleaned$definition_rv,
                  getj_i = getj.i, getd_i = getd.i, gett_i = gett.i, getc_i = getc.i,getr_c = getr.c,
                  datatype1_i = datatype1.i, datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
                  N = N, numcountry = max(getc.i), numregion = max(getr.c), estyears = estyears, yearLength = yearLength,

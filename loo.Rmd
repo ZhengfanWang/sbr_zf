@@ -14,23 +14,23 @@ knitr::opts_chunk$set(echo = TRUE)
 library("rstanarm")
 library("bayesplot")
 library("loo")
-fit.c1 <- readRDS("rdsoutput/cubic.I1.rds")
-fit.c2.5 <- readRDS("rdsoutput/cubic.I2.5.rds")
-fit.q1 <- readRDS("rdsoutput/quad.I1.rds")
-fit.q2.5 <- readRDS("rdsoutput/quad.I2.5.rds")
-loo.c1 <- loo(fit.c1)
-loo.c2.5 <- loo(fit.c2.5)
-loo.q1 <- loo(fit.q1)
-loo.q2.5 <- loo(fit.q2.5)
+fit.ref <- readRDS("rdsoutput/ref_qi1.rds")
+fit.add1 <- readRDS("rdsoutput/add1_qi1.rds")
+fit.add2 <- readRDS("rdsoutput/add2_qi1.rds")
+
+loo.ref <- loo(fit.ref)
+loo.add1 <- loo(fit.add1)
+loo.add2 <- loo(fit.add2)
+
 ```
 
 
 ```{r warnings = FALSE,message=FALSE}
-compare(loo.c2.5,loo.c1)
+compare(loo.add1,loo.ref)
 ```
 Here $elpd_diff-2se$ does not include zero, and the difference is postive, hence the model(cubic $I=1$) is preferred. 
 ```{r warnings= FALSE, message=FALSE}
-compare(loo.c1,loo.q1)
+compare(loo.add2,loo.ref)
 ```
 Here $elpd_diff-2se$ does not include zero, and the difference is postive, hence the model(quadratic $I=1$) is preferred. But it seems less smooth.
 

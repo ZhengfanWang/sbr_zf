@@ -1,4 +1,30 @@
+---
+title: "LOOCV"
+author: "zhengfan"
+date: "11/15/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+All result are based on the most recent run(NOV.14.2019).
+
+# In sample
+
+```{r message=FALSE}
 library(rstan)
+library(loo)
+fit <- readRDS(file = "rdsoutput/qi1.rds")
+stan.data <- readRDS(file = "output/stan.qi1.rds")
+loo.fit <- loo(fit)
+print(loo.fit)
+plot(loo.fit)
+```
+
+# out of sample
+```{r}
 
 #sub_validationoutput.R
 fit <- readRDS(file = "rdsoutput/qi1.loo.rds")
@@ -45,6 +71,6 @@ mean(pit.j < 0.1)
 mean(pit.j > 0.975) # % above 95% PI 
 mean(pit.j > 0.95) 
 mean(pit.j > 0.9)
-
+```
 
 

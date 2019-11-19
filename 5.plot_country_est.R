@@ -1,13 +1,19 @@
 standata <- readRDS(file = "output/stan.qi1.rds")             ####  data used for fit model
 
-fit <- readRDS(file = "rdsoutput/qi1.rds")                            ### fit result
+fit <- readRDS(file = "rdsoutput/add1_qi1.rds")                            ### fit result
+#fit <- readRDS(file = "rdsoutput/add2_qi1.rds") 
+fit <- readRDS(file = "rdsoutput/ref_qi1.rds")                            
 
-print(fit, pars = c("beta","bias_dt","sigma_j","tau_delta","gamma_r"))
+print(fit2, pars = c("bias_dt","sigma_j"))
 
 df <- rstan::extract(fit)
-dt_bias <- c(0,round(apply(df$bias_dt,2,mean),digits = 4))             ## get data type bias from fit
-dt_variance <- c(0.0025,round((apply(df$var_j,2,mean)),digits = 4))         ## get data type variance from fit
+#df2 <- rstan::extract(fit2)
+#dt_bias <- c(0,round(apply(df$bias_dt,2,mean),digits = 4))             ## get data type bias from fit
+#dt_variance <- c(0.0025,round((apply(df$var_j,2,mean)),digits = 4))         ## get data type variance from fit
 
+bias_dt_i <- apply(df$bias_dt_i,2,mean)
+sd_i <- apply(df$sigma_i,2,mean)
+var_i <- sd_i^2
 mu_ct <- df$mu_ct +df$delta_ct                                  ### est mean
 getr_c <- standata$getr_c                                       
 
@@ -51,32 +57,32 @@ fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 #write.csv(fit_result,"output/qi1.csv")
 
 ###########################################################################
-def <- standata$eta_d
-definition_fac <- c("ga28wks","bw1000g","ga22wks","bw500g")
+standata$getd_i
+standata$definition_rv
+definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
-sbr2018 <- data.frame(logSBR = standata$Y )
+sbr2018 <- data.frame(logSBR = standata$unadj_Y )
 sbr2018$getj_i <- standata$getj_i
 sbr2018$getd_i <- standata$getd_i
 sbr2018$year <- standata$gett_i + 1999
 sbr2018$country_idx <- standata$getc_i
 sbr2018$source_name <- source_fac[sbr2018$getj_i]
 sbr2018$definition_name <- definition_fac[sbr2018$getd_i]
-sbr2018$var <- standata$var_i + standata$phi_d[sbr2018$getd_i] + dt_variance[sbr2018$getj_i]
-sbr2018$logadjsbr <- sbr2018$logSBR - def[sbr2018$getd_i] - dt_bias[sbr2018$getj_i]
+sbr2018$var <- var_i
+sbr2018$logadjsbr <- standata$Y  - bias_dt_i
 sbr2018 <- merge(sbr2018,countryRegionList,by=c("country_idx"))
-which(sbr2018$var>1)
-sbr2018[which(sbr2018$var>10),]
+
 ################################################
 
 ####################################################
 
-year.f <- c(1,2,3,4)
-logSBR.f <- rep(0,4)
-logsbradj.f <- rep(1,4)
+year.f <- c(1,2,3,4,5)
+logSBR.f <- rep(0,5)
+logsbradj.f <- rep(1,5)
 
 fake.legend <- data.frame(year=year.f,logSBR=logSBR.f,logadjsbr=logsbradj.f,
-                          source_name=source_fac,definition_name=definition_fac) %>% 
-  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,4), low = NA, muhat = NA, up = NA) %>% 
+                          source_name=c("admin",source_fac),definition_name=definition_fac) %>% 
+  mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,5), low = NA, muhat = NA, up = NA) %>% 
   select(country,iso,source_name,definition_name,country_idx,logSBR,logadjsbr, year, var, low, muhat,up)
 
 
@@ -130,7 +136,7 @@ check <- function(dat.list){
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/qi1_v2.pdf")
+pdf_name <- paste0("fig/ref_qi1.pdf")
 pdf(pdf_name, width = 10, height = 5)
 point.list %>% lapply(check)
 dev.off()
