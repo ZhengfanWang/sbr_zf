@@ -46,13 +46,18 @@ exclude_sbrnmr_max_i <- (prob_min_i < cutoff_prob)
 # NOTE: the exclusion conslusions are based on assuming all def are 28wks. 
 #        There is another round excludsion after def adj 
                             
+## AM: After talking to Lucia, I think we should use the "exclude_sbrnmr" variable for exclusion in first round
+##     which only uses UN IGME-NMR based exclusion rule if obs NMR is missing. Creating that variable here
+##     and using it for filtering step in 3.def_adj script. 
 SBR.full.ratio <- full_data %>% rename(exclude_sbrnmr = exclusion_ratio ) %>% 
+                                mutate(exclude_sbrnmr = ifelse(is.na(NMR),exclude_sbrnmr_un_i,exclude_sbrnmr_obs_i)) %>%
                                 mutate(exclude_sbrnmr_max = exclude_sbrnmr_max_i) %>% 
                                 mutate(exclude_sbrnmr_obs = exclude_sbrnmr_obs_i) %>% 
                                 mutate(exclude_sbrnmr_un = exclude_sbrnmr_un_i) %>% 
                                 mutate(prob_min = prob_min_i) %>% 
                                 mutate(prob_obs = prob_obs_i) %>%
-                                mutate(prob_un = prob_un_i)  
+                                mutate(prob_un = prob_un_i)
+
                                
 ### Overwrite exclusion for small countries ## 
 ## if we observe 0 SBR & non-zero NMR country exclude_sbrnmr_obs_i= TRUE, since log(fsbr/fnmr)=0, 
@@ -62,7 +67,8 @@ SBR.full.ratio <- full_data %>% rename(exclude_sbrnmr = exclusion_ratio ) %>%
 #in these cases apply the small country exclusion, to overwrite these probabilities as "FALSE" 
 SBR.full.ratio <- SBR.full.ratio %>% mutate(exclude_sbrnmr_max= replace(exclude_sbrnmr_max,exclude_sbrnmr_max==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
                                             exclude_sbrnmr_obs = replace(exclude_sbrnmr_obs,exclude_sbrnmr_obs==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
-                                            exclude_sbrnmr_un = replace(exclude_sbrnmr_un,exclude_sbrnmr_un==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE))
+                                            exclude_sbrnmr_un = replace(exclude_sbrnmr_un,exclude_sbrnmr_un==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
+                                            exclude_sbrnmr = replace(exclude_sbrnmr,exclude_sbrnmr==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE))
 
 
 #table(SBR.full.ratio$exclusion_ratio)
