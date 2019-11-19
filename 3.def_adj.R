@@ -12,7 +12,9 @@ SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                                                            "duplicates, use BDR data",
                                                            "duplicates, use ge1000gORge28wks def",
                                                            "duplicates, use ge500gANDge28wks def")) %>% 
-                             filter(exclude_sbrnmr_max==FALSE) %>% 
+                             #filter(exclude_sbrnmr_max==FALSE) %>% 
+                             ### AM: Use exclude_sbrnmr variable instead of max and pick up NAs and FALSEs
+                             filter(exclude_sbrnmr==FALSE | is.na(exclude_sbrnmr)) %>%
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
@@ -86,11 +88,13 @@ summ <- data.frame(definition = alter.def, num_paired_obs = num_paired_obs ,
 #-------------------------------------------------#
 #    selecting only 1 def per country-year        # 
 #-------------------------------------------------#
+
+## AM: Assuming this is what gets used in 3.comp_cutoff, so need to include LB,NMR,etc.
 SBR.full <- SBR.full %>% filter(is.na(exclusion_notes))
 SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
                            filter(source != "subnat.admin") %>% 
                            select(uniqueID,iso,country,year,source,shmdg2,lmic,definition_rv,definition_rv2,definition_raw,definition,
-                                 adj_sbr_unknown,country_idx,SE.logsbr) %>% 
+                                 adj_sbr_unknown,country_idx,SE.logsbr,nLB,WPP_LB,NMR,UN_NMR) %>% 
                            mutate(definition_rv2 = as.factor(definition_rv2),
                                   source = as.factor(source),
                                   duplicates = NA)
