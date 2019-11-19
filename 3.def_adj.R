@@ -13,6 +13,7 @@ SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                                                            "duplicates, use ge1000gORge28wks def",
                                                            "duplicates, use ge500gANDge28wks def")) %>% 
                              #filter(exclude_sbrnmr_max==FALSE) %>% 
+                             ### AM: Use exclude_sbrnmr variable instead of max and pick up NAs and FALSEs
                              filter(exclude_sbrnmr==FALSE | is.na(exclude_sbrnmr)) %>%
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
@@ -87,6 +88,8 @@ summ <- data.frame(definition = alter.def, num_paired_obs = num_paired_obs ,
 #-------------------------------------------------#
 #    selecting only 1 def per country-year        # 
 #-------------------------------------------------#
+
+## AM: Assuming this is what gets used in 3.comp_cutoff, so need to include LB,NMR,etc.
 SBR.full <- SBR.full %>% filter(is.na(exclusion_notes))
 SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
                            filter(source != "subnat.admin") %>% 
