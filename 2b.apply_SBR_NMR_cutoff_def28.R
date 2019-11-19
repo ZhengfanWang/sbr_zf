@@ -31,7 +31,7 @@ prob_un_i <- get_probs_sbrnmr(ftb = ftb,
                               params_cutoff)
 exclude_sbrnmr_un_i <- (prob_un_i < cutoff_prob)
                      
-prob_min_i <- unlist(map2(prob_un_i,prob_obs_i,min,na.rm=T))
+prob_min_i <- map2_dbl(prob_un_i,prob_obs_i,min,na.rm=T)
 exclude_sbrnmr_max_i <- (prob_min_i < cutoff_prob)
 # some exploratory analysis 
 #hist(prob_i_obs,freq = FALSE, breaks = 20)
