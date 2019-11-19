@@ -20,9 +20,9 @@ data{
   int <lower=0,upper=1> datatype4_i[N];        //survey
   
   real covar_array[numcov,numcountry,yearLength];   //coariates array: super slow!!!!!!!
-
-  real<lower=0> var_i[N];              // sampling error^2
-
+    
+    real<lower=0> var_i[N];              // sampling error^2
+  
   
   //input data  spline
   int<lower=0> K;                  //number of basis
@@ -32,7 +32,7 @@ data{
 
 transformed data{
   real var_admin = 0.0025;
-
+  
 }
 
 parameters {
@@ -40,11 +40,11 @@ parameters {
   vector[numcov] beta_tilde;
   //deviance part
   vector[numsource-1] bias_dt_tilde;
-
+  
   real<lower=0,upper=5> sigma_j[numsource-1];
-
+  
   real<lower=0,upper=5> sigma_c;
-
+  
   //parameters: P spline 2 order
   real<lower=0,upper=3> tau_delta;      // sd for spline coefficients
   vector[numregion] gamma_r;
@@ -60,27 +60,27 @@ transformed parameters {
   real sigma_i[N];
   matrix[numcountry,yearLength] delta_ct;
   real<lower=0> var_j[numsource-1];
-
+  
   for(j in 1:(numsource-1)){
     var_j[j]= square(sigma_j[j]);}
-
+  
   //P spline 2 order
-
+  
   for(c in 1:numcountry){
     for(t in 1:yearLength){
       mu_ct[c,t] = to_row_vector(covar_array[,c,t]) * beta;
     }}
   // source type bias
   for(i in 1:N){
-    bias_dt_i[i] = bias_dt[1]*datatype2_i[i]+
-                   bias_dt[2]*datatype3_i[i]+
-                   bias_dt[3]*datatype4_i[i];
-
+    bias_dt_i[i] = 0*datatype2_i[i]+
+                   0*datatype3_i[i]+
+                   0*datatype4_i[i];
+    
     sigma_i[i] = sqrt(var_admin*datatype1_i[i]+
-                      var_j[1]*datatype2_i[i]+
-                      var_j[2]*datatype3_i[i]+
-                      var_j[3]*datatype4_i[i]+
-                      var_i[i]);
+                        var_j[1]*datatype2_i[i]+
+                        var_j[2]*datatype3_i[i]+
+                        var_j[3]*datatype4_i[i]+
+                        var_i[i]);
   }
   
   for(c in 1:numcountry){
@@ -94,38 +94,38 @@ model {
   // P spline
   //-----------------------/
     gamma_r[] ~ normal(0,1);
-    for(c in 1:numcountry){
-      gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
-    }
+  for(c in 1:numcountry){
+    gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
+  }
   for(h in 1:H){
     delta_hc[h,] ~ normal(0,tau_delta);
   }
-   //---------------------/
-  beta_tilde ~ normal(0,1);   // covariates
+  //---------------------/
+    beta_tilde ~ normal(0,1);   // covariates
   bias_dt_tilde ~ normal(0,1);// source type bias part
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)
-
+  
   //main part
   for(k in 1:ntrain){
     Y[getitrain_k[k]] ~ normal(mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
-                  + bias_dt_i[getitrain_k[k]]
-                  + delta_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
-                  ,
-                  sigma_i[getitrain_k[k]]);
+                               + bias_dt_i[getitrain_k[k]]
+                               + delta_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
+                               ,
+                               sigma_i[getitrain_k[k]]);
   }
 }
 
 generated quantities{
   vector[N] log_lik;
   vector[N] prep;
-for (i in 1:N) log_lik[i] = normal_lpdf(Y[i] | mu_ct[getc_i[i],gett_i[i]]
-                  + bias_dt_i[i]
-                  + delta_ct[getc_i[i],gett_i[i]], 
-                  sigma_i[i]);
+  for (i in 1:N) log_lik[i] = normal_lpdf(Y[i] | mu_ct[getc_i[i],gett_i[i]]
+                                          + bias_dt_i[i]
+                                          + delta_ct[getc_i[i],gett_i[i]], 
+                                          sigma_i[i]);
   
-for (i in 1:N) prep[i] = normal_rng(mu_ct[getc_i[i],gett_i[i]]
-                  + bias_dt_i[i]
-                  + delta_ct[getc_i[i],gett_i[i]], 
-                  sigma_i[i]);             
+  for (i in 1:N) prep[i] = normal_rng(mu_ct[getc_i[i],gett_i[i]]
+                                      + bias_dt_i[i]
+                                      + delta_ct[getc_i[i],gett_i[i]], 
+                                      sigma_i[i]);             
   
 }

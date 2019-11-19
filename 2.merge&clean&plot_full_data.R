@@ -53,7 +53,7 @@ SBR.full.ori$SBR[i.noSB] <- 1000*SBR.full.ori$nSB[i.noSB]/SBR.full.ori$nTB[i.noS
 SBR.full.ori$adj_sbr_unknown[i.noSB] <- 1000*SBR.full.ori$nSB[i.noSB]/SBR.full.ori$nTB[i.noSB] 
 ############################################
 SBR.full2 <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
-                             select(-notes) %>% 
+                              select(-notes) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
                                     year = floor(year),
@@ -62,7 +62,10 @@ SBR.full2 <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) 
                                     rSN_UN = adj_sbr_unknown/UN_NMR,
                                     definition_rv2 = as.character(definition_rv),
                                     definition_raw = definition_rv) %>% 
-                             mutate(SE.sbr = ifelse(is.na(SE.sbr),sqrt(1000*adj_sbr_unknown/(nSB+WPP_LB)),SE.sbr)) 
+                             mutate(SE.sbr = ifelse(is.na(SE.sbr),sqrt(1000*adj_sbr_unknown/(nSB+WPP_LB)),SE.sbr)) %>% 
+                             mutate(exclusion_notes =  replace(exclusion_notes, 
+                                                              is.na(SBR), 
+                                                              "missing sbr"))
 
 SE.sbr.max <- sapply(SBR.full2$source,function(x) max(SBR.full2$SE.sbr[SBR.full2$source==x],na.rm = T))
 

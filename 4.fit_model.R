@@ -10,9 +10,14 @@ rstan_options(auto_write = TRUE)
 fit<- rstan::stan(file= "mod/q1_hs.stan",data=stan.data,chains = 1,
                   control=list(adapt_delta=0.99, max_treedepth=15))
 
-fit<- rstan::stan(file= "mod/q1.stan",data=stan.data,chains = 1,
+fit<- rstan::stan(file= "mod/ref_qi1.stan",data=stan.data,chains = 1,
                   control=list(adapt_delta=0.99, max_treedepth=15))
 
+fit<- rstan::stan(file= "mod/0bias.stan",data=stan.data,chains = 1,
+                  control=list(adapt_delta=0.99, max_treedepth=15))
+
+fit<- rstan::stan(file= "mod/est_adm_var.stan",data=stan.data,chains = 1,
+                  control=list(adapt_delta=0.99, max_treedepth=15))
 
 saveRDS(fit,file = "rdsoutput/base_model_standardize.rds")
 

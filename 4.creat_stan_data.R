@@ -18,7 +18,7 @@ int_cov <- c(int_cov,"exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors"
 }
 
 covarset.raw <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')
-covarset.nmr <- read.csv("input/covar/mcee_covariates_20191113.csv")
+#covarset.nmr <- read.csv("input/covar/mcee_covariates_20191113.csv")
  
 covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>% 
                              dplyr::rename("iso"="iso3") %>% 
@@ -28,24 +28,33 @@ covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>%
                              nmr = log(nmr)) %>% 
                              arrange(iso,year) 
 
-### definition type
-definition_fac <- c("ge28wks","ge1000g","ge22wks","ge500g")
+#------------------------------------------#
+# need updates input from def adj          #
+#------------------------------------------#
+definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g","ge1000gANDge28wks")
+lmic <- c(0,1,0,1,0,1,0,1)
+def_bias <- c(0.3890,0.2157,NA,0.2660,-0.07,NA,0.27,NA)
+def_sd <- c(0.17240,0.08412,NA,0.11328,0.3,NA,0.3464,NA)
 
-###################bias and variance
-definition_bias <- c(0,-0.07,0.38,0.27)
-definition_var <-  c(0,0.09,0.15,0.12)
+def_adj_res <- data.frame(definition_rv=definition_rv,
+                          lmic=lmic,
+                          def_bias=def_bias,
+                          def_sd=def_sd)
+def_adj_res
+sbr2018 <- right_join(def_adj_res,sbr2018,by = c("definition_rv","lmic"))
 
-
+definition_fac <- c("ge28wks",paste0(unique(def_adj_res$definition_rv[!is.na(def_adj_res$def_bias)])))
 sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>% 
-                               filter(!is.na(SE.logsbr))
+                               mutate(def_bias = ifelse(is.na(def_bias),0,def_bias)) %>% 
+                               mutate(def_sd = ifelse(is.na(def_sd),0,def_sd))
 
 
 
-model_data_list <- create_list_for_country(sbr2018_cleaned) 
-pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
-pdf(pdf_name,width=12)
-model_data_list %>% lapply(exploratory_plot)
-dev.off()
+#model_data_list <- create_list_for_country(sbr2018_cleaned) 
+#pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
+#pdf(pdf_name,width=12)
+#model_data_list %>% lapply(exploratory_plot)
+#dev.off()
 
 sbr2018_cleaned$source <- droplevels(as.factor(sbr2018_cleaned$source))
 sbr2018_cleaned$source2 <- as.numeric(sbr2018_cleaned$source)
@@ -58,11 +67,12 @@ table(sbr2018_cleaned$definition_rv)
 N = dim(sbr2018_cleaned)[1]
 
 getd.i <- as.numeric(sbr2018_cleaned$definition_rv)
-
-deftype1.i <- ifelse(getd.i==1,1,0)
-deftype2.i <- ifelse(getd.i==2,1,0)
-deftype3.i <- ifelse(getd.i==3,1,0)
-deftype4.i <- ifelse(getd.i==4,1,0)
+#deftype1.i <- ifelse(getd.i==1,1,0)
+#deftype2.i <- ifelse(getd.i==2,1,0)
+#deftype3.i <- ifelse(getd.i==3,1,0)
+#deftype4.i <- ifelse(getd.i==4,1,0)
+Y = log(sbr2018_cleaned$SBR) - sbr2018_cleaned$def_bias
+var_i = sbr2018_cleaned$SE.logsbr^2 + sbr2018_cleaned$def_sd^2 
 
 getc.i <- sbr2018_cleaned$country_idx
 getr.c <- countryRegionList$shmdg2
@@ -77,12 +87,6 @@ splines.data <- getSplinesData(yearLength,I=1,order=1, degree = 2)
 
 gett.i<- sbr2018_cleaned$year-estyears[1]+1
 
-#covarset.nmr <- covarset.nmr %>% filter(year >= 2000) %>% 
-#                                 select(iso3,year,nmr) %>% 
-#                                 rename(iso = iso3)
-#covarset.nmr %>% filter(iso == "CHN")
-#summary(covarset.nmr)
-#covarMatrix("nmr",dataset = covarset.nmr)
 
 covar_array <- create_covar_array(interest_cov = int_cov)
 #X1 <- covarMatrix(int_cov[1])
@@ -99,29 +103,15 @@ datatype4.i <- ifelse(sbr2018_cleaned$source2==4,1,0)   # survey
 
 getj.i <- sbr2018_cleaned$source2
 
-stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr^2, 
+stan.data<- list(Y = Y, var_i = var_i, unadj_Y = log(sbr2018_cleaned$SBR),
                  covar_array = covar_array, 
-                 #X1 = X1, X2 = X2, X3 = X3, X4 = X4, X5 = X5, 
-                 #Z1 = standardize(X1), Z2 = standardize(X2), Z3 = standardize(X3), Z4 = standardize(X4), Z5 = standardize(X5),
                  getj_i = getj.i, getd_i = getd.i, gett_i = gett.i, getc_i = getc.i,getr_c = getr.c,
-                 eta_d = definition_bias, phi_d = definition_var,
                  datatype1_i = datatype1.i, datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
-                 deftype1_i = deftype1.i, deftype2_i = deftype2.i, deftype3_i = deftype3.i, deftype4_i = deftype4.i,
                  N = N, numcountry = max(getc.i), numregion = max(getr.c), estyears = estyears, yearLength = yearLength,
-                 numdef = length(definition_fac), numcov = length(int_cov), numsource = max(getj.i),
+                 numdef = max(getd.i), numcov = length(int_cov), numsource = max(getj.i),
                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
                  BG_td = splines.data$BG.td,H=splines.data$H)
 
-#stan.data<- list(Y = log(sbr2018_cleaned$SBR), var_i = sbr2018_cleaned$SE.logsbr^2, covar_array = covar_array,
-#                 getj_i = getj.i, getd_i = getd.i, gett_i = round(gett.i), getc_i = getc.i,getr_c = getr.c,
-#                 eta_d = definition_bias, phi_d = definition_var,
-#                 datatype1_i = datatype1.i,datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,datatype5_i=datatype5.i,
-#                 deftype1_i=deftype1.i,deftype2_i=deftype2.i,deftype3_i=deftype3.i,deftype4_i=deftype4.i,
-#                 N = N, numcountry = 195, numregion = max(getr.c), estyears = estyears, numcov = length(int_cov),
-#                 yearLength = yearLength, numdef = length(definition_fac),
-#                 B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
-#                 BG_td = splines.data$BG.td,H=splines.data$H)
-#saveRDS(stan.data,file = "output/stan.quad.I1.rds")
 
 if (!do.validation){
   # all observations are in the training set
@@ -139,10 +129,10 @@ if (!do.validation){
 }
 
 stan.data$ntrain <- length(stan.data$getitrain_k)
-stan.data$getitrain_k
-
 saveRDS(stan.data,file = "output/stan.qi1.rds")
-saveRDS(stan.data,file = "output/stan.qi1.loo.rds")
+
+
+#saveRDS(stan.data,file = "output/stan.qi1.loo.rds")
 
 
 
