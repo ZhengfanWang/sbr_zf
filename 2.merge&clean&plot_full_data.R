@@ -43,8 +43,15 @@ i.miss6 <- which(is.na(SBR.full.ori$SBR) &
                    !is.na(SBR.full.ori$nSB) & !is.na(SBR.full.ori$nLB))
 SBR.full.ori$SBR[i.miss6] <- SBR.full.ori$nSB[i.miss6]/(SBR.full.ori$nSB[i.miss6]+SBR.full.ori$nLB[i.miss6])*1000
 
-
-
+#-------------------------------------#
+# if nSB=0  add 0.5, ntb+0.5          #
+#-------------------------------------#
+i.noSB <- which(SBR.full.ori$nSB==0)
+SBR.full.ori$nSB[i.noSB] <- SBR.full.ori$nSB[i.noSB] + 0.5
+SBR.full.ori$nTB[i.noSB] <- SBR.full.ori$nTB[i.noSB] + 0.5
+SBR.full.ori$SBR[i.noSB] <- 1000*SBR.full.ori$nSB[i.noSB]/SBR.full.ori$nTB[i.noSB] 
+SBR.full.ori$adj_sbr_unknown[i.noSB] <- 1000*SBR.full.ori$nSB[i.noSB]/SBR.full.ori$nTB[i.noSB] 
+############################################
 SBR.full2 <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
                              select(-notes) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
