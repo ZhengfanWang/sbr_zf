@@ -12,8 +12,6 @@ SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                                                            "duplicates, use BDR data",
                                                            "duplicates, use ge1000gORge28wks def",
                                                            "duplicates, use ge500gANDge28wks def")) %>% 
-                             #filter(exclude_sbrnmr_max==FALSE) %>% 
-                             ### AM: Use exclude_sbrnmr variable instead of max and pick up NAs and FALSEs
                              filter(exclude_sbrnmr==FALSE | is.na(exclude_sbrnmr)) %>%
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
