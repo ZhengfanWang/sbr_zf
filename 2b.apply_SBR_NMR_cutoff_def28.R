@@ -65,10 +65,11 @@ SBR.full.ratio <- full_data %>% rename(exclude_sbrnmr = exclusion_ratio ) %>%
 ##                                     but  exclude_sbrnmr_un_i=TRUE and exclude_sbrnmr_max_i=TRUE since NMR=0
 
 #in these cases apply the small country exclusion, to overwrite these probabilities as "FALSE" 
-SBR.full.ratio <- SBR.full.ratio %>% mutate(exclude_sbrnmr_max= replace(exclude_sbrnmr_max,exclude_sbrnmr_max==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
-                                            exclude_sbrnmr_obs = replace(exclude_sbrnmr_obs,exclude_sbrnmr_obs==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
-                                            exclude_sbrnmr_un = replace(exclude_sbrnmr_un,exclude_sbrnmr_un==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE),
-                                            exclude_sbrnmr = replace(exclude_sbrnmr,exclude_sbrnmr==TRUE & WPP_LB <= 30000 & (SBR==0 | NMR==0),FALSE))
+# zw: because I add 0.5 to nSB when nSB is 0. sO i change SBR=0 to nSB<1.
+SBR.full.ratio <- SBR.full.ratio %>% mutate(exclude_sbrnmr_max= replace(exclude_sbrnmr_max,exclude_sbrnmr_max==TRUE & WPP_LB <= 30000 & (nSB < 1 | NMR==0),FALSE),
+                                            exclude_sbrnmr_obs = replace(exclude_sbrnmr_obs,exclude_sbrnmr_obs==TRUE & WPP_LB <= 30000 & (nSB < 1  | NMR==0),FALSE),
+                                            exclude_sbrnmr_un = replace(exclude_sbrnmr_un,exclude_sbrnmr_un==TRUE & WPP_LB <= 30000 & (nSB < 1 | NMR==0),FALSE),
+                                            exclude_sbrnmr = replace(exclude_sbrnmr,exclude_sbrnmr==TRUE & WPP_LB <= 30000 & (nSB < 1  | NMR==0),FALSE))
 
 
 #table(SBR.full.ratio$exclusion_ratio)

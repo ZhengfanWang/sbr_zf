@@ -1,7 +1,7 @@
 #function to create standata for model
 
 covarMatrix <-function (covar,
-                        estyears=seq(2000,2018),
+                        estyears,
                         dataset=covarset){
   yearLength <- length(estyears)
   numcoun<- max(countryRegionList$country_idx)
@@ -18,14 +18,14 @@ standardize <- function(x){
   return((x-mean(x))/sd(x))
 }
 
-create_covar_array <- function(dataset = covarset , interest_cov){
+create_covar_array <- function(dataset = covarset , interest_cov,estyears){
   ncovar <- length(interest_cov)
   numcoun <- max(countryRegionList$country_idx)
   yearLength <- length(estyears)
   covararray <- array(NA, dim = c(ncovar,numcoun,yearLength))
   
   for(i in 1:ncovar){
-    covararray[i,,] <- standardize(covarMatrix(interest_cov[i]))
+    covararray[i,,] <- standardize(covarMatrix(interest_cov[i],estyears = estyears,dataset = covarset))
   }
   return(covararray)
 }

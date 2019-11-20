@@ -8,14 +8,14 @@
 #------------------------------------------#
 definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g","ge1000gANDge28wks")
 lmic <- c(0,1,0,1,0,1,0,1)
-def_bias <- c(0.3890,0.2157,NA,0.2660,-0.07,NA,0.27,NA)
-def_sd <- c(0.17240,0.08412,NA,0.11328,0.3,NA,0.3464,NA)
+def_bias <- c(0.3890,0.2157,NA,0.2660,-0.0710,NA,0.27,NA)
+def_sd <- c(0.17240,0.08412,NA,0.11328,0.06896,NA,0.3464,NA)
 
-def_adj_res <- data.frame(definition_rv=definition_rv,
+def_adj_output<- data.frame(definition_rv=definition_rv,
                           lmic=lmic,
                           def_bias=def_bias,
                           def_sd=def_sd)
-def_adj_res
+def_adj_output
 
 ## AM: Is the the right file to read in?
 ## ZW: Sorry, It is a example here.I should have made it clear. I use this to create data for stan model. I think it would be better to read in the output in "2b.apply_SBR_NMR_cutoff_value.R" or 

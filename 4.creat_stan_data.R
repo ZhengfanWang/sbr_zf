@@ -11,14 +11,14 @@ hs <- FALSE
 do.validation <- F
 ### input covariates
 
-int_cov <- c("gni","nmr","lbw","anc4","mean_edu")
+int_cov <- c("gni","nmr","lbw","anc4","mean_edu_f")
 if(hs == TRUE){
 int_cov <- c(int_cov,"exbf","gfr","gini","hdi","imr","u5mr","literacy_fem","ors","anc1","sab",
                  "underweight","stunting","u5pop","urban","dtp3","mcv","bcg","pab","hib3","rota_last","pcv3","sanitation","water")
 }
 
-covarset.raw <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')
-#covarset.nmr <- read.csv("input/covar/mcee_covariates_20191113.csv")
+#covarset.raw <- read_dta("input/covar/mcee_covariates_20190625.dta",encoding='latin1')
+covarset.raw <- read.csv("input/covar/sbr_igme_covariates_20191118.csv")
  
 covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>% 
                              dplyr::rename("iso"="iso3") %>% 
@@ -69,7 +69,7 @@ var_i = sbr2018_cleaned$SE.logsbr^2 + sbr2018_cleaned$def_sd^2
 getc.i <- sbr2018_cleaned$country_idx
 getr.c <- countryRegionList$shmdg2
 
-estyears<-seq(2000,2018)
+estyears<-seq(2000,2020)
 yearLength <- length(estyears)
 
 ###Basis matrix
@@ -80,7 +80,7 @@ splines.data <- getSplinesData(yearLength,I=1,order=1, degree = 2)
 gett.i<- sbr2018_cleaned$year-estyears[1]+1
 
 
-covar_array <- create_covar_array(interest_cov = int_cov)
+covar_array <- create_covar_array(interest_cov = int_cov,estyears = estyears)
 #X1 <- covarMatrix(int_cov[1])
 #X2 <- covarMatrix(int_cov[2])
 #X3 <- covarMatrix(int_cov[3])
