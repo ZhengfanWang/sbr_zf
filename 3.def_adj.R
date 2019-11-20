@@ -94,7 +94,7 @@ SBR.full <- SBR.full %>% filter(is.na(exclusion_notes))
 SBR.model <- SBR.full  %>% filter(!(definition_rv %in% c("any","not defined","unknownGA"))) %>% 
                            filter(source != "subnat.admin") %>% 
                            select(uniqueID,iso,country,year,source,shmdg2,lmic,definition_rv,definition_rv2,definition_raw,definition,
-                                 adj_sbr_unknown,country_idx,SE.logsbr,nLB,WPP_LB,NMR,UN_NMR) %>% 
+                                 adj_sbr_unknown,country_idx,SE.logsbr) %>% 
                            mutate(definition_rv2 = as.factor(definition_rv2),
                                   source = as.factor(source),
                                   duplicates = NA)
