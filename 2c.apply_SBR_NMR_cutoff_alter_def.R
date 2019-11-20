@@ -127,4 +127,4 @@ defadj_sbr2018$exclusion_ratio <- ifelse(defadj_sbr2018$defadj_exclude_sbrnmr==T
 #                                  filter(is.na(exclusion_ratio))
 # probably more filtering happens elswehere 
 
-
+saveRDS(defadj_sbr2018,"output/sbr2018_com_exclusion.rds")

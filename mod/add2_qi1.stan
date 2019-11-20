@@ -32,14 +32,13 @@ data{
 
 transformed data{
   real var_admin = 0.0025;
-  
 }
 
 parameters {
   
   vector[numcov] beta_tilde;
   //deviance part
-  real<upper=0> bias_dt[numsource-1];
+  real<upper=0> bias_dt;
   
   real<lower=0,upper=5> sigma_j[numsource];
   
@@ -71,9 +70,7 @@ transformed parameters {
     }}
   // source type bias
   for(i in 1:N){
-    bias_dt_i[i] = bias_dt[1]*datatype2_i[i]+
-                            0*datatype3_i[i]+
-                   bias_dt[3]*datatype4_i[i];
+    bias_dt_i[i] = bias_dt*datatype4_i[i];
     
     sigma_i[i] = sqrt(  var_j[1]*datatype1_i[i]+
                         var_j[2]*datatype2_i[i]+

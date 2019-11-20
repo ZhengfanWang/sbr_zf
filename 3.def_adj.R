@@ -172,21 +172,7 @@ summ1 <- summ %>% merge(tab,by = "definition") %>% arrange(desc(num_paired_obs))
 
 write.csv(summ1,"table/def_adj_num_paired_obs_exclustion_strict.csv")
 
-#-------------------------------------------------#
-#summary duplicates obs                           #
-#-------------------------------------------------#
-duplicates_obs <- SBR.model.f %>% filter(duplicates >=1) %>% filter(source == "admin")
-if(nrow(duplicates_obs)>0){
-write.csv(duplicates_obs,"table/duplicates.csv")
-}
-##############################################################
-#  plot
-############################################################
-model_data_list <- create_list_for_country(SBR.model.f) 
-pdf_name <- paste0("fig/exploratory_plot/model_data.pdf")
-pdf(pdf_name,width=12)
-model_data_list %>% lapply(exploratory_plot)
-dev.off()
+
 
 
 need_adj_list <- create_list_for_country(SBR.need.adj)

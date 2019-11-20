@@ -1,6 +1,6 @@
  
 sbr2018 <- readRDS("output/data_for_model.rds")
-sbr2018$definition_rv <- droplevels(sbr2018$definition_rv)
+sbr2018$definition_rv <- droplevels(as.factor(sbr2018$definition_rv))
 table(sbr2018$definition_rv)
 dim(sbr2018)
 names(sbr2018)
@@ -31,10 +31,10 @@ covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>%
 #------------------------------------------#
 # need updates input from def adj          #
 #------------------------------------------#
-definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g","ge1000gANDge28wks")
-lmic <- c(0,1,0,1,0,1,0,1)
-def_bias <- c(0.3890,0.2157,NA,0.2660,-0.07,NA,0.27,NA)
-def_sd <- c(0.17240,0.08412,NA,0.11328,0.3,NA,0.3464,NA)
+definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g")
+lmic <- c(0,1,0,1,0,1,0)
+def_bias <- c(0.3890,0.2157,NA,0.2660,-0.07,NA,0.27)
+def_sd <- c(0.17240,0.08412,NA,0.11328,0.3,NA,0.3464)
 
 def_adj_res <- data.frame(definition_rv=definition_rv,
                           lmic=lmic,
