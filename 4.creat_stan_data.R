@@ -40,7 +40,8 @@ def_adj_res <- data.frame(definition_rv=definition_rv,
                           lmic=lmic,
                           def_bias=def_bias,
                           def_sd=def_sd)
-def_adj_res
+
+
 sbr2018 <- right_join(def_adj_res,sbr2018,by = c("definition_rv","lmic"))
 
 definition_fac <- c("ge28wks",paste0(unique(def_adj_res$definition_rv[!is.na(def_adj_res$def_bias)])))
@@ -49,12 +50,6 @@ sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>%
                                mutate(def_sd = ifelse(is.na(def_sd),0,def_sd))
 
 
-
-#model_data_list <- create_list_for_country(sbr2018_cleaned) 
-#pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
-#pdf(pdf_name,width=12)
-#model_data_list %>% lapply(exploratory_plot)
-#dev.off()
 
 sbr2018_cleaned$source <- droplevels(as.factor(sbr2018_cleaned$source))
 sbr2018_cleaned$source2 <- as.numeric(sbr2018_cleaned$source)
@@ -67,10 +62,7 @@ table(sbr2018_cleaned$definition_rv)
 N = dim(sbr2018_cleaned)[1]
 
 getd.i <- as.numeric(sbr2018_cleaned$definition_rv)
-#deftype1.i <- ifelse(getd.i==1,1,0)
-#deftype2.i <- ifelse(getd.i==2,1,0)
-#deftype3.i <- ifelse(getd.i==3,1,0)
-#deftype4.i <- ifelse(getd.i==4,1,0)
+
 Y = log(sbr2018_cleaned$SBR) - sbr2018_cleaned$def_bias
 var_i = sbr2018_cleaned$SE.logsbr^2 + sbr2018_cleaned$def_sd^2 
 
@@ -136,4 +128,9 @@ saveRDS(stan.data,file = "output/stan.qi1.rds")
 
 
 
+#model_data_list <- create_list_for_country(sbr2018_cleaned) 
+#pdf_name <- paste0("fig/exploratory_plot/model_data_clean.pdf")
+#pdf(pdf_name,width=12)
+#model_data_list %>% lapply(exploratory_plot)
+#dev.off()
 

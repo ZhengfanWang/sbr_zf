@@ -18,6 +18,8 @@ def_adj_res <- data.frame(definition_rv=definition_rv,
 def_adj_res
 
 ## AM: Is the the right file to read in?
+## ZW: Sorry, It is a example here.I should have made it clear. I use this to create data for stan model. I think it would be better to read in the output in "2b.apply_SBR_NMR_cutoff_value.R" or 
+# the output of "2.merge&clean&plot_full_data.R"
 sbr2018 <- readRDS("output/data_for_model.rds")
 sbr2018 <- right_join(def_adj_res,sbr2018,by = c("definition_rv","lmic"))
 
@@ -65,7 +67,7 @@ defadj_exclude_sbrnmr_un_i <- (defadj_prob_un_i < cutoff_prob)
 defadj_prob_min_i <- map2_dbl(defadj_prob_un_i,defadj_prob_obs_i,min,na.rm=T)
 defadj_exclude_sbrnmr_max_i <- (defadj_prob_min_i < cutoff_prob)
 
-
+###ZW: do we need another column "defadj_exclude_sbrnmr..." or just use "exclude_sbrnmr"? Not sure. And we did not consider the uncertainty of def adj here.
 defadj_sbr2018_cleaned <- sbr2018_cleaned %>% mutate(defadj_sbr = adj_sbr) %>%
                                               mutate(defadj_sbr_se = sd_i) %>%
                                               mutate(defadj_exclude_sbrnmr = ifelse(is.na(NMR),defadj_exclude_sbrnmr_un_i,defadj_exclude_sbrnmr_obs_i)) %>%
@@ -85,6 +87,7 @@ defadj_sbr2018_cleaned <- defadj_sbr2018_cleaned %>% mutate(defadj_exclude_sbrnm
 
 ### AM: I'm not sure if to add it here, but there will need to be a filtering step (and any other manipulation) before
 ###     putting into Stan model. Added for now so we could see what to filter by
+## ZW: The output should be full set with complete "exclude_sbrnmr". Then I use the complete set to select observations for model.
 
 dataformodel <- defadj_sbr2018_cleaned %>% filter(defadj_exclude_sbrnmr==FALSE | is.na(defadj_exclude_sbrnmr)) 
 

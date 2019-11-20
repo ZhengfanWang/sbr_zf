@@ -1,25 +1,23 @@
-standata <- readRDS(file = "output/stan.qi1.rds")             ####  data used for fit model
 
-fit <- readRDS(file = "rdsoutput/add1_qi1.rds")                            ### fit result
-#fit <- readRDS(file = "rdsoutput/add2_qi1.rds") 
-fit <- readRDS(file = "rdsoutput/ref_qi1.rds")                            
 
-print(fit2, pars = c("bias_dt","sigma_j"))
-
+####################################      input   ########################################
+standata <- readRDS(file = "output/stan.qi1.rds")     #stan data used for fit model
+fit <- readRDS(file = "rdsoutput/1119/qi1.rds")       #stan fit 
+definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
+source_fac <- c("admin","HMIS","subnat LR","survey")
+###########################################################################################
+                         
 df <- rstan::extract(fit)
-#df2 <- rstan::extract(fit2)
-#dt_bias <- c(0,round(apply(df$bias_dt,2,mean),digits = 4))             ## get data type bias from fit
-#dt_variance <- c(0.0025,round((apply(df$var_j,2,mean)),digits = 4))         ## get data type variance from fit
 
-bias_dt_i <- apply(df$bias_dt_i,2,mean)
-sd_i <- apply(df$sigma_i,2,mean)
+bias_dt_i <- apply(df$bias_dt_i,2,median)
+sd_i <- apply(df$sigma_i,2,median)
 var_i <- sd_i^2
 mu_ct <- df$mu_ct +df$delta_ct                                  ### est mean
 getr_c <- standata$getr_c                                       
 
 muhat <-c()
-for(c in 1:195){
-  for(t in 1:19){
+for(c in 1:standata$numcountry){
+  for(t in 1:standata$yearLength){
     cache_mu_ct <- quantile(mu_ct[,c,t],c(0.025,0.5,0.975))
     cache_covar <- cache_mu_ct 
     cache_exp_mu_rt <- exp(cache_covar)
@@ -35,14 +33,13 @@ year <- rep(estyears,times=standata$numcountry)
 
 
 countryiso <- countryRegionList$iso                     #### run "iso.R" to get countryRegionList
-iso <- rep(countryiso,each=19)
+iso <- rep(countryiso,each=standata$yearLength)
 muhat <- data.frame(muhat,year,iso)
 
-class(muhat)
 country.list <- list()
 for(c in 1:standata$numcountry){
-  start.p <- (c-1)*19+1
-  country.list[[c]] <- muhat[start.p:(start.p+18),] %>% mutate(country = countryRegionList$country[c])
+  start.p <- (c-1)*standata$yearLength+1
+  country.list[[c]] <- muhat[start.p:(start.p+yearLength-1),] %>% mutate(country = countryRegionList$country[c])
 }
 
 #country.list
@@ -54,13 +51,8 @@ for(c in 2:standata$numcountry){
 
 fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 
-#write.csv(fit_result,"output/qi1.csv")
-
 ###########################################################################
-standata$getd_i
-standata$definition_rv
-definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
-source_fac <- c("admin","HMIS","subnat LR","survey")
+
 sbr2018 <- data.frame(logSBR = standata$unadj_Y )
 sbr2018$getj_i <- standata$getj_i
 sbr2018$getd_i <- standata$getd_i
@@ -74,7 +66,7 @@ sbr2018 <- merge(sbr2018,countryRegionList,by=c("country_idx"))
 
 ################################################
 
-####################################################
+########################  add this because want to make legend consistent.#############
 
 year.f <- c(1,2,3,4,5)
 logSBR.f <- rep(0,5)
@@ -84,7 +76,7 @@ fake.legend <- data.frame(year=year.f,logSBR=logSBR.f,logadjsbr=logsbradj.f,
                           source_name=c("admin",source_fac),definition_name=definition_fac) %>% 
   mutate(country = NA,iso = NA, country_idx = NA, var = rep(0.001,5), low = NA, muhat = NA, up = NA) %>% 
   select(country,iso,source_name,definition_name,country_idx,logSBR,logadjsbr, year, var, low, muhat,up)
-
+######################################################################################################
 
 point.list <- list()
 for(c in 1:standata$numcountry){
@@ -136,7 +128,7 @@ check <- function(dat.list){
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/ref_qi1.pdf")
+pdf_name <- paste0("fig/qi1.pdf")
 pdf(pdf_name, width = 10, height = 5)
 point.list %>% lapply(check)
 dev.off()
