@@ -6,10 +6,10 @@
 # need updates input from def adj          #
 #------------------------------------------#
 
-set_definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g","ge1000gANDge28wks")
-lmic <- c(0,1,0,1,0,1,0,1)
-def_bias <- c(0.3890,0.2157,NA,0.2660,-0.0710,NA,0.27,NA)
-def_sd <- c(0.17240,0.08412,NA,0.11328,0.06896,NA,0.3464,NA)
+set_definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g")
+lmic <- c(0,1,0,1,0,1,0)
+def_bias <- c(0.3890,0.2157,0.2660,0.2660,-0.07,NA,0.27)
+def_sd <- c(0.17240,0.08412,0.11328,0.11328,0.3,NA,0.3464)
 
 
 def_adj_output<- data.frame(definition_rv=set_definition_rv,
@@ -128,3 +128,4 @@ defadj_sbr2018$exclusion_ratio <- ifelse(defadj_sbr2018$defadj_exclude_sbrnmr==T
 # probably more filtering happens elswehere 
 
 saveRDS(defadj_sbr2018,"output/sbr2018_com_exclusion.rds")
+

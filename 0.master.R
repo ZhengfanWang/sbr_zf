@@ -44,6 +44,7 @@ source("2.study_SBR_NMR_cutoff_value.R")
 
 # exclusion based on SBR:NMR ratio 
 source("2b.apply_SBR_NMR_cutoff_def28.R")
+source("2c.apply_SBR_NMR_cutoff_alter_def.R")
 
 #----------------------------------------------------------------------------------------#
 #############          3. definition adjustment                      #####################
@@ -57,13 +58,14 @@ source("3.def_adj.R")
 #source("3.comp_cutoff_for_non28wks_def.R")
 
 ##### new approach may applied here
-source("3.def_adj_reg.R")  ### it is old approach
+#source("3.def_adj_reg.R")  ### it is old approach
 
 #----------------------------------------------------------------------------------------#
 #############          4. Process  model  fit                          ###################
 #----------------------------------------------------------------------------------------#
-source("4.creat_stan_data.R")
-source("fit_model")
+source("4a.create_model_data.R")
+source("4b.creat_stan_data.R")
+source("4c.fit_model")
 
 #----------------------------------------------------------------------------------------#
 #############          5. model check and others                              ############

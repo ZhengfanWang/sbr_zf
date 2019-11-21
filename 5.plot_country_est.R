@@ -2,7 +2,7 @@
 
 ####################################      input   ########################################
 standata <- readRDS(file = "output/stan.qi1.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/1119/qi1.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/add2_qi1.rds")       #stan fit 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
 ###########################################################################################
@@ -111,7 +111,7 @@ check <- function(dat.list){
     geom_point(aes(x = year, y = exp(logadjsbr), colour = definition_name,shape = source_name), size =3, data = point_dat)+
 
     
-    scale_x_continuous(name = 'Time', breaks = estyears, minor_breaks = NULL, limits = c(2000,2018)) +
+    scale_x_continuous(name = 'Time', breaks = estyears, minor_breaks = NULL, limits = c(2000,2020)) +
     scale_y_continuous(name = 'Stillbirth Rate') +
     labs(title = plot_title) +
     theme(plot.title = element_text(hjust = 0.5, size = 30, face = 'bold'),

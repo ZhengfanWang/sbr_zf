@@ -7,7 +7,7 @@ names(sbr2018)
 
 ########################################################
 
-hs <- TRUE
+hs <- F
 do.validation <- F
 ### input covariates
 
@@ -32,8 +32,8 @@ covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>%
 #------------------------------------------#
 definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g")
 lmic <- c(0,1,0,1,0,1,0)
-def_bias <- c(0.3890,0.2157,NA,0.2660,-0.07,NA,0.27)
-def_sd <- c(0.17240,0.08412,NA,0.11328,0.3,NA,0.3464)
+def_bias <- c(0.3890,0.2157,0.2660,0.2660,-0.07,NA,0.27)
+def_sd <- c(0.17240,0.08412,0.11328,0.11328,0.3,NA,0.3464)
 
 def_adj_res <- data.frame(definition_rv=definition_rv,
                           lmic=lmic,

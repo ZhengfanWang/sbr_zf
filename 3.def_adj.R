@@ -18,7 +18,6 @@ SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 SBR.full.lmic <- SBR.full %>% filter(lmic == 1) %>% 
-                              filter(exclusion_ratio)
                               filter(source != "survey")
 
 SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>% 
