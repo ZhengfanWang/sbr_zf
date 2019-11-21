@@ -1,19 +1,20 @@
 
 
-fit <- readRDS(file = "rdsoutput/1119/qi1.rds")
+fit <- readRDS(file = "rdsoutput/1121_qi1.rds")
 fit2 <- readRDS(file = "rdsoutput/qi1.rds")
 
 
 
 ################################################
 
-get_chain_result <- function(fit,smooth = TRUE){
+get_chain_result <- function(fit,smooth = TRUE, estyears = seq(2000,2020)){
   df <- rstan::extract(fit)
+  yearLength <- length(estyears)
   muhat <-c()
   if(smooth == TRUE){
   mu_ct <- df$mu_ct + df$delta_ct
     for(c in 1:195){
-    for(t in 1:19){
+    for(t in 1:yearLength){
       
       muhat <- rbind(muhat,exp(quantile(mu_ct[,c,t],c(.025,.5,.975))))
       
@@ -22,7 +23,7 @@ get_chain_result <- function(fit,smooth = TRUE){
     mu_ct <- df$mu_ct
     gamma_c <- df$gamma_c
     for(c in 1:195){
-      for(t in 1:19){
+      for(t in 1:yearLength){
         
         muhat <- rbind(muhat,exp(quantile(mu_ct[,c,t]+gamma_c[,c],c(.025,.5,.975))))
         
@@ -34,15 +35,14 @@ get_chain_result <- function(fit,smooth = TRUE){
   
   colnames(muhat) <- c("low","muhat","up")
   
-  estyears <- seq(2000,2018)
   year <- rep(estyears,times=195)
   muhat <- as.data.frame(cbind(muhat,year))
   
   class(muhat)
   country.list <- list()
   for(c in 1:195){
-    start.p <- (c-1)*19+1
-    country.list[[c]] <- muhat[start.p:(start.p+18),] %>% mutate(country = countryRegionList$country[c])
+    start.p <- (c-1)*yearLength+1
+    country.list[[c]] <- muhat[start.p:(start.p+yearLength-1),] %>% mutate(country = countryRegionList$country[c])
   }
 
   return(country.list)

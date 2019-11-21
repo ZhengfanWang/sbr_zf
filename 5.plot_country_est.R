@@ -2,7 +2,7 @@
 
 ####################################      input   ########################################
 standata <- readRDS(file = "output/stan.qi1.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/add2_qi1.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/1121_qi1.rds")       #stan fit 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
 ###########################################################################################
@@ -39,7 +39,7 @@ muhat <- data.frame(muhat,year,iso)
 country.list <- list()
 for(c in 1:standata$numcountry){
   start.p <- (c-1)*standata$yearLength+1
-  country.list[[c]] <- muhat[start.p:(start.p+yearLength-1),] %>% mutate(country = countryRegionList$country[c])
+  country.list[[c]] <- muhat[start.p:(start.p+standata$yearLength-1),] %>% mutate(country = countryRegionList$country[c])
 }
 
 #country.list

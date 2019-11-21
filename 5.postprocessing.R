@@ -1,14 +1,14 @@
-fit <- readRDS("rdsoutput/1119/qi1.rds")
-fit2 <- readRDS("rdsoutput/1119/ref_qi1.rds")
+fit <- readRDS("rdsoutput/1121_qi1.rds")
+#fit2 <- readRDS("rdsoutput/1119/ref_qi1.rds")
 standata <- readRDS("output/stan.qi1.rds")
 mcmc.array <- rstan::extract(fit)
-mcmc.array2 <- rstan::extract(fit2)
+#mcmc.array2 <- rstan::extract(fit2)
 
 #--------------------------------#
 #     source type summary table  #
 #--------------------------------#
 source_type <- c("admin","HMIS","subnat LR","survey")
-source_type_bias <- c(0,median(mcmc.array$bias_dt[,1]),0,median(mcmc.array$bias_dt[,3]))
+source_type_bias <- c(0,0,0,median(mcmc.array$bias_dt))
 source_type_sd <- sqrt(apply(mcmc.array$var_j,2,median))        
 ## note: current assumption: 0 bias for admin and subnat LR. estimate bias for HMIS and survey with prior N(0,5^2)T[,0]
 ##                           estimate source type variance
@@ -18,7 +18,7 @@ source_summ <- data.frame(source = source_type,
 source_summ
 write.csv(source_summ,"table/source summary.csv")
 
-#hist(mcmc.array$bias_dt[,1],main = "posterior sample HMIS bias",xlab = "posterior sample",breaks = 40)
+hist(mcmc.array$bias_dt,main = "posterior sample HMIS bias",xlab = "posterior sample",breaks = 40)
 #hist(mcmc.array$bias_dt[,3],main = "posterior sample survey bias",xlab = "posterior sample",breaks = 40)
 #------------------------------------------------#
 #   country -year estimates and 95% uncertainity  #
