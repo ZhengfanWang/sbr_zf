@@ -20,6 +20,20 @@ write.csv(source_summ,"table/source summary.csv")
 
 hist(mcmc.array$bias_dt,main = "posterior sample HMIS bias",xlab = "posterior sample",breaks = 40)
 #hist(mcmc.array$bias_dt[,3],main = "posterior sample survey bias",xlab = "posterior sample",breaks = 40)
+
+#--------------------------------#
+#  summary     covariates table  #
+#--------------------------------#
+
+
+int_cov <- c("gni","nmr","lbw","anc4","mean_edu_f")
+betas <- round(apply(mcmc.array$beta,2,median),digits = 3)
+sd <- round(apply(mcmc.array$beta,2,sd),digits = 3)
+ci <- t(round(apply(mcmc.array$beta,2,quantile,c(0.025,0.975)),digits = 3))
+covar_summ <- as.data.frame(cbind(int_cov,betas,sd,ci))
+colnames(covar_summ) <- c("covariates","estimates","sd","2.5%","97.%%")
+covar_summ
+write.csv(covar_summ,"table/covariates summary.csv")
 #------------------------------------------------#
 #   country -year estimates and 95% uncertainity  #
 #------------------------------------------------#
