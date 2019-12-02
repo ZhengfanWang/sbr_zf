@@ -23,7 +23,6 @@ data{
     
     real<lower=0> var_i[N];              // sampling error^2
   
-  
   //input data  spline
   int<lower=0> K;                  //number of basis
   int<lower=0> H;

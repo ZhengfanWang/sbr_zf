@@ -7,7 +7,7 @@ names(sbr2018)
 
 ########################################################
 
-hs <- F
+hs <- T
 do.validation <- F
 ### input covariates
 
@@ -32,8 +32,8 @@ covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>%
 #------------------------------------------#
 definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g")
 lmic <- c(0,1,0,1,0,1,0)
-def_bias <- c(0.3890,0.2157,0.2660,0.2660,-0.07,NA,0.27)
-def_sd <- c(0.17240,0.08412,0.11328,0.11328,0.3,NA,0.3464)
+def_bias <- c(0.3890,0.2141,0.2664,0.2664,-0.0711,NA,0.2661)
+def_sd <- c(0.17240,0.0844,0.1122,0.1122,0.0688,NA,0.1326)
 
 def_adj_res <- data.frame(definition_rv=definition_rv,
                           lmic=lmic,
@@ -120,10 +120,10 @@ if (!do.validation){
 }
 
 stan.data$ntrain <- length(stan.data$getitrain_k)
-saveRDS(stan.data,file = "output/stan.qi1.rds")
 
-
-saveRDS(stan.data,file = "output/stan.qi1.hs.rds")
+if(hs <- F){
+saveRDS(stan.data,file = "output/stan.qi1.rds")}else{
+saveRDS(stan.data,file = "output/stan.qi1.hs.rds")}
 
 
 

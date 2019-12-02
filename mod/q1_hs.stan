@@ -3,7 +3,6 @@ data{
   int<lower=0> numcov; //number of preidctors
   int<lower=0> numcountry; // number of countries
   int<lower=0> numregion; // number of regions
-  int<lower=0> numdef; //number of definitions
   int<lower=0> numsource; // num of source type
   int<lower=0> yearLength; //number of est year
   int<lower=0> ntrain;  //loo 
@@ -12,7 +11,6 @@ data{
   int<lower=0,upper=numcountry> getc_i[N];          // country for given obs
   int<lower=0,upper=numregion> getr_c[numcountry];  // vector of region given country
   int<lower=1,upper=yearLength> gett_i[N];       // time for given obs
-  int<lower=0,upper=numdef> getd_i[N];                // definition type for given obs
   int<lower=0> getitrain_k[ntrain];              // loo or not
   
   //source type indicator variable
@@ -21,16 +19,7 @@ data{
   int <lower=0,upper=1> datatype3_i[N];        //subnat.lr
   int <lower=0,upper=1> datatype4_i[N];        //survey
   
-  //def type indicator variable
-  int <lower=0,upper=1> deftype1_i[N];
-  int <lower=0,upper=1> deftype2_i[N];
-  int <lower=0,upper=1> deftype3_i[N];
-  int <lower=0,upper=1> deftype4_i[N];
-
-  real covar_array[numcov,numcountry,yearLength];   //coariates array: super slow!!!!!!!
-   
-  vector[numdef] eta_d;               // definition adjustment bias
-  real<lower=0> phi_d[numdef];               // definition adjustment var
+  real covar_array[numcov,numcountry,yearLength];   //coariates array
 
   real<lower=0> var_i[N];              // sampling error^2
 
@@ -40,25 +29,16 @@ data{
   matrix[yearLength,H] Z_th;
 }
 
-
 transformed data{
   real slab_scale = 3;
   real nu_local = 1;
   real nu_global =1;
   real scale_global = 0.333;
   real slab_df = 3;
-  //def bias
-  vector[N] bias_def_i;
-  for(i in 1:N){
-    bias_def_i[i] = eta_d[1]*deftype1_i[i]+
-                    eta_d[2]*deftype2_i[i]+
-                    eta_d[3]*deftype3_i[i]+
-                    eta_d[4]*deftype4_i[i];}
 }
 
 parameters {
-  
-  //mean part
+    //mean part
   //hs prior
   real<lower=0> tau;
   vector<lower=0>[numcov] lambda;
@@ -66,9 +46,8 @@ parameters {
   vector[numcov] beta_tilde;
   
   //deviance part
-  vector[numsource-1] bias_dt_tilde;
-
-  real<lower=0,upper=5> sigma_j[numsource-1];
+  real<upper=0> bias_dt;
+  real<lower=0,upper=5> sigma_j[numsource];
 
   real<lower=0,upper=5> sigma_c;
 
@@ -84,17 +63,16 @@ transformed parameters {
   vector[numcov] beta;
   vector<lower=0>[numcov] lambda_tilde;
   real<lower=0> cc;
-  vector[numsource-1] bias_dt = bias_dt_tilde *5;
   matrix[numcountry,yearLength] mu_ct;
   real bias_dt_i[N];
   real sigma_i[N];
   matrix[numcountry,yearLength] delta_ct;
-  real<lower=0> var_j[numsource-1];
+  real<lower=0> var_j[numsource];
   
    cc = slab_scale * sqrt(caux);
    lambda_tilde = sqrt(cc^2 * square(lambda) ./ (cc^2 + tau^2 *square(lambda)));
    beta = beta_tilde .* lambda_tilde * tau;
-  for(j in 1:(numsource-1)){
+  for(j in 1:(numsource)){
     var_j[j]= square(sigma_j[j]);}
   
   for(c in 1:numcountry){
@@ -103,15 +81,13 @@ transformed parameters {
     }}
   
   for(i in 1:N){
-    bias_dt_i[i] = bias_dt[1]*datatype2_i[i]+
-                   bias_dt[2]*datatype3_i[i]+
-                   bias_dt[3]*datatype4_i[i];
+    bias_dt_i[i] = bias_dt*datatype4_i[i];
 
-    sigma_i[i] = sqrt(  0.0025*datatype1_i[i]+
-                      var_j[1]*datatype2_i[i]+
-                      var_j[2]*datatype3_i[i]+
-                      var_j[3]*datatype4_i[i]+
-                      var_i[i] + phi_d[getd_i[i]]);
+    sigma_i[i] = sqrt(var_j[1]*datatype1_i[i]+
+                      var_j[2]*datatype2_i[i]+
+                      var_j[3]*datatype3_i[i]+
+                      var_j[4]*datatype4_i[i]+
+                      var_i[i]);
   }
   for(c in 1:numcountry){
     for(t in 1:yearLength){
@@ -140,7 +116,7 @@ model {
   }
   
   //bias part
-  bias_dt_tilde ~ normal(0,1);// source type bias part
+  bias_dt ~ normal(0,5);// source type bias part
   
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)
   
@@ -148,7 +124,6 @@ model {
   for(k in 1:ntrain){
     Y[getitrain_k[k]] ~ normal(mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
                   + bias_dt_i[getitrain_k[k]]
-                  + bias_def_i[getitrain_k[k]]
                   + delta_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
                   ,
                   sigma_i[getitrain_k[k]]);
@@ -160,12 +135,10 @@ generated quantities{
   vector[N] prep;
 for (i in 1:N) log_lik[i] = normal_lpdf(Y[i] | mu_ct[getc_i[i],gett_i[i]]
                   + bias_dt_i[i]
-                  + bias_def_i[i]
                   + delta_ct[getc_i[i],gett_i[i]], 
                   sigma_i[i]);
 for (i in 1:N) prep[i] = normal_rng(mu_ct[getc_i[i],gett_i[i]]
                   + bias_dt_i[i]
-                  + bias_def_i[i]
                   + delta_ct[getc_i[i],gett_i[i]], 
                   sigma_i[i]);   
 }
