@@ -127,5 +127,7 @@ defadj_sbr2018$exclusion_ratio <- ifelse(defadj_sbr2018$defadj_exclude_sbrnmr==T
 #                                  filter(is.na(exclusion_ratio))
 # probably more filtering happens elswehere 
 
-saveRDS(defadj_sbr2018,"output/sbr2018_com_exclusion.rds")
+## AM: Should we call this "fullset"? Because I think the new exclusion ratio column is not getting saved 
+write.csv(SBR.full.ratio,"output/fullset.csv")
+saveRDS(SBR.full.ratio,"output/fullset.rds")
 
