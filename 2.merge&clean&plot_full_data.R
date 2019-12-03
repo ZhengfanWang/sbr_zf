@@ -52,7 +52,7 @@ SBR.full.ori$nTB[i.noSB] <- SBR.full.ori$nTB[i.noSB] + 0.5
 SBR.full.ori$SBR[i.noSB] <- 1000*SBR.full.ori$nSB[i.noSB]/SBR.full.ori$nTB[i.noSB] 
 SBR.full.ori$adj_sbr_unknown[i.noSB] <- 1000*SBR.full.ori$nSB[i.noSB]/SBR.full.ori$nTB[i.noSB] 
 ############################################
-SBR.full2 <- SBR.full.ori %>% merge(countryRegionList, by = c("iso","country")) %>% 
+SBR.full2 <- SBR.full.ori %>% merge(countryRegionList[,!names(countryRegionList) %in% "country"], by = c("iso")) %>% 
                               select(-notes) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "s40wksANDge28wks", "ge28wks")) %>% 
                              mutate(adj_sbr_unknown = ifelse(is.na(adj_sbr_unknown),SBR,adj_sbr_unknown),
