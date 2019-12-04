@@ -2,7 +2,7 @@
 # Last modified: Oct.22.2019
 
 ##read subnational lit review 
-subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_2019-11-12.xlsx", sheet =  3, startRow = 2) # read in subnation data
+subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_2019-11-22.xlsx", sheet =  3, startRow = 2) # read in subnation data
 
 #save(subnat_lit_rv.ori,file = "input/rdata/subnat_lit_rv.ori.rdata")
 subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",

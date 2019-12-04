@@ -1,5 +1,5 @@
 #load data
-SBR.full.ori <- readRDS("output/sbr2018_com_exclusion.rds")
+SBR.full.ori <- readRDS("output/fullset.rds")
 SBR.full.ori$lmic[SBR.full.ori$iso == "COK"] <- 1
 
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)) %>% 
