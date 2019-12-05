@@ -1,7 +1,7 @@
 
 
 fit <- readRDS(file = "rdsoutput/1121_qi1.rds")
-fit2 <- readRDS(file = "rdsoutput/qi1.rds")
+fit2 <- readRDS(file = "rdsoutput/1121_qi1.rds")
 
 
 
@@ -55,7 +55,7 @@ Pspline2_country_list <- get_chain_result(fit,smooth = FALSE)
 
 ####################################################################
 
-standata <- readRDS(file = "output/stan.qi1.rds")
+standata <- readRDS(file = "output/stan.qi1.hs.rds")
 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
@@ -156,7 +156,7 @@ compare_plot <- function(dat.list){
 
 normal_keep_ex[[1]]
 
-pdf_name <- paste0("fig/cov&fit.pdf")
+pdf_name <- paste0("fig/HS_fit&cov.pdf")
 pdf(pdf_name, width = 8, height = 5)
 normal_keep_ex %>% lapply(compare_plot)
 dev.off()

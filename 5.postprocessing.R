@@ -1,6 +1,6 @@
-fit <- readRDS("rdsoutput/1121_qi1.rds")
+fit <- readRDS("rdsoutput/qi1.hs.rds")
 #fit2 <- readRDS("rdsoutput/1119/ref_qi1.rds")
-standata <- readRDS("output/stan.qi1.rds")
+standata <- readRDS("output/stan.qi1.hs.rds")
 mcmc.array <- rstan::extract(fit)
 #mcmc.array2 <- rstan::extract(fit2)
 
@@ -24,16 +24,20 @@ hist(mcmc.array$bias_dt,main = "posterior sample HMIS bias",xlab = "posterior sa
 #--------------------------------#
 #  summary     covariates table  #
 #--------------------------------#
-
-
+hs <- T
 int_cov <- c("gni","nmr","lbw","anc4","mean_edu_f")
+if(hs == TRUE){
+  int_cov <- c(int_cov,"gini","urban","gfr","sab","anc1","abr","csec","pab")
+}# ,"pfpr""gdp","mmr", have missing
+
 betas <- round(apply(mcmc.array$beta,2,median),digits = 3)
 sd <- round(apply(mcmc.array$beta,2,sd),digits = 3)
 ci <- t(round(apply(mcmc.array$beta,2,quantile,c(0.025,0.975)),digits = 3))
 covar_summ <- as.data.frame(cbind(int_cov,betas,sd,ci))
 colnames(covar_summ) <- c("covariates","estimates","sd","2.5%","97.%%")
 covar_summ
-write.csv(covar_summ,"table/covariates summary.csv")
+
+write.csv(covar_summ,"table/HS covariates summary.csv")
 #------------------------------------------------#
 #   country -year estimates and 95% uncertainity  #
 #------------------------------------------------#
