@@ -1,8 +1,8 @@
 
 
 ####################################      input   ########################################
-standata <- readRDS(file = "output/stan.qi1.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/1121_qi1.rds")       #stan fit 
+standata <- readRDS(file = "output/stan.qi1.hs.rds")     #stan data used for fit model
+fit <- readRDS(file = "rdsoutput/qi1.hs.rds")       #stan fit 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
 ###########################################################################################
@@ -124,7 +124,7 @@ check <- function(dat.list){
   ylower <- min(point_dat$lowunc,na.rm = T)
   ave <- mean(cis.tq$muhat,na.rm=T)
  if(yupper-ylower>20){
-    est_plot <- est_plot + coord_cartesian(ylim= c(max(0,ave-15),ave+15), xlim = c(1999.5,2018.5),expand = FALSE)
+    est_plot <- est_plot + coord_cartesian(ylim= c(max(0,ave-15),ave+15), xlim = c(1999.5,2020.5),expand = FALSE)
   }
   return(est_plot)
 }
