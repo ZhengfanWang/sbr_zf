@@ -10,43 +10,26 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## LOOCV
 
-```{r message=FALSE, echo=FALSE, warning=FALSE}
+```{r message=FALSE, echo=FALSE, warning=FALSE, error=FALSE}
 library("rstanarm")
 library("bayesplot")
 library("loo")
-fit.ref <- readRDS("rdsoutput/ref_qi1.rds")
-fit.add1 <- readRDS("rdsoutput/add1_qi1.rds")
-fit.add2 <- readRDS("rdsoutput/add2_qi1.rds")
-
+fit.ref <- readRDS("rdsoutput/qi1.hs.rds")
+standata <- readRDS("output/stan.qi1.hs.rds")
+chain <- rstan::extract(fit.ref)
+dim(chain$log_lik)
 loo.ref <- loo(fit.ref)
-loo.add1 <- loo(fit.add1)
-loo.add2 <- loo(fit.add2)
+print(loo.ref)
+plot(loo.ref)
 
-```
+y <- standata$Y
+yrep <- chain$prep
+loo1 <- loo(fit.ref, save_psis = TRUE, cores = 4)
+psis1 <- loo1$psis_object
+lw <- weights(psis1)
+color_scheme_set("orange")
+ppc_loo_pit_overlay(y, yrep, lw = lw)
 
-
-```{r warnings = FALSE,message=FALSE}
-compare(loo.add1,loo.ref)
-```
-Here $elpd_diff-2se$ does not include zero, and the difference is postive, hence the model(cubic $I=1$) is preferred. 
-```{r warnings= FALSE, message=FALSE}
-compare(loo.add2,loo.ref)
-```
-Here $elpd_diff-2se$ does not include zero, and the difference is postive, hence the model(quadratic $I=1$) is preferred. But it seems less smooth.
-
-Pareto k diagnostic for 4 models are listed as following, where $c2.5$ means cubic splines with interval length 2.5 years, $q1$ means quadratic splines with interval length 1 year.
-```{r}
-print(loo.c2.5)
-print(loo.q2.5)
-print(loo.c1)
-print(loo.q1)
-
-
-
-plot(loo.c2.5)
-plot(loo.q2.5)
-plot(loo.c1)
-plot(loo.q1)
 
 ```
 

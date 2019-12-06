@@ -1,7 +1,7 @@
 
 
 fit <- readRDS(file = "rdsoutput/1121_qi1.rds")
-fit2 <- readRDS(file = "rdsoutput/1121_qi1.rds")
+fit2 <- readRDS(file = "rdsoutput/qi1.hs.rds")
 
 
 
@@ -49,8 +49,8 @@ get_chain_result <- function(fit,smooth = TRUE, estyears = seq(2000,2020)){
 }
 
 
-Pspline1_country_list <- get_chain_result(fit,smooth = TRUE)
-Pspline2_country_list <- get_chain_result(fit,smooth = FALSE)
+Pspline1_country_list <- get_chain_result(fit,smooth = FALSE)
+Pspline2_country_list <- get_chain_result(fit2,smooth = FALSE)
 
 
 ####################################################################
@@ -119,7 +119,7 @@ compare.plot.list <- function(set1,set2,name){
   return(finalplot.list)
 }
 #example
-normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("fit","cov"))
+normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("covbase","covhs"))
 normal_keep_ex[[1]]
 #########################################################
 
