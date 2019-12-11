@@ -25,12 +25,12 @@ sbr2018 <- readRDS("output/fullset.rds")
 
 ## AM: should this be added here, so that lmic with 500g or 1000g definitions 
 ##     that get changed, are getting these definitional adjustments and thne 
-##     the SBR/NMR ratio exclusion is based on that?
-sbr2018 <- sbr2018 %>% 
-  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
-  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
-  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
-  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
+##     the SBR/NMR ratio exclusion is based on that? ACTUALLY I THINK MOVING THIS HERE CAUSES SOME ISSUES 
+##sbr2018 <- sbr2018 %>% 
+##  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
+##  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
+##  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
+##  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 
 sbr2018 <- right_join(def_adj_output,sbr2018,by = c("definition_rv","lmic"))
 
