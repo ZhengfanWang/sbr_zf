@@ -25,14 +25,15 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
                              source="subnat.LR",
                              exclusion_notes=NA) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
-                      mutate(exclusion_notes = replace(exclusion_notes,!is.na(exclude),"exclude by exclude col")) %>% 
+                      mutate(exclusion_notes = replace(exclusion_notes,!is.na(exclude),"exclude by exclude col")) %>%
+                      mutate(exclude_col = ifelse(!is.na(exclude),"exclude by exclude col",NA)) %>% 
                       mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
                       mutate(NMR = ifelse(is.na(NMR),nNM/nLB*1000,NMR)) %>% 
                       mutate(rSN = SBR/NMR,
                              rSN_UN = SBR/UN_NMR) %>%
                       select("uniqueID","country","iso","region","year","source","context","definition","SBR",
                              "nSB","nTB","nLB","nNM","NMR","rSN","rSN_UN","UN_NMR",
-                             "notes","source_name","exclusion_notes") # now 164 obs
+                             "notes","source_name","exclusion_notes","exclude_col") # now 164 obs
 
 
 # definitions                
@@ -47,29 +48,29 @@ levels(subnat.full$definition) <- c("ge28wks","ge1000g","ge1000gANDge28wks","ge1
 
 
 ############################
-#revalue code does not work for "≥" 
+#revalue code does not work for "â¥" 
 if(FALSE){
 definition.cleaned2 <- plyr::revalue(subnat.full$definition,
-                                 c("≥ 28 weeks"="ge28wks",
-                                 "≥1000g"="ge1000g",
-                                 "≥1000g and ≥28 weeks"="ge1000gANDge28wks",
-                                 "≥1000g or ≥28wks"="ge1000gORge28wks",
-                                 "≥20 weeks"="ge20wks",
-                                 "≥20wks"="ge20wks",
-                                 "≥20wks or ≥500g"="ge500gORge20wks",
-                                 "≥22weeks"="ge22wks",
-                                 "≥22wks or ≥500g"="ge500gORge22wks",
-                                 "≥24 weeks"="ge24wks",
-                                 "≥24wks"="ge24wks",
-                                 "≥26wks or ≥1000g"="ge1000gORge26wks",
-                                 "≥28 and <40wks"="le40wksANDge28",
-                                 "≥28 weeks"="ge28wks",
-                                 "≥28wks"="ge28wks",
-                                 "≥28wks or ≥1000g"="ge1000gORge28wks",
-                                 "≥500g"="ge500g",
-                                 "≥500g or ≥22weeks"="ge500gORge22wks",
-                                 "≥6 months"="ge24wks",
-                                 "≥7 months"="ge28wks",
+                                 c("â¥ 28 weeks"="ge28wks",
+                                 "â¥1000g"="ge1000g",
+                                 "â¥1000g and â¥28 weeks"="ge1000gANDge28wks",
+                                 "â¥1000g or â¥28wks"="ge1000gORge28wks",
+                                 "â¥20 weeks"="ge20wks",
+                                 "â¥20wks"="ge20wks",
+                                 "â¥20wks or â¥500g"="ge500gORge20wks",
+                                 "â¥22weeks"="ge22wks",
+                                 "â¥22wks or â¥500g"="ge500gORge22wks",
+                                 "â¥24 weeks"="ge24wks",
+                                 "â¥24wks"="ge24wks",
+                                 "â¥26wks or â¥1000g"="ge1000gORge26wks",
+                                 "â¥28 and <40wks"="le40wksANDge28",
+                                 "â¥28 weeks"="ge28wks",
+                                 "â¥28wks"="ge28wks",
+                                 "â¥28wks or â¥1000g"="ge1000gORge28wks",
+                                 "â¥500g"="ge500g",
+                                 "â¥500g or â¥22weeks"="ge500gORge22wks",
+                                 "â¥6 months"="ge24wks",
+                                 "â¥7 months"="ge28wks",
                                  "any gest"="any",
                                  "other or not defined"="not defined")
                                  )
@@ -82,7 +83,7 @@ levels(subnat.full$context) <- c("HF min bias","pop based","pop based")
 subnat.full <- subnat.full %>% mutate(adj_sbr_unknown = NA, prop_unknown = NA, definition_rv = definition, WPP_LB = NA) %>% 
                                select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                       "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","nNM","NMR",
-                                      "UN_NMR","rSN","rSN_UN","notes","exclusion_notes") %>%
+                                      "UN_NMR","rSN","rSN_UN","notes","exclusion_notes","exclude_col") %>%
                                arrange(iso,year) # now 141 obs
 
 saveRDS(subnat.full, "output/subnat.lit.rv.full.rds")
@@ -92,7 +93,7 @@ saveRDS(subnat.full, "output/subnat.lit.rv.full.rds")
 #   survey    #
 #-------------#
 ##read survey data
-survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2019-11-12.xlsx", sheet = 1) # read in survey
+survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2019-12-11.xlsx", sheet = 1) # read in survey
 
 survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code",
                                 "year"="ReferenceDate", 
@@ -111,10 +112,12 @@ survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code"
                               mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>% 
                               mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>% 
                               mutate(exclusion_notes = replace(exclusion_notes,model_include==0,"U5MR model exclude")) %>% 
+                              mutate(exclude_col = ifelse(model_include==0,"U5MR model exclude",NA)) %>%
                               select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
                                      "SBR","adj_sbr_unknown","prop_unknown","nSB","nTB","nLB","WPP_LB","nNM","NMR","UN_NMR","rSN","rSN_UN",
-                                     "notes","exclusion_notes") 
+                                     "notes","exclusion_notes","exclude_col") 
 
 saveRDS(survey.full, "output/survey.full.rds")
+
 
 
