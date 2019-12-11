@@ -53,8 +53,7 @@ exclude_sbrnmr_un_i <- (prob_un_i < cutoff_prob)
 ## AM: After talking to Lucia, I think we should use the "exclude_sbrnmr" variable for exclusion in first round
 ##     which only uses UN IGME-NMR based exclusion rule if obs NMR is missing. Creating that variable here
 ##     and using it for filtering step in 3.def_adj script. 
-SBR.full.ratio <- full_data %>% rename(exclude_sbrnmr = exclusion_ratio ) %>% 
-                                mutate(exclude_sbrnmr = ifelse(is.na(NMR) | source %in% c("HMIS","subnat.LR"),exclude_sbrnmr_un_i,exclude_sbrnmr_obs_i)) %>%
+SBR.full.ratio <- full_data %>% mutate(exclude_sbrnmr = ifelse(is.na(NMR) | source %in% c("HMIS","subnat.LR"),exclude_sbrnmr_un_i,exclude_sbrnmr_obs_i)) %>%
                                 #mutate(exclude_sbrnmr_max = exclude_sbrnmr_max_i) %>% 
                                 mutate(exclude_sbrnmr_obs = exclude_sbrnmr_obs_i) %>% 
                                 mutate(exclude_sbrnmr_un = exclude_sbrnmr_un_i) %>% 
@@ -90,17 +89,6 @@ SBR.full.ratio <- SBR.full.ratio %>% mutate(#exclude_sbrnmr_max= replace(exclude
 
 
 #table(SBR.full.ratio$exclusion_ratio)
-write.csv(SBR.full.ratio,"output/fullset.csv")
+#write.csv(SBR.full.ratio,"output/fullset.csv")
 saveRDS(SBR.full.ratio,"output/fullset.rds")
-################################################################################################
-
-#--------------------------------------#
-#   exploratory plot after exclusion   # 
-#--------------------------------------#
-SBR.clean <- SBR.full.ratio %>% filter(is.na(exclusion_notes),exclude_sbrnmr==FALSE)
-clean_data_list <- create_list_for_country(SBR.clean)
-pdf_name <- paste0("fig/exploratory_plot/exploratory_clean_data.pdf")
-pdf(pdf_name,width=12)
-clean_data_list %>% lapply(exploratory_plot)
-dev.off()
 
