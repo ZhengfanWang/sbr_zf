@@ -7,10 +7,16 @@
 #---------------#
 admin <- readRDS("output/admin.full.rds")
 subnat.lr <- readRDS("output/subnat.lit.rv.full.rds")
+subnat.lr$nSB_adj_unknown <- subnat.lr$nSB
+
 subnat.admin <- readRDS("output/sub.admin.full.rds")
+subnat.admin$exclude_col  <- NA
+subnat.admin$exclusion_notes_full <- subnat.admin$exclusion_notes
+subnat.admin$nSB_adj_unknown <- subnat.admin$nSB
+
 survey <- readRDS("output/survey.full.rds")
-
-
+survey$nSB_adj_unknown <- survey$nSB
+survey$exclusion_notes_full <- survey$exclusion_notes
 #-------------#
 #   merge     # 
 #-------------#
@@ -81,8 +87,9 @@ SBR.full <- SBR.full2 %>%    mutate(SE.sbr = ifelse(is.na(SE.sbr),SE.sbr.max,SE.
                                     definition_rv = replace(definition_rv, definition_raw == "ge500gORge28wks", "ge500g")) %>% 
                              mutate(exclusion_ratio = NA) %>% 
                              select(uniqueID,iso,country,region,year,source,context,definition_rv,definition_rv2,definition_raw,
-                                    definition,SBR,adj_sbr_unknown,SE.sbr,SE.logsbr,prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
-                                    UN_NMR,rSN,rSN_UN,shmdg2,icgroup,lmic,country_idx,exclusion_notes,exclusion_ratio)
+                                    definition,SBR,nSB_adj_unknown,adj_sbr_unknown,nSB_adj_unknown,SE.sbr,SE.logsbr, prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
+                                    UN_NMR,rSN,rSN_UN,shmdg2,icgroup,lmic,country_idx,exclusion_notes,exclusion_ratio,exclude_col,
+                                   exclusion_notes_full)
 
 i.miss5 <- which(is.na(SBR.full$nLB) & !is.na(SBR.full$adj_sbr_unknown * SBR.full$nTB))
 SBR.full$nLB[i.miss5] <- (SBR.full$adj_sbr_unknown * SBR.full$nTB/1000)[i.miss5]
