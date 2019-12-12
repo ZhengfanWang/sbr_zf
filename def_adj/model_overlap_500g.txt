@@ -1,0 +1,45 @@
+model{
+
+### DATA ###
+# nsb = number of still births of alternative definition
+# nsb28 = number of still births of 28wks definition
+# n = number of observations (these are all 500g obs)
+# boxes refers to categories a, b, c
+# ncombi[i] = number of possible values for b = box2
+
+    # poisson zeroes trick for 500g data
+  for (i in 1:n){
+    for (index in 1:ncombis[i]){
+      box2[i, index] <- min_intersect[i] + index - 1  
+      contrL_invr[i, index] <- exp(contrLL_invr[i, index])
+      box1[i, index] <- nsb[i] - box2[i, index]
+      contrLL_invr[i,index] <- logdensity.multi(
+          c(
+            box1[i, index], 
+            box2[i, index], 
+            nsb28[i] - box2[i, index]
+          ),
+          p[i, 1:3], 
+          box1[i, index] + nsb28[i]
+                                      )
+    }
+    LL[i] <- log(sum(contrL_invr[i, 1:ncombis[i]])
+                        + 0.000000000000000001)
+    pois.mean[i] <- -LL[i] + 1
+    zeroes[i] ~ dpois(pois.mean[i])
+  }
+
+### process model ###
+  for (i in 1:n){
+    kappa[i] <- exp(logkappa[i])
+    logkappa[i] ~ dnorm(mu, tau)
+    p_2plus3[i] ~ dunif(1/(1+kappa[i]), 1/(max(1,kappa[i])))
+    p[i, 1] <- 1 - p_2plus3[i]
+    p[i, 2] <- (kappa[i]+1)*p_2plus3[i] - 1
+    p[i, 3] <- p_2plus3[i] - p[i, 2]
+  }
+  tau <- 1/sigma^2
+  sigma ~ dnorm(0,1)T(0, )
+  mu ~ dnorm(0, 0.05)
+
+}
