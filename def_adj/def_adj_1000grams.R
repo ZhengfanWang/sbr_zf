@@ -49,7 +49,7 @@ jags_data <- list(n = n,
 # saveRDS(mod, "output/mod.rds")
 # mod$BUGSoutput$summary[c("mu", "sigma"),]
 
-mod <- jags.model(file = "model_overlap5.txt",
+mod <- jags.model(file = "model_overlap_1000g.txt",
                   data = jags_data,
                   n.chains = 3,
                   n.adapt = 2500)
