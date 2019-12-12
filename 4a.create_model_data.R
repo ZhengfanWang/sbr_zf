@@ -3,11 +3,13 @@ SBR.full.ori <- readRDS("output/fullset.rds")
 SBR.full.ori$lmic[SBR.full.ori$iso == "COK"] <- 1
 
 SBR.full <- SBR.full.ori %>% mutate(data_for_model = ifelse(is.na(exclusion_notes) & 
-                                           is.na(exclusion_ratio),1,0)) %>%
-  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
-  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
-  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
-  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
+                                           is.na(exclusion_ratio),1,0)) #%>%
+# AM: Added to 2, so that these new observations get defintional adjustment and sbr:nmr ratio scripts applied to thme
+
+#  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
+#  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
+#  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
+#  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 
 #---------------------------------------------------------#
 # Overview for num paired obs and obs where need to adj   # 
