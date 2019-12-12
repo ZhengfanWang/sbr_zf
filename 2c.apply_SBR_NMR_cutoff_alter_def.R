@@ -1,4 +1,5 @@
 
+
 ##few code to do def adj
 
 ### Read in def adjutments
@@ -19,15 +20,20 @@ def_adj_output<- data.frame(definition_rv=set_definition_rv,
 def_adj_output
 
 
-## AM: Is the the right file to read in?
-## ZW: Sorry, It is a example here.I should have made it clear. I use this to create data for stan model. I think it would be better to read in the output in "2b.apply_SBR_NMR_cutoff_value.R" or 
-# the output of "2.merge&clean&plot_full_data.R"
-## AM: Does it make sense to read in "fullset.RDS" instead (i.e. output of of 2b.apply_SBR_NMR) then overwrite the exclusion
-##     criteria for those that get a definition adjustment (i.e wthose with def_bias!=0)
-## I think it is 
 
 sbr2018 <- readRDS("output/fullset.rds")
+
+## AM: should this be added here, so that lmic with 500g or 1000g definitions 
+##     that get changed, are getting these definitional adjustments and thne 
+##     the SBR/NMR ratio exclusion is based on that? ACTUALLY I THINK MOVING THIS HERE CAUSES SOME ISSUES 
+##sbr2018 <- sbr2018 %>% 
+##  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
+##  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
+##  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
+##  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
+
 sbr2018 <- right_join(def_adj_output,sbr2018,by = c("definition_rv","lmic"))
+
 
 
 ## AM: Since we are starting with the whole dataset, maybe we should not filter yet, so we can see 
@@ -119,15 +125,9 @@ defadj_sbr2018$exclusion_ratio <- ifelse(defadj_sbr2018$defadj_exclude_sbrnmr==T
                                            "prob < 0.05 & non-28 wks def",
                                            defadj_sbr2018$exclusion_ratio)
 
-## AM:  remove other columns?  Not sure          
-#sbr2018_clean <- defadj_sbr2018 %>% select(-c(defadj_exclude_sbrnmr_obs,defadj_exclude_sbrnmr_un,exclude_sbrnmr_obs,exclude_sbrnmr_un))
 
-## testing filter
-#dataformodel <- defadj_sbr2018 %>% filter(is.na(exclusion_notes)) %>%
-#                                  filter(is.na(exclusion_ratio))
-# probably more filtering happens elswehere 
-
-## AM: Should we call this "fullset"? Because I think the new exclusion ratio column is not getting saved 
-write.csv(defadj_sbr2018,"output/fullset.csv")
+## AM: Saved at the end of script 4.creat_model_data.R
+#write.csv(defadj_sbr2018,"output/fullset.csv")
 saveRDS(defadj_sbr2018,"output/fullset.rds")
+
 
