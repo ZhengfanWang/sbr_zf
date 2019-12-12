@@ -33,6 +33,10 @@ SBR.full <- SBR.full  %>%
   SBR.full$definition_rv2 <- droplevels(SBR.full$definition_rv2)
 table(SBR.full$definition_rv2)
 
+## clean up full exclusion notes column a little
+SBR.full$exclusion_notes_full <- gsub(pattern = "NA;",replacement = "",SBR.full$exclusion_notes_full)
+SBR.full$exclusion_notes_full <- gsub(pattern = ";;",replacement = ";",SBR.full$exclusion_notes_full)
+
 #### the following vector is decided by where we can do def adj(priority.for.adj) and where we need adj(SBR.model$definition_rv2)
 priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g",
                           "ge1000g.m","ge24wks","ge500g")
