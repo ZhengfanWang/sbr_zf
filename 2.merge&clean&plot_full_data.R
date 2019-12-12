@@ -86,6 +86,10 @@ SBR.full <- SBR.full2 %>%    mutate(SE.sbr = ifelse(is.na(SE.sbr),SE.sbr.max,SE.
                                     definition_rv = replace(definition_rv, definition_raw == "ge500gORge22wks", "ge500g"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge1000gORge28wks", "ge1000g"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge500gORge28wks", "ge500g")) %>% 
+                             mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>%
+                             mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>%
+                             mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>%
+                             mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks")) %>%
                              mutate(exclusion_ratio = NA) %>% 
                              select(uniqueID,iso,country,region,year,source,context,definition_rv,definition_rv2,definition_raw,
                                     definition,SBR,nSB_adj_unknown,adj_sbr_unknown,nSB_adj_unknown,SE.sbr,SE.logsbr, prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
