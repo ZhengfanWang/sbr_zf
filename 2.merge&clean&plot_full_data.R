@@ -8,6 +8,7 @@
 admin <- readRDS("output/admin.full.rds")
 subnat.lr <- readRDS("output/subnat.lit.rv.full.rds")
 subnat.lr$nSB_adj_unknown <- subnat.lr$nSB
+subnat.lr$exclusion_notes_full <- subnat.lr$exclusion_notes
 
 subnat.admin <- readRDS("output/sub.admin.full.rds")
 subnat.admin$exclude_col  <- NA
@@ -78,11 +79,11 @@ SE.sbr.max <- sapply(SBR.full2$source,function(x) max(SBR.full2$SE.sbr[SBR.full2
 SBR.full <- SBR.full2 %>%    mutate(SE.sbr = ifelse(is.na(SE.sbr),SE.sbr.max,SE.sbr),
                                     SE.logsbr = SE.sbr / adj_sbr_unknown) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_raw == "ge500gANDge28wks", "ge28wks.m"),
-                                    definition_rv2 = replace(definition_rv2, definition_raw == "ge500gORge22wks", "ge22wks.m"),
+                                    definition_rv2 = replace(definition_rv2, definition_raw == "ge500gORge22wks", "ge500g.m"),
                                     definition_rv2 = replace(definition_rv2, definition_raw == "ge1000gORge28wks", "ge1000g.m"),
                                     definition_rv2 = replace(definition_rv2, definition_raw == "ge500gORge28wks", "ge500g.m")) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_raw == "ge500gANDge28wks", "ge28wks"),
-                                    definition_rv = replace(definition_rv, definition_raw == "ge500gORge22wks", "ge22wks"),
+                                    definition_rv = replace(definition_rv, definition_raw == "ge500gORge22wks", "ge500g"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge1000gORge28wks", "ge1000g"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge500gORge28wks", "ge500g")) %>% 
                              mutate(exclusion_ratio = NA) %>% 
