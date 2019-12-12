@@ -8,6 +8,7 @@
 admin <- readRDS("output/admin.full.rds")
 subnat.lr <- readRDS("output/subnat.lit.rv.full.rds")
 subnat.lr$nSB_adj_unknown <- subnat.lr$nSB
+subnat.lr$exclusion_notes_full <- subnat.lr$exclusion_notes
 
 subnat.admin <- readRDS("output/sub.admin.full.rds")
 subnat.admin$exclude_col  <- NA
