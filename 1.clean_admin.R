@@ -6,7 +6,7 @@
 #   load data   #
 #---------------#
 
-admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20191211.xlsx", sheet = 1, startRow = 2) # read in admin data
+admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20191213.xlsx", sheet = 1, startRow = 2) # read in admin data
 
 
 #-----------------------------#
@@ -58,6 +58,7 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                               "notes"="Coverage",
                               "source_name"="Source_1_name",
                               "inclusion.U5MR"="Inclusion.VR.U5MR") %>% 
+                            mutate(exclusion_notes_full = NA) %>%
                             mutate(source="admin", LB_frac = nLB/WPP_LB, rSN = SBR/NMR, rSN_UN = SBR/UN_NMR,exclusion_notes=NA) %>%
                             mutate(source = replace(source,context=="HMIS-DHIS2","HMIS")) %>% 
                             # mutate(exclusion_notes = replace(exclusion_notes,
@@ -68,48 +69,60 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                             #                                "duplicate observation")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, 
                                                              country=="Cyprus" & notes == "national public sector only",
-                                                             "Cyprus public sector only"),
-                                   exclusion_notes_full = replace(exclusion_notes, 
-                                                                  country=="Cyprus" & notes == "national public sector only",
-                                                                  "Cyprus public sector only")) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes, inclusion.U5MR == 0, "excluded by U5MR"),
-                                   exclusion_notes_full = ifelse(inclusion.U5MR == 0, 
+                                                             "Cyprus public sector only")) %>%
+                            mutate(exclusion_notes_full = ifelse(country %in% "Cyprus" & notes %in% "national public sector only",
+                                                                 "Cyprus public sector only",exclusion_notes_full)) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes, inclusion.U5MR == 0, "excluded by U5MR")) %>%
+                            mutate(exclusion_notes_full = ifelse(inclusion.U5MR==0 & !is.na(inclusion.U5MR), 
                                                                   paste(exclusion_notes_full,"excluded by U5MR",sep = ";"),
                                                                  exclusion_notes_full)) %>%   
-                            mutate(exclude_col = ifelse(inclusion.U5MR == 0, "excluded by U5MR",NA)) %>%
+                            mutate(exclude_col = ifelse(inclusion.U5MR==0 & !is.na(inclusion.U5MR), "excluded by U5MR",NA)) %>%
                             #mutate(exclusion_notes = replace(exclusion_notes, 
                             #                                country=="Germany" & year==2014 & Definition_SB == "not defined", 
                             #                                "not defined makes duplicate")) %>% 
+                            # mutate(exclusion_notes = replace(exclusion_notes,
+                            #                                 (!(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
+                            #                                 "low coverage")) %>%
+                            # mutate(exclusion_notes_full = ifelse((!(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
+                            #                                      paste(exclusion_notes_full,"low coverage",sep = ";"),
+                            #                                      exclusion_notes_full)) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                            !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation"), 
-                                                            "low coverage"),
-                                   exclusion_notes_full = ifelse(!(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation"), 
-                                                                 paste(exclusion_notes_full,"low coverage",sep = ";"),
-                                                                 exclusion_notes_full)) %>%
+                                                            (source=="admin" & !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
+                                                            "low coverage")) %>%
+                            mutate(exclusion_notes_full = ifelse(source=="admin" &  
+                                                                   (!is.na(LB_frac) & !is.na(WPP_LB)) &
+                                                                   (!(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
+                                                                  paste(exclusion_notes_full,"low coverage",sep = ";"),exclusion_notes_full)) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes,
+                                                             (source=="HMIS" & !(LB_frac >= 0.7 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
+                                                             "low coverage")) %>%
+                            mutate(exclusion_notes_full = ifelse(source=="HMIS" & (!(LB_frac >= 0.7 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")) & 
+                                                                   (!is.na(LB_frac) & !is.na(WPP_LB)),
+                                                                 paste(exclusion_notes_full,"low coverage",sep = ";"),exclusion_notes_full)) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                              source_name == "PAHO/WHO (2018). Health Situation in the Americas: Core Indicators 2018.",
-                                                             "PAHO/WHO data"),
-                                   exclusion_notes_full = ifelse(source_name == "PAHO/WHO (2018). Health Situation in the Americas: Core Indicators 2018.", 
+                                                             "PAHO/WHO data")) %>%
+                            mutate(exclusion_notes_full = ifelse(source_name %in% "PAHO/WHO (2018). Health Situation in the Americas: Core Indicators 2018." , 
                                                                  paste(exclusion_notes_full,"PAHO/WHO data",sep = ";"),
                                                                  exclusion_notes_full)) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,dq_flag %in% c(3,9,12),"dq_flag in 3,9,12"),
-                                   exclusion_notes_full = ifelse(dq_flag %in% c(3,9,12), 
+                            mutate(exclusion_notes = replace(exclusion_notes,dq_flag %in% c(3,9,12),"dq_flag in 3,9,12")) %>%
+                            mutate(exclusion_notes_full = ifelse(dq_flag %in% c(3,9,12),
                                                                  paste(exclusion_notes_full,"dq_flag in 3,9,12",sep = ";"),
                                                                  exclusion_notes_full)) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR"),
-                                   exclusion_notes_full = ifelse(is.na(SBR), 
+                            mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>%
+                            mutate(exclusion_notes_full = ifelse(is.na(SBR), 
                                                                  paste(exclusion_notes_full,"missing SBR",sep = ";"),
                                                                  exclusion_notes_full)) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes, prop_unknown > 0.5, "prop of unknown sb > 0.5"),
-                                   exclusion_notes_full = ifelse(prop_unknown > 0.5, 
+                            mutate(exclusion_notes = replace(exclusion_notes, prop_unknown > 0.5 & !is.na(prop_unknown), "prop of unknown sb > 0.5")) %>%
+                            mutate(exclusion_notes_full = ifelse(prop_unknown > 0.5 & !is.na(prop_unknown), 
                                                                  paste(exclusion_notes_full,"prop of unknown sb > 0.5",sep = ";"),
                                                                  exclusion_notes_full)) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000"),
-                                   exclusion_notes_full = ifelse(year < 2000, 
+                            mutate(exclusion_notes = replace(exclusion_notes,year < 2000,"prior to 2000")) %>%
+                            mutate(exclusion_notes_full = ifelse(year < 2000, 
                                                                  paste(exclusion_notes_full,"prior to 2000",sep = ";"),
                                                                  exclusion_notes_full)) %>% 
                             mutate(nSB_adj_unknown = ifelse(is.na(sb_adj_unknown),nSB,sb_adj_unknown)) %>%
-                             select("uniqueID","iso","country","year","source","context","definition",
+                             select("uniqueID","iso","country","year","source","source_name","context","definition",
                                      "SBR","adj_sbr_unknown","nSB_adj_unknown", "prop_unknown","nSB","nTB","nLB","WPP_LB","LB_frac",
                                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes","exclude_col","exclusion_notes_full") 
 
@@ -137,6 +150,8 @@ definition.cleaned <-  fct_collapse(admin.full$definition,
 #table(definition.cleaned)
 #-----------------#
 #### definition.cleaned2: rename definition in same scale.
+
+### AM: Lucia said that 100g
 definition.cleaned2 <- plyr::revalue(definition.cleaned,
                               c(">30cm"="ge30cm",
                                 "x29wks"="ge29wks",
@@ -167,7 +182,7 @@ admin.full <- admin.full %>% mutate(definition = definition.cleaned2,definition_
 #-----------------#
 levels(admin.full$definition_rv)
 
-admin.full <- admin.full %>% merge(countryRegionList,by=c("iso","country"))
+admin.full <- admin.full %>% merge(countryRegionList[!names(countryRegionList) %in% "country"],by=c("iso"))
 nd.data <- admin.full %>%  filter(definition=="not defined")
 
 notdefine.list <- unique(nd.data$country_idx)
@@ -368,10 +383,23 @@ admin.full <- admin.full %>% mutate(region=NA,
                                                             iso=="DEU" & year==2014 & definition_rv == "ge28wks" & 
                                                             context == "Vital Registration", 
                                                             "duplicates, use BDR data")) %>% 
+                            #dupcliate peristat data
+                            mutate(exclusion_notes = replace(exclusion_notes, 
+                                                     iso=="ROU" & year==2010 & definition_rv == "ge1000g" & 
+                                                       source_name == "EURO-PERISTAT project", 
+                                                     "duplicate Peristat, use VR data")) %>% 
+                            mutate(exclusion_notes = replace(exclusion_notes, 
+                                                     iso=="NOR" & year==2015 & definition_rv == "ge1000g" & 
+                                                       source_name == "EURO-PERISTAT project", 
+                                                     "duplicate Peristat, use VR data")) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes, 
+                                                     iso=="IRL" & year==2010 & 
+                                                       source_name == "EURO-PERISTAT project", 
+                                                     "duplicate Peristat, use VR data")) %>%
                             mutate(exclusion_notes_full = ifelse(grepl("duplicates",exclusion_notes),
                                                                   paste(exclusion_notes_full,exclusion_notes,sep=";"),exclusion_notes_full)) %>%
                              arrange(iso, year) %>% 
-                             select("uniqueID","country","iso","region","year","source","context","definition","definition_rv",
+                             select("uniqueID","country","iso","region","year","source","source_name","context","definition","definition_rv",
                                     "SBR","adj_sbr_unknown","nSB_adj_unknown", "prop_unknown","nSB","nTB","nLB","WPP_LB",
                                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes","exclude_col","exclusion_notes_full") 
 

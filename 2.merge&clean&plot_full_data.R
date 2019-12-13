@@ -9,15 +9,19 @@ admin <- readRDS("output/admin.full.rds")
 subnat.lr <- readRDS("output/subnat.lit.rv.full.rds")
 subnat.lr$nSB_adj_unknown <- subnat.lr$nSB
 subnat.lr$exclusion_notes_full <- subnat.lr$exclusion_notes
+subnat.lr$source_name <- NA
 
 subnat.admin <- readRDS("output/sub.admin.full.rds")
 subnat.admin$exclude_col  <- NA
 subnat.admin$exclusion_notes_full <- subnat.admin$exclusion_notes
 subnat.admin$nSB_adj_unknown <- subnat.admin$nSB
+subnat.admin$source_name <- NA
 
 survey <- readRDS("output/survey.full.rds")
 survey$nSB_adj_unknown <- survey$nSB
 survey$exclusion_notes_full <- survey$exclusion_notes
+survey$source_name <- NA
+
 #-------------#
 #   merge     # 
 #-------------#
@@ -86,12 +90,12 @@ SBR.full <- SBR.full2 %>%    mutate(SE.sbr = ifelse(is.na(SE.sbr),SE.sbr.max,SE.
                                     definition_rv = replace(definition_rv, definition_raw == "ge500gORge22wks", "ge500g"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge1000gORge28wks", "ge1000g"),
                                     definition_rv = replace(definition_rv, definition_raw == "ge500gORge28wks", "ge500g")) %>% 
+                             mutate(exclusion_ratio = NA) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>%
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>%
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>%
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks")) %>%
-                             mutate(exclusion_ratio = NA) %>% 
-                             select(uniqueID,iso,country,region,year,source,context,definition_rv,definition_rv2,definition_raw,
+                             select(uniqueID,iso,country,region,year,source,source_name,context,definition_rv,definition_rv2,definition_raw,
                                     definition,SBR,nSB_adj_unknown,adj_sbr_unknown,nSB_adj_unknown,SE.sbr,SE.logsbr, prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
                                     UN_NMR,rSN,rSN_UN,shmdg2,icgroup,lmic,country_idx,exclusion_notes,exclusion_ratio,exclude_col,
                                    exclusion_notes_full)
