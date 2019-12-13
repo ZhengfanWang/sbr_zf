@@ -4,12 +4,10 @@ SBR.full.ori$lmic[SBR.full.ori$iso == "COK"] <- 1
 
 SBR.full <- SBR.full.ori %>% mutate(data_for_model = ifelse(is.na(exclusion_notes) & 
                                            is.na(exclusion_ratio),1,0)) #%>%
-# AM: Added to 2, so that these new observations get defintional adjustment and sbr:nmr ratio scripts applied to thme
-
-#  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
-#  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
-#  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
-#  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
+  # mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
+  # mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
+  # mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
+  # mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 
 #---------------------------------------------------------#
 # Overview for num paired obs and obs where need to adj   # 
@@ -20,7 +18,7 @@ SBR.full <- SBR.full  %>%
   mutate(data_for_model = replace(data_for_model,
                                   (definition_rv %in% c("any","not defined","unknownGA")),0)) %>% 
   mutate(data_for_model = replace(data_for_model,source == "subnat.admin",0)) %>% 
-  select(definition_rv,lmic,def_bias,def_sd,uniqueID,iso,country,region,year,source,context,definition_rv2,definition_raw,
+  select(definition_rv,lmic,def_bias,def_sd,uniqueID,iso,country,region,year,source,source_name,context,definition_rv2,definition_raw,
          definition,SBR,nSB_adj_unknown,adj_sbr_unknown,SE.sbr,SE.logsbr, prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
          UN_NMR,rSN,rSN_UN,shmdg2,icgroup,country_idx,exclusion_notes,exclusion_ratio,exclude_col,
          exclusion_notes_full,
@@ -45,6 +43,32 @@ priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g",
 
 SBR.full <- SBR.full %>% mutate(data_for_model=replace(data_for_model,
                                                        !definition_rv2 %in% priority.for.adj_vec,0))
+
+### If 28wks is excluded then excluded all other data from that source (admin only)
+for(c in 1:195){
+  for(t in 2000:2018){
+      i<- which(SBR.full$country_idx == c&
+                  SBR.full$year == t&
+                  SBR.full$source == "admin")
+      len <- length(i)
+      tmp <- SBR.full[i,]
+      if(len > 1)  {
+        if("ge28wks" %in% tmp$definition_rv){
+          if(0 %in% tmp$data_for_model[tmp$definition_rv=="ge28wks"]){
+            sourceName <- unique(tmp$source_name[tmp$data_for_model==0 & tmp$definition_rv=="ge28wks"]) 
+            i2<- which(SBR.full$country_idx == c&
+                         SBR.full$year == t&
+                         SBR.full$source == "admin" & 
+                         SBR.full$source_name %in% sourceName & 
+                         SBR.full$definition_rv!="ge28wks")
+            SBR.full$data_for_model[i2] <- 0
+            
+          }
+        }
+      }
+    }
+}
+
 
 SBR.noModel <- SBR.full  %>% filter(data_for_model==0)
 SBR.model <- SBR.full %>% filter(data_for_model==1)
