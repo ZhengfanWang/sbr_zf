@@ -3,11 +3,13 @@ SBR.full.ori <- readRDS("output/fullset.rds")
 SBR.full.ori$lmic[SBR.full.ori$iso == "COK"] <- 1
 
 SBR.full <- SBR.full.ori %>% mutate(data_for_model = ifelse(is.na(exclusion_notes) & 
-                                           is.na(exclusion_ratio),1,0)) %>%
-  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
-  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
-  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
-  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
+                                           is.na(exclusion_ratio),1,0)) #%>%
+# AM: Added to 2, so that these new observations get defintional adjustment and sbr:nmr ratio scripts applied to thme
+
+#  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
+#  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
+#  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
+#  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 
 #---------------------------------------------------------#
 # Overview for num paired obs and obs where need to adj   # 
@@ -32,6 +34,10 @@ SBR.full <- SBR.full  %>%
          duplicates = NA)
   SBR.full$definition_rv2 <- droplevels(SBR.full$definition_rv2)
 table(SBR.full$definition_rv2)
+
+## clean up full exclusion notes column a little
+SBR.full$exclusion_notes_full <- gsub(pattern = "NA;",replacement = "",SBR.full$exclusion_notes_full)
+SBR.full$exclusion_notes_full <- gsub(pattern = ";;",replacement = ";",SBR.full$exclusion_notes_full)
 
 #### the following vector is decided by where we can do def adj(priority.for.adj) and where we need adj(SBR.model$definition_rv2)
 priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g",
