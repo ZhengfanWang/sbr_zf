@@ -55,9 +55,9 @@ jags_data <- list(n = n,
 mod_1000g <- jags.model(file = "model_overlap_1000g.txt",
                   data = jags_data,
                   n.chains = 4,
-                  n.adapt = 5000) # at least
+                  n.adapt = 5000)
 update(mod_1000g, 5000) # burn-in (optional)
-samp_1000g <- coda.samples(mod_1000g, c("mu","sigma"), n.iter=100000) # at least
+samp_1000g <- coda.samples(mod_1000g, c("mu","sigma"), n.iter=100000)
 
 
 #### below is old code where I sampled in chunks ####
