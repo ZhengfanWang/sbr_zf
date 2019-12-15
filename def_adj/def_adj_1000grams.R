@@ -3,22 +3,29 @@ library(rjags)
 library(R2jags)
 library(tidyverse)
 
+# dat_list <- readRDS("def_adj_data_hic_old.rds")
+# dat <- rbind(dat_list[[4]], dat_list[[5]]) #ge1000g, ge1000gANDge28wks
+
 dat_list <- readRDS("def_adj_data_hic.rds")
-dat <- rbind(dat_list[[4]], dat_list[[5]])
+dat <- rbind(dat_list[[6]], dat_list[[7]]) #ge1000g, ge1000gANDge28wks
+names(dat)
 
-res2 <- dat %>%
+res <- dat %>%
   select(iso, year, region, nSB, nLB, nSB28, definition_rv,
-         definition_raw, ori_def28) %>%
-  rename(nsb = nSB, nsb28 = nSB28, lb = nLB, def = definition_rv)
+         definition_raw, ori_def28, nSB_adj_unknown) %>%
+  rename(nsb = nSB, nsb28 = nSB28, lb = nLB, def = definition_rv) %>%
+  filter(!is.na(nsb)) # 35 observations are missing nsb
 
-res2 %>%
+res %>%
   ggplot(aes(nsb, nsb28, color = iso, shape = def)) +
   geom_point()
-# table(res2$def)
+
+res2 <- res
+res2$nsb[res2$nsb==0.5] <- 0
+res2$nsb28[res2$nsb28==0.5] <- 0
 
 dat2 <- 
-  res2 %>% 
-#  filter(def != "ge1000gORge28wks") %>% # as per email conversation
+  res2 %>%
   mutate(
     # get ranges for b
     # min_intersect = floor(0.5*pmin(nsb, nsb28)),
@@ -42,12 +49,18 @@ jags_data <- list(n = n,
                   ncombis = as.integer(dat2$ncombis[1:n_1000])
 )
 
-# mod <- jags(data = jags_data,
-#                      parameters.to.save = c("p", "mu", "sigma"),
-#                      model.file = "model_overlap5.txt")
-# LA still uses kappa in model file here
-# saveRDS(mod, "output/mod.rds")
-# mod$BUGSoutput$summary[c("mu", "sigma"),]
+# Hi Lucia, here's an example of what I would do
+# but I don't know how it will change when parallelizing
+
+mod_1000g <- jags.model(file = "model_overlap_1000g.txt",
+                  data = jags_data,
+                  n.chains = 4,
+                  n.adapt = 5000) # at least
+update(mod_1000g, 5000) # burn-in (optional)
+samp_1000g <- coda.samples(mod_1000g, c("mu","sigma"), n.iter=100000) # at least
+
+
+#### below is old code where I sampled in chunks ####
 
 mod <- jags.model(file = "model_overlap_1000g.txt",
                   data = jags_data,
@@ -79,3 +92,11 @@ summary(samp_final)
 pdf("samp_1000g.pdf", width=9)
 plot(samp_final)
 dev.off()
+
+# LA's way of running
+# mod <- jags(data = jags_data,
+#                      parameters.to.save = c("p", "mu", "sigma"),
+#                      model.file = "model_overlap5.txt")
+# LA still uses kappa in model file here
+# saveRDS(mod, "output/mod.rds")
+# mod$BUGSoutput$summary[c("mu", "sigma"),]

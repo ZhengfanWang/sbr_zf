@@ -3,23 +3,30 @@ library(rjags)
 library(R2jags)
 library(tidyverse)
 
-dat_list_new <- readRDS("def_adj_data_hic_Nov19.rds")
-dat_list_old <- readRDS("def_adj_data_hic.rds")
+dat_list <- readRDS("def_adj_data_hic.rds")
+dat <- dat_list[[11]]
+names(dat)
 
-dat_500g_new <- dat_list_new[[10]]
-dat_500g_old <- dat_list_old[[9]]
-dplyr::setdiff(dat_500g_new[,1:7], dat_500g_old[,1:7])
-# these obs are from Andorra and have counts of 0.5 ?
-# gonna stick with the older dataset
+# dat_list_new <- readRDS("def_adj_data_hic_Nov19.rds")
+# dat_list_old <- readRDS("def_adj_data_hic.rds")
+# 
+# dat_500g_new <- dat_list_new[[10]]
+# dat_500g_old <- dat_list_old[[9]]
+# dplyr::setdiff(dat_500g_new[,1:7], dat_500g_old[,1:7])
 
-dat500 <- dat_500g_old %>%
+dat500 <- dat %>%
   select(iso, year, region, nSB, nLB, nSB28, definition_rv,
-         definition_raw, ori_def28) %>%
+         definition_raw, ori_def28, nSB_adj_unknown) %>%
   rename(nsb = nSB, nsb28 = nSB28, lb = nLB, def = definition_rv)
 
-# plot(nsb28~nsb, data=dat500); abline(0,1)
-# dat500[which(dat500$nsb28 > dat500$nsb),] # only 2 obs; in both old and new
+dat500$nsb[dat500$nsb==0.5] <- 0
+dat500$nsb28[dat500$nsb28==0.5] <- 0
 
+# plot(nsb28~nsb, data=dat500); abline(0,1)
+# dat500[which(dat500$nsb28 > dat500$nsb),] # only a few
+
+# some of this doesn't really do anything b/c we don't have 500gAND28wks
+# (just copied over from 1000g)
 dat500g <- 
   dat500 %>% 
   mutate(
@@ -31,7 +38,7 @@ dat500g <-
   ) %>%
   mutate(def = ifelse(def == "ge500g", "def_500", "def_intersect" )) %>%
   filter(!( (nsb > nsb28) & def == "def_intersect")) %>%
-  arrange(def) # don't need anymore 
+  arrange(def) 
 
 n <- dim(dat500g)[1] # all obs are def_500
 # n_500 = n
