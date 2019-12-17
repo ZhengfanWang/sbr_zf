@@ -5,32 +5,12 @@
 ### Read in def adjutments
 #------------------------------------------#
 # need updates input from def adj          #
+
+def_adj_output <- readRDS("output/def_adj_res.rds")
 #------------------------------------------#
-
-set_definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g")
-lmic <- c(0,1,0,1,0,1,0)
-def_bias <- c(0.3890,0.2157,0.2660,0.2660,-0.07,NA,0.27)
-def_sd <- c(0.17240,0.08412,0.11328,0.11328,0.3,NA,0.3464)
-
-
-def_adj_output<- data.frame(definition_rv=set_definition_rv,
-                          lmic=lmic,
-                          def_bias=def_bias,
-                          def_sd=def_sd)
-def_adj_output
-
-
 
 sbr2018 <- readRDS("output/fullset.rds")
 
-## AM: should this be added here, so that lmic with 500g or 1000g definitions 
-##     that get changed, are getting these definitional adjustments and thne 
-##     the SBR/NMR ratio exclusion is based on that? ACTUALLY I THINK MOVING THIS HERE CAUSES SOME ISSUES 
-##sbr2018 <- sbr2018 %>% 
-##  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
-##  mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
-##  mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
-##  mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
 
 sbr2018 <- right_join(def_adj_output,sbr2018,by = c("definition_rv","lmic"))
 
@@ -45,6 +25,7 @@ definition_fac <- c("ge28wks",paste0(unique(def_adj_output$definition_rv[!is.na(
 #                               mutate(def_bias = ifelse(is.na(def_bias),0,def_bias)) %>% 
 #                               mutate(def_sd = ifelse(is.na(def_sd),0,def_sd))
 
+set_definition_rv <- c("ge22wks","ge24wks","ge1000g","ge20wks","ge500g")
 sbr2018 <- sbr2018 %>% mutate(def_bias = ifelse(is.na(def_bias) & definition_rv %in% set_definition_rv,0,def_bias)) %>% 
                                mutate(def_sd = ifelse(is.na(def_sd)  & definition_rv %in% set_definition_rv,0,def_sd))
 

@@ -6,7 +6,8 @@ find_comb_def_adj <- function(data){
     select(iso,year,region,SBR28,nSB28,source,ori_def28) 
   
   def.other <- data %>% filter(definition_rv != "ge28wks") %>% 
-    mutate(year = round(year))
+    mutate(year = round(year),
+           definition_rv=as.factor(definition_rv))
   lev <- levels(def.other$definition_rv)
   n_comb <- length(lev)
   definition_adj_data_list <- list()

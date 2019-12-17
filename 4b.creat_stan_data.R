@@ -27,21 +27,15 @@ covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>%
                              nmr = log(nmr)) %>% 
                              arrange(iso,year) 
 
+
 #------------------------------------------#
-# need updates input from def adj          #
-#------------------------------------------#
-definition_rv <- c("ge22wks","ge22wks","ge24wks","ge24wks","ge1000g","ge20wks","ge500g")
-lmic <- c(0,1,0,1,0,1,0)
-def_bias <- c(0.3890,0.2141,0.2664,0.2664,-0.0711,NA,0.2661)
-def_sd <- c(0.17240,0.0844,0.1122,0.1122,0.0688,NA,0.1326)
+# input from def adj         
 
-def_adj_res <- data.frame(definition_rv=definition_rv,
-                          lmic=lmic,
-                          def_bias=def_bias,
-                          def_sd=def_sd)
+def_adj_output <- readRDS("output/def_adj_res.rds")
+#-----------------------------------------------#
 
 
-sbr2018 <- right_join(def_adj_res,sbr2018,by = c("definition_rv","lmic"))
+sbr2018 <- right_join(def_adj_output,sbr2018,by = c("definition_rv","lmic"))
 
 definition_fac <- c("ge28wks",paste0(unique(def_adj_res$definition_rv[!is.na(def_adj_res$def_bias)])))
 sbr2018_cleaned <- sbr2018 %>% filter(definition_rv %in% definition_fac) %>% 

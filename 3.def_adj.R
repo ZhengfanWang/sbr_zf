@@ -4,7 +4,7 @@
 
 #load data
 SBR.full.ori <- readRDS("output/fullset.rds")
-hq.lmic.def.ori <- openxlsx::read.xlsx("input/High Quality LMIC data_Definition.xlsx",sheet=1) ## high quality LMIC data
+hq.lmic.def.ori <- openxlsx::read.xlsx("input/high quality LMIC study data/High Quality LMIC data_Definition.xlsx",sheet=1) ## high quality LMIC data
 SBR.full.ori$lmic[SBR.full.ori$iso == "COK"] <- 1
 
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
@@ -41,7 +41,7 @@ hq.lmic.def <- hq.lmic.def.ori %>% mutate(definition_rv = "ge22wks",definition_r
                                     arrange(country, year)
 
 def_adj_lmic_res <- list(dat = hq.lmic.def,
-                              alter.def = "ge22wks")
+                         alter.def = "ge22wks")
 
 
 #store each combation as a element of a list
@@ -118,7 +118,7 @@ def <- levels(droplevels(SBR.model$definition_rv2))
 source <- levels(droplevels(SBR.model$source))
 record <- 0
 for(c in 1:195){
-  for(t in 2000:2018){
+  for(t in 2000:2020){
     for(s in source){
           i<- which(SBR.model$country_idx == c&
                     SBR.model$year == t&
@@ -152,7 +152,7 @@ SBR.need.adj <- SBR.model.f %>% filter(definition_rv != "ge28wks" )
 #-------------------------------------------------#
 #                  summary table                  # 
 #-------------------------------------------------#
-def <- droplevels(SBR.need.adj$definition_rv)
+def <- droplevels(as.factor(SBR.need.adj$definition_rv))
 N1 <- length(levels(def))
 k <- table(def)
 definition <- names(k)

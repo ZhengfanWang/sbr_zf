@@ -4,7 +4,7 @@
 
 
 # load high quality lmic data
-hq_data <- openxlsx::read.xlsx("input/High Quality LMIC data_SBR_NMR.xlsx")
+hq_data <- openxlsx::read.xlsx("input/high quality LMIC study data/High Quality LMIC data_SBR_NMR.xlsx")
 
 ############################# MC method to explore cut off ######################
 
