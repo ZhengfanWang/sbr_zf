@@ -8,29 +8,121 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## LOOCV
+
+
+
+## IN-SAMPLE
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE, error=FALSE}
+library("rstan")
 library("rstanarm")
 library("bayesplot")
 library("loo")
-fit.ref <- readRDS("rdsoutput/qi1.hs.rds")
-standata <- readRDS("output/stan.qi1.hs.rds")
-chain <- rstan::extract(fit.ref)
+standata <- readRDS(file = "output/stan_data/nhs_nval.rds")     #stan data used for fit model
+fit <- readRDS(file = "rdsoutput/base_nval.rds")       #stan fit 
+chain <- rstan::extract(fit)
 dim(chain$log_lik)
-loo.ref <- loo(fit.ref)
-print(loo.ref)
-plot(loo.ref)
+loo1 <- loo(fit, save_psis = TRUE, cores = 4)
+print(loo1)
+plot(loo1)
 
 y <- standata$Y
 yrep <- chain$prep
-loo1 <- loo(fit.ref, save_psis = TRUE, cores = 4)
 psis1 <- loo1$psis_object
 lw <- weights(psis1)
 color_scheme_set("orange")
 ppc_loo_pit_overlay(y, yrep, lw = lw)
 
 
+#######
+#   breaking LOO results down by source type
+#----------------------------------------------------
+
+loo_by_source <- function(source,dat,loo){
+i <- dat$getj_i == source
+y <- dat$Y[i]
+yrep <- chain$prep[,i]
+psis1 <- loo$psis_object
+lw <- weights(psis1)[,i]
+color_scheme_set("orange")
+ppc_loo_pit_overlay(y, yrep, lw = lw)
+}
 ```
 
 
+# admin data
+```{r}
+length(which(standata$getj_i == 1)) #num of obs
+loo_by_source(source=1,dat = standata,loo=loo1)
+```
+
+# HMIS
+```{r}
+length(which(standata$getj_i == 2)) #num of obs
+loo_by_source(source=2,dat = standata,loo=loo1)
+```
+
+# subnat LR
+```{r}
+length(which(standata$getj_i == 3)) #num of obs
+loo_by_source(source=3,dat = standata,loo=loo1)
+```
+
+# survey
+```{r}
+length(which(standata$getj_i == 4)) #num of obs
+loo_by_source(source=4,dat = standata,loo=loo1)
+
+```
+
+
+## OUT-SAMPLE 
+
+```{r}
+
+fit <- readRDS(file = "rdsoutput/base_val.rds")
+stan.data <- readRDS(file = "output/stan_data/nhs_val.rds")
+
+array <- rstan::extract(fit)
+# indices of test set
+getitest <- setdiff(seq(1,stan.data$N), stan.data$getitrain_k)
+
+# errors
+pred <- apply(array$prep,2,median)
+errors <- stan.data$Y[getitest] - pred[getitest]
+hist(errors)
+# summarize
+mean(errors)  
+median(errors)  
+mean(abs(errors))
+median(abs(errors))
+
+
+ntest <- length(getitest)
+ntest
+# PIT
+pit.j <- rep(NA, ntest)
+for (j in 1:ntest){
+  i <- getitest[j]
+  yrepi.s <- array$prep[,i]
+  pit.j[j] <- mean(yrepi.s <= stan.data$Y[i])
+} 
+hist(pit.j, freq = F, xlab = "PIT-values", main = "Predicting last obs")  # should look uniform
+abline(h=1)  
+
+p <- 0.1
+qbinom(c(0.1, 0.9), size = ntest, prob = p)/ntest # 80% PI for prop of left out obs in one bin of PIT values with range of p 
+qbinom(c(0.25, 0.75), size = ntest, prob = p)/ntest # 50% PI for prop of left out obs in one bin of PIT values with range of p 
+p <- 0.25
+qbinom(c(0.1, 0.9), size = ntest, prob = p)/ntest # 80% PI for prop of left out obs in one bin of PIT values with range of p 
+qbinom(c(0.25, 0.75), size = ntest, prob = p)/ntest # 50% PI for prop of left out obs in one bin of PIT values with range of p 
+
+# coverage follows from pit
+mean(pit.j < 0.025) # % below 95% PI
+mean(pit.j < 0.05) # % below 90% PI
+mean(pit.j < 0.1)
+mean(pit.j > 0.975) # % above 95% PI 
+mean(pit.j > 0.95) 
+mean(pit.j > 0.9)
+
+```

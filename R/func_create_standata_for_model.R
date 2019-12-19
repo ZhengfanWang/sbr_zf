@@ -2,7 +2,7 @@
 
 covarMatrix <-function (covar,
                         estyears,
-                        dataset=covarset){
+                        dataset){
   yearLength <- length(estyears)
   numcoun<- max(countryRegionList$country_idx)
   cMatrix<- matrix(ncol=yearLength,nrow=numcoun)
@@ -18,7 +18,7 @@ standardize <- function(x){
   return((x-mean(x))/sd(x))
 }
 
-create_covar_array <- function(dataset = covarset , interest_cov,estyears){
+create_covar_array <- function(dataset, interest_cov,estyears){
   ncovar <- length(interest_cov)
   numcoun <- max(countryRegionList$country_idx)
   yearLength <- length(estyears)
