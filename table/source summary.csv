@@ -1,5 +1,5 @@
-,source,bias,source type sd,assumption
-1,admin,0,0.028,0 bias. Est sd
-2,HMIS,0,0.032,0 bias. Est sd
-3,subnat LR,0,0.302,0 bias. Est sd
-4,survey,-0.066,0.211,"N(0,25)T[,0] bias. Est sd"
+"","source","bias","sd"
+"1","admin",0,0.028
+"2","HMIS",0,0.039
+"3","subnat LR",0,0.234
+"4","survey",-0.186,0.169
