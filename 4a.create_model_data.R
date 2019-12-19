@@ -117,6 +117,7 @@ SBR.full.f <- SBR.full.f %>% mutate(SBR_raw = SBR,
 write.csv(SBR.full.f,"output/fullset.csv")
 saveRDS(SBR.full.f,"output/fullset.rds")
 
+### ZF: duplicates col is used to create duplicates observation table. Anu can reorganize it if you do not want duplicates col in final dataset.
 SBR.model.f<- SBR.model %>% filter(data_for_model==1) %>%
                             select(uniqueID,iso,country,year,source,shmdg2,lmic,
                                   definition_rv,definition_rv2,definition_raw,definition,
