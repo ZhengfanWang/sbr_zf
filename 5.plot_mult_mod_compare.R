@@ -1,7 +1,7 @@
 
 
-fit <- readRDS(file = "rdsoutput/1121_qi1.rds")
-fit2 <- readRDS(file = "rdsoutput/qi1.hs.rds")
+fit <- readRDS(file = "rdsoutput/base_val.rds")
+fit2 <- readRDS(file = "rdsoutput/base_nval.rds")
 
 
 
@@ -49,13 +49,13 @@ get_chain_result <- function(fit,smooth = TRUE, estyears = seq(2000,2020)){
 }
 
 
-Pspline1_country_list <- get_chain_result(fit,smooth = FALSE)
-Pspline2_country_list <- get_chain_result(fit2,smooth = FALSE)
+Pspline1_country_list <- get_chain_result(fit,smooth = TRUE)
+Pspline2_country_list <- get_chain_result(fit2,smooth = TRUE)
 
 
 ####################################################################
 
-standata <- readRDS(file = "output/stan.qi1.hs.rds")
+standata <- readRDS(file = "output/stan_data/nhs_val.rds")
 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
@@ -68,11 +68,10 @@ sbr2018$source_name <- source_fac[sbr2018$getj_i]
 sbr2018$definition_name <- definition_fac[sbr2018$getd_i]
 sbr2018$var <- var_i
 sbr2018$logadjsbr <- standata$Y  - bias_dt_i
-sbr2018 <- merge(sbr2018,countryRegionList,by=c("country_idx"))
 train <- rep(0,standata$N)
 train[standata$getitrain_k] <- 1
 sbr2018$train <- train 
-
+sbr2018 <- merge(sbr2018,countryRegionList,by=c("country_idx"))
  
 ###################  add this because we want to see the country name if no data point for some country, AND make legend consistent.
 year.f <- c(1,2,3,4,5)
@@ -93,7 +92,7 @@ for(c in 1:standata$numcountry){
    # right_join(Pspline1_country_list[[c]],by = c("year","country","iso")) %>% 
     rbind(fake.legend)
   }
-dat.list <-point.list[[1]]
+point.list[[5]]
 
 ###################################################################
 
@@ -119,8 +118,7 @@ compare.plot.list <- function(set1,set2,name){
   return(finalplot.list)
 }
 #example
-normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("covbase","covhs"))
-normal_keep_ex[[1]]
+normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("LOOCV","BASE"))
 #########################################################
 
 
@@ -154,9 +152,9 @@ compare_plot <- function(dat.list){
   return(est_plot)
 }
 
-normal_keep_ex[[1]]
+normal_keep_ex[[5]]
 
-pdf_name <- paste0("fig/HS_fit&cov.pdf")
+pdf_name <- paste0("fig/base_loocv.pdf")
 pdf(pdf_name, width = 8, height = 5)
 normal_keep_ex %>% lapply(compare_plot)
 dev.off()

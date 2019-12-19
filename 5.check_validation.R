@@ -1,8 +1,8 @@
 library(rstan)
 
 #sub_validationoutput.R
-fit <- readRDS(file = "rdsoutput/qi1.loo.rds")
-stan.data <- readRDS(file = "output/stan.qi1.loo.rds")
+fit <- readRDS(file = "rdsoutput/base_val.rds")
+stan.data <- readRDS(file = "output/stan_data/nhs_val.rds")
 
 array <- extract(fit)
 # indices of test set

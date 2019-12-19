@@ -1,8 +1,8 @@
 
 
 ####################################      input   ########################################
-standata <- readRDS(file = "output/stan.qi1.hs.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/qi1.hs.rds")       #stan fit 
+standata <- readRDS(file = "output/stan_data/nhs_nval.rds")     #stan data used for fit model
+fit <- readRDS(file = "rdsoutput/base_nval.rds")       #stan fit 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
 ###########################################################################################
@@ -53,7 +53,7 @@ fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 
 ###########################################################################
 
-sbr2018 <- data.frame(logSBR = standata$unadj_Y )
+sbr2018 <- data.frame(logSBR = standata$unadj_Y)
 sbr2018$getj_i <- standata$getj_i
 sbr2018$getd_i <- standata$getd_i
 sbr2018$year <- standata$gett_i + 1999
@@ -128,7 +128,7 @@ check <- function(dat.list){
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/qi1.hs.pdf")
+pdf_name <- paste0("fig/base.pdf")
 pdf(pdf_name, width = 10, height = 5)
 point.list %>% lapply(check)
 dev.off()
