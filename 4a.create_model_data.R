@@ -122,7 +122,9 @@ SBR.model.f<- SBR.model %>% filter(data_for_model==1) %>%
                             select(uniqueID,iso,country,year,source,shmdg2,lmic,
                                   definition_rv,definition_rv2,definition_raw,definition,
                                   adj_sbr_unknown,country_idx,SE.logsbr,duplicates) %>% 
-                            mutate(SBR = adj_sbr_unknown)
+                            mutate(SBR = adj_sbr_unknown) %>% 
+                            filter(!(definition_rv == "ge24wks" & lmic == 1))
+  
 ## apply new exclusion rule, there is one observation with def "ge500gORge20wks" in Brazil 2010 from subnat lit Rv database. 
 # In condition that we already have time-series HMIS data in that country-year. I think we can exclude the obs with def "ge500gORge20wks".
 
