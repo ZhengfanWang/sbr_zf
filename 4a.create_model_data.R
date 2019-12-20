@@ -44,12 +44,14 @@ priority.for.adj_vec <- c("ge28wks","ge28wks.m","ge22wks","ge22wks.m","ge1000g",
 SBR.full <- SBR.full %>% mutate(data_for_model=replace(data_for_model,
                                                        !definition_rv2 %in% priority.for.adj_vec,0))
 
-### If 28wks is excluded then excluded all other data from that source (admin only)
+### If 28wks is excluded then excluded all other data from that source (all sources)
+source <- levels(droplevels(SBR.full$source))
 for(c in 1:195){
   for(t in 2000:2018){
+    for(s in source){
       i<- which(SBR.full$country_idx == c&
                   SBR.full$year == t&
-                  SBR.full$source == "admin")
+                  SBR.full$source == s)
       len <- length(i)
       tmp <- SBR.full[i,]
       if(len > 1)  {
@@ -58,7 +60,7 @@ for(c in 1:195){
             sourceName <- unique(tmp$source_name[tmp$data_for_model==0 & tmp$definition_rv=="ge28wks"]) 
             i2<- which(SBR.full$country_idx == c&
                          SBR.full$year == t&
-                         SBR.full$source == "admin" & 
+                         SBR.full$source == s &
                          SBR.full$source_name %in% sourceName & 
                          SBR.full$definition_rv!="ge28wks")
             SBR.full$data_for_model[i2] <- 0
@@ -66,9 +68,10 @@ for(c in 1:195){
           }
         }
       }
+      
     }
+  }
 }
-
 
 SBR.noModel <- SBR.full  %>% filter(data_for_model==0)
 SBR.model <- SBR.full %>% filter(data_for_model==1)
@@ -112,6 +115,7 @@ SBR.full.f <- SBR.full.f %>% mutate(SBR_raw = SBR,
                      SBR = adj_sbr_unknown,
                      nSB = nSB_adj_unknown) %>%
               arrange(country,year,source,definition_rv)
+SBR.full.f$data_for_model <- ifelse(SBR.full.f$definition_rv == "ge24wks" & SBR.full.f$lmic == 1,0,SBR.full.f$data_for_model)
 
   
 write.csv(SBR.full.f,"output/fullset.csv")
