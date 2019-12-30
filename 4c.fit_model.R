@@ -8,7 +8,7 @@ library(rstan)
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
-fit<- rstan::stan(file= "mod/reg_hs.stan",data=stan.data,chains = 1,
+fit<- rstan::stan(file= "mod/base_t.stan",data=stan.data,chains = 1,
                   control=list(adapt_delta=0.99, max_treedepth=15))
 
 

@@ -128,7 +128,7 @@ check <- function(dat.list){
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/base.pdf")
+pdf_name <- paste0("fig/basic_hs.pdf")
 pdf(pdf_name, width = 10, height = 5)
 point.list %>% lapply(check)
 dev.off()

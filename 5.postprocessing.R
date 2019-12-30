@@ -15,7 +15,7 @@ source_summ <- data.frame(source = source_type,
                           bias = round(source_type_bias,digits = 3),
                           sd = round(source_type_sd,digits = 3))
 source_summ
-write.csv(source_summ,"output/result/source summary.csv")
+write.csv(source_summ,"output/result/base source summary.csv")
 
 hist(mcmc.array$bias_dt,main = "posterior sample survey bias",xlab = "posterior sample",breaks = 40)
 
@@ -23,21 +23,21 @@ hist(mcmc.array$bias_dt,main = "posterior sample survey bias",xlab = "posterior 
 #  summary     covariates table  #
 #--------------------------------#
 hs <- F
-int_cov <- c("gni","nmr","lbw","anc4","mean_edu_f")
+int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm")
 if(hs == TRUE){
-  int_cov <- c("gni","nmr","lbw","anc4","mean_edu_f",
-               "gini","urban","gfr","sab","anc1","abr",
-               "csec","pab")
+  int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
+               "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
+               "csec_sm","pab_sm","pfpr","gdp","mmr")
 }
 
 betas <- round(apply(mcmc.array$beta,2,median),digits = 3)
-sd <- round(apply(mcmc.array$beta,2,sd),digits = 3)
-ci <- t(round(apply(mcmc.array$beta,2,quantile,c(0.025,0.975)),digits = 3))
+sd <- round(apply(mcmc.array$beta,2,sd),digits = 4)
+ci <- t(round(apply(mcmc.array$beta,2,quantile,c(0.025,0.975)),digits = 4))
 covar_summ <- as.data.frame(cbind(int_cov,betas,sd,ci))
 colnames(covar_summ) <- c("covariates","estimates","sd","2.5%","97.%%")
 covar_summ
 
-write.csv(covar_summ,"output/result/HS covariates summary.csv")
+write.csv(covar_summ,"output/result/base covariates summary.csv")
 
 #--------------------------------#
 #  summary   regional intercept  #
@@ -50,7 +50,7 @@ reg_summ <- as.data.frame(cbind(c("1","2","3","4","5","6"),gamma_r,sd_gamma,ci_g
 colnames(reg_summ) <- c("sdg region","estimates","sd","2.5%","97.%%")
 reg_summ
 
-write.csv(covar_summ,"output/result/HS covariates summary.csv")
+write.csv(reg_summ,"output/result/base reg summary.csv")
 
 #------------------------------------------------#
 #   country -year estimates and 95% uncertainity  #
@@ -92,3 +92,4 @@ for(c in 2:standata$numcountry){
 fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 
 write.csv(fit_result,"output/result/base.csv")
+

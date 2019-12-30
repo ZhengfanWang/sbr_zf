@@ -19,7 +19,7 @@ library("rstanarm")
 library("bayesplot")
 library("loo")
 standata <- readRDS(file = "output/stan_data/nhs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/base_nval.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/base_nval_t.rds")       #stan fit 
 chain <- rstan::extract(fit)
 dim(chain$log_lik)
 loo1 <- loo(fit, save_psis = TRUE, cores = 4)
@@ -47,6 +47,16 @@ lw <- weights(psis1)[,i]
 color_scheme_set("orange")
 ppc_loo_pit_overlay(y, yrep, lw = lw)
 }
+loo_by_def <- function(def,dat,loo){
+  i <- dat$getj_i == def
+  y <- dat$Y[i]
+  yrep <- chain$prep[,i]
+  psis1 <- loo$psis_object
+  lw <- weights(psis1)[,i]
+  color_scheme_set("orange")
+  ppc_loo_pit_overlay(y, yrep, lw = lw)
+}
+
 ```
 
 
@@ -72,57 +82,29 @@ loo_by_source(source=3,dat = standata,loo=loo1)
 ```{r}
 length(which(standata$getj_i == 4)) #num of obs
 loo_by_source(source=4,dat = standata,loo=loo1)
+```
+
+# ga28wks
+```{r}
+length(which(standata$getd_i == 1))
+loo_by_def(def=1,dat = standata,loo=loo1)
 
 ```
 
-
-## OUT-SAMPLE 
-
+# ga22wks
 ```{r}
+length(which(standata$getd_i == 2))
+loo_by_def(def=2,dat = standata,loo=loo1)
+```
 
-fit <- readRDS(file = "rdsoutput/base_val.rds")
-stan.data <- readRDS(file = "output/stan_data/nhs_val.rds")
+# ga24wks
+```{r}
+length(which(standata$getd_i == 3))
+loo_by_def(def=3,dat = standata,loo=loo1)
+```
 
-array <- rstan::extract(fit)
-# indices of test set
-getitest <- setdiff(seq(1,stan.data$N), stan.data$getitrain_k)
-
-# errors
-pred <- apply(array$prep,2,median)
-errors <- stan.data$Y[getitest] - pred[getitest]
-hist(errors)
-# summarize
-mean(errors)  
-median(errors)  
-mean(abs(errors))
-median(abs(errors))
-
-
-ntest <- length(getitest)
-ntest
-# PIT
-pit.j <- rep(NA, ntest)
-for (j in 1:ntest){
-  i <- getitest[j]
-  yrepi.s <- array$prep[,i]
-  pit.j[j] <- mean(yrepi.s <= stan.data$Y[i])
-} 
-hist(pit.j, freq = F, xlab = "PIT-values", main = "Predicting last obs")  # should look uniform
-abline(h=1)  
-
-p <- 0.1
-qbinom(c(0.1, 0.9), size = ntest, prob = p)/ntest # 80% PI for prop of left out obs in one bin of PIT values with range of p 
-qbinom(c(0.25, 0.75), size = ntest, prob = p)/ntest # 50% PI for prop of left out obs in one bin of PIT values with range of p 
-p <- 0.25
-qbinom(c(0.1, 0.9), size = ntest, prob = p)/ntest # 80% PI for prop of left out obs in one bin of PIT values with range of p 
-qbinom(c(0.25, 0.75), size = ntest, prob = p)/ntest # 50% PI for prop of left out obs in one bin of PIT values with range of p 
-
-# coverage follows from pit
-mean(pit.j < 0.025) # % below 95% PI
-mean(pit.j < 0.05) # % below 90% PI
-mean(pit.j < 0.1)
-mean(pit.j > 0.975) # % above 95% PI 
-mean(pit.j > 0.95) 
-mean(pit.j > 0.9)
-
+# bw1000g
+```{r}
+length(which(standata$getd_i == 4))
+loo_by_def(def=4,dat = standata,loo=loo1)
 ```

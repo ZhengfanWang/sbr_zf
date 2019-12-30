@@ -1,5 +1,7 @@
 
-
+hs <- T
+do.validation <- F
+save.to <- "output/stan_data/hs_nval.rds"
 #------------------------------ input -------------------------------------------#
 endyear <- 2020
 estyears <- seq(2000,endyear)
@@ -33,7 +35,7 @@ covar_array <- create_covar_array(interest_cov = int_cov,estyears = estyears, da
 def_adj_output <- readRDS("output/def_adj_res.rds")
 
 #data for model result
-sbr2018 <- readRDS("output/data_for_model.rds") %>% filter(!(definition_rv == "ge24wks" & lmic == 1))
+sbr2018 <- readRDS("output/data_for_model.rds") 
 definition_fac <- c("ge28wks",paste0(unique(def_adj_output$definition_rv[!is.na(def_adj_output$def_bias)])))
 sbr2018$definition_rv <- factor(sbr2018$definition_rv, levels = definition_fac)
 
@@ -72,8 +74,8 @@ yearLength <- length(estyears)
 ## order=1 means Random walk 1, degree = 3 cubic spline
 splines.data <- getSplinesData(yearLength,I=1,order=1, degree = 2)
 
-stan.data<- list(Y = Y, var_i = var_i, unadj_Y = log(sbr2018_cleaned$SBR),
-                 covar_array = covar_array, definition_rv = sbr2018_cleaned$definition_rv,
+stan.data<- list(Y = Y, var_i = var_i, unadj_Y = log(sbr2018$SBR),
+                 covar_array = covar_array, definition_rv = sbr2018$definition_rv,
                  getj_i = getj.i, getd_i = getd.i, gett_i = gett.i, getc_i = getc.i,getr_c = getr.c,
                  datatype1_i = datatype1.i, datatype2_i = datatype2.i, datatype3_i = datatype3.i,datatype4_i=datatype4.i,
                  N = N, numcountry = max(getc.i), numregion = max(getr.c), estyears = estyears, yearLength = yearLength,

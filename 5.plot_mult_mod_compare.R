@@ -1,7 +1,7 @@
 
 
-fit <- readRDS(file = "rdsoutput/base_val.rds")
-fit2 <- readRDS(file = "rdsoutput/base_nval.rds")
+fit <- readRDS(file = "rdsoutput/base_nval.rds")
+fit2 <- readRDS(file = "rdsoutput/reg_hs_nval.rds")
 
 
 
@@ -55,7 +55,7 @@ Pspline2_country_list <- get_chain_result(fit2,smooth = TRUE)
 
 ####################################################################
 
-standata <- readRDS(file = "output/stan_data/nhs_val.rds")
+standata <- readRDS(file = "output/stan_data/hs_nval.rds")
 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
@@ -66,6 +66,13 @@ sbr2018$year <- standata$gett_i + 1999
 sbr2018$country_idx <- standata$getc_i
 sbr2018$source_name <- source_fac[sbr2018$getj_i]
 sbr2018$definition_name <- definition_fac[sbr2018$getd_i]
+
+
+df <- rstan::extract(fit)
+bias_dt_i <- apply(df$bias_dt_i,2,median)
+sd_i <- apply(df$sigma_i,2,median)
+var_i <- sd_i^2
+
 sbr2018$var <- var_i
 sbr2018$logadjsbr <- standata$Y  - bias_dt_i
 train <- rep(0,standata$N)
@@ -118,7 +125,7 @@ compare.plot.list <- function(set1,set2,name){
   return(finalplot.list)
 }
 #example
-normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("LOOCV","BASE"))
+normal_keep_ex <- compare.plot.list(Pspline1_country_list,Pspline2_country_list, c("base","regHS"))
 #########################################################
 
 
@@ -154,7 +161,7 @@ compare_plot <- function(dat.list){
 
 normal_keep_ex[[5]]
 
-pdf_name <- paste0("fig/base_loocv.pdf")
+pdf_name <- paste0("fig/base&regHS.pdf")
 pdf(pdf_name, width = 8, height = 5)
 normal_keep_ex %>% lapply(compare_plot)
 dev.off()
