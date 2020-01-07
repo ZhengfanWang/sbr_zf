@@ -1,10 +1,10 @@
-
+####All user-defined functions are in R/comp_plot.R
 
 # load one or two stanmodel output. 
 # 1. load one if want to plot covariate-base vs model fit
 # 2. load two if want to compare two model results
 
-fit <- readRDS(file = "rdsoutput/base_nval.rds")
+fit <- readRDS(file = "rdsoutput/reg_hs_nval.rds")
 #fit2 <- readRDS(file = "rdsoutput/reg_hs_nval.rds")
 
 ################################################
@@ -28,7 +28,7 @@ sbr2018$year <- standata$gett_i + 1999
 sbr2018$country_idx <- standata$getc_i
 sbr2018$source_name <- source_fac[sbr2018$getj_i]
 sbr2018$definition_name <- definition_fac[sbr2018$getd_i]
-
+estyears <- seq(2000,2020)
 
 df <- rstan::extract(fit)
 bias_dt_i <- apply(df$bias_dt_i,2,median)
@@ -68,7 +68,7 @@ comp.list <- compare.plot.list(country_list1,country_list2, c("fit","cov"))
 
 
 
-pdf_name <- paste0("fig/fit&cov.pdf")
+pdf_name <- paste0("fig/HS_fit&cov.pdf")
 pdf(pdf_name, width = 8, height = 5)
 comp.list %>% lapply(compare_plot)
 dev.off()
