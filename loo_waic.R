@@ -1,8 +1,8 @@
 library("rstanarm")
 library("bayesplot")
 library("loo")
-standata <- readRDS(file = "output/stan_data/nhs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/base_nval_t.rds")       #stan fit 
+standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
+fit <- readRDS(file = "rdsoutput/reg_hs_nval_t.rds")       #stan fit 
 chain <- rstan::extract(fit)
 dim(chain$log_lik)
 loo1 <- loo(fit, save_psis = TRUE, cores = 4)

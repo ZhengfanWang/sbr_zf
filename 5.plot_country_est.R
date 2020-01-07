@@ -1,8 +1,8 @@
 
 
 ####################################      input   ########################################
-standata <- readRDS(file = "output/stan_data/nhs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/base_nval.rds")       #stan fit 
+standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
+fit <- readRDS(file = "rdsoutput/reg_hs_nval.rds")       #stan fit 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
 ###########################################################################################
@@ -128,7 +128,7 @@ check <- function(dat.list){
   }
   return(est_plot)
 }
-pdf_name <- paste0("fig/basic_hs.pdf")
+pdf_name <- paste0("fig/reg_hs.pdf")
 pdf(pdf_name, width = 10, height = 5)
 point.list %>% lapply(check)
 dev.off()
