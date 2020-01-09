@@ -1,5 +1,5 @@
 standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/reg_hs_nval_t.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/reg_hs_nval.rds")       #stan fit 
 mcmc.array <- rstan::extract(fit)
 #mcmc.array2 <- rstan::extract(fit2)
 print(fit,pars = c("beta","bias_dt","sigma_j","gamma_r"))
@@ -15,7 +15,7 @@ source_summ <- data.frame(source = source_type,
                           bias = round(source_type_bias,digits = 3),
                           sd = round(source_type_sd,digits = 3))
 source_summ
-write.csv(source_summ,"output/result/HS_t_source.csv")
+write.csv(source_summ,"output/result/HS_source.csv")
 
 hist(mcmc.array$bias_dt,main = "posterior sample survey bias",xlab = "posterior sample",breaks = 40)
 
@@ -37,7 +37,7 @@ covar_summ <- as.data.frame(cbind(int_cov,betas,sd,ci))
 colnames(covar_summ) <- c("covariates","estimates","sd","2.5%","97.%%")
 covar_summ
 
-write.csv(covar_summ,"output/result/HS_t_covariates.csv")
+write.csv(covar_summ,"output/result/HS_covariates.csv")
 
 #--------------------------------#
 #  summary   regional intercept  #
@@ -50,7 +50,7 @@ reg_summ <- as.data.frame(cbind(c("1","2","3","4","5","6"),gamma_r,sd_gamma,ci_g
 colnames(reg_summ) <- c("sdg region","estimates","sd","2.5%","97.%%")
 reg_summ
 
-write.csv(reg_summ,"output/result/HS_t_region.csv")
+write.csv(reg_summ,"output/result/HS_region.csv")
 
 #------------------------------------------------#
 #   country -year estimates and 95% uncertainity  #
@@ -91,5 +91,5 @@ for(c in 2:standata$numcountry){
 
 fit_result <- fit_result %>% select(country,iso,year,low,muhat,up)
 
-write.csv(fit_result,"output/result/HS_t.csv")
+write.csv(fit_result,"output/result/HS.csv")
 

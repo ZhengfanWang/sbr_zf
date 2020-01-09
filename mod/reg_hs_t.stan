@@ -35,6 +35,8 @@ transformed data{
   real nu_global =1;
   real scale_global = 0.333;
   real slab_df = 3;
+  real nu_t = 3;
+  real t_scale = 3;
 }
 
 parameters {
@@ -83,11 +85,11 @@ transformed parameters {
   for(i in 1:N){
     bias_dt_i[i] = bias_dt*datatype4_i[i];
 
-    sigma_i[i] = sqrt(var_j[1]*datatype1_i[i]+
-                      var_j[2]*datatype2_i[i]+
-                      var_j[3]*datatype3_i[i]+
-                      var_j[4]*datatype4_i[i]+
-                      var_i[i]);
+    sigma_i[i] = sqrt((var_j[1]*datatype1_i[i]+
+                       var_j[2]*datatype2_i[i]+
+                       var_j[3]*datatype3_i[i]+
+                       var_j[4]*datatype4_i[i]+
+                       var_i[i])/t_scale);
   }
   for(c in 1:numcountry){
     for(t in 1:yearLength){
@@ -122,7 +124,7 @@ model {
   
   //main part
   for(k in 1:ntrain){
-    Y[getitrain_k[k]] ~ student_t(3,
+    Y[getitrain_k[k]] ~ student_t(nu_t,
                                  mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
                                + bias_dt_i[getitrain_k[k]]
                                + delta_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
@@ -134,13 +136,13 @@ model {
 generated quantities{
   vector[N] log_lik;
   vector[N] prep;
-  for (i in 1:N) log_lik[i] = student_t_lpdf(Y[i] | 3,
+  for (i in 1:N) log_lik[i] = student_t_lpdf(Y[i] | nu_t,
                                           mu_ct[getc_i[i],gett_i[i]]
                                           + bias_dt_i[i]
                                           + delta_ct[getc_i[i],gett_i[i]], 
                                           sigma_i[i]);
   
-  for (i in 1:N) prep[i] = student_t_rng(3,
+  for (i in 1:N) prep[i] = student_t_rng(nu_t,
                                         mu_ct[getc_i[i],gett_i[i]]
                                       + bias_dt_i[i]
                                       + delta_ct[getc_i[i],gett_i[i]], 
