@@ -39,10 +39,23 @@ SBR.full.ori$nTB[i.miss2] <- (SBR.full.ori$nSB+SBR.full.ori$nLB)[i.miss2]
 # fill in missing nLB when we have SBR >0 and nSB
 i.miss3 <- which(is.na(SBR.full.ori$nLB) & !is.na(SBR.full.ori$nSB) & SBR.full.ori$SBR>0)
 SBR.full.ori$nLB[i.miss3] <- SBR.full.ori$nSB[i.miss3]*(1000-SBR.full.ori$SBR[i.miss3])/SBR.full.ori$SBR[i.miss3]
+SBR.full.ori$nTB[i.miss3] <- SBR.full.ori$nLB[i.miss3] + SBR.full.ori$nSB[i.miss3]
 
 # fill in missing nLB when we have SBR >0 and nTB but no nSB
 i.miss4 <- which(is.na(SBR.full.ori$nLB) & is.na(SBR.full.ori$nSB) & !is.na(SBR.full.ori$nTB) & SBR.full.ori$SBR>0)
 SBR.full.ori$nLB[i.miss4] <- SBR.full.ori$nTB[i.miss4]*(1000-SBR.full.ori$SBR[i.miss4])/1000
+
+# fill in missing nSB when we have SBR >0 and nLB but no nTB 
+i.miss7 <- which(is.na(SBR.full.ori$nSB) & is.na(SBR.full.ori$nTB)& !is.na(SBR.full.ori$nLB) & !is.na(SBR.full.ori$SBR) & SBR.full.ori$SBR>0)
+i.miss7.replace <- SBR.full.ori$nLB * (SBR.full.ori$SBR/1000)/(1-(SBR.full.ori$SBR/1000))
+SBR.full.ori$nSB[i.miss7] <- i.miss7.replace[i.miss7]
+SBR.full.ori$nTB[i.miss7] <- SBR.full.ori$nSB[i.miss7] + SBR.full.ori$nLB[i.miss7]
+
+# also use wpp_LB when missing - but only for survey and admin 
+i.miss7b <- which(is.na(SBR.full.ori$nSB) & is.na(SBR.full.ori$nTB)& is.na(SBR.full.ori$nLB) & !is.na(SBR.full.ori$SBR) & SBR.full.ori$SBR>0 & !is.na(SBR.full.ori$WPP_LB)) & SBR.full.ori$source %in% c("survey","admin")
+i.miss7b.replace <- SBR.full.ori$WPP_LB * (SBR.full.ori$SBR/1000)/(1-(SBR.full.ori$SBR/1000))
+SBR.full.ori$nSB[i.miss7b] <- i.miss7b.replace[i.miss7b]
+
 
 # fill in missing SBR -- for now (includes some unknown def)
 # not sure if we also need to change adj_sbr_unknown?
