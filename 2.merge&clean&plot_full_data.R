@@ -52,7 +52,7 @@ SBR.full.ori$nSB[i.miss7] <- i.miss7.replace[i.miss7]
 SBR.full.ori$nTB[i.miss7] <- SBR.full.ori$nSB[i.miss7] + SBR.full.ori$nLB[i.miss7]
 
 # also use wpp_LB when missing - but only for survey and admin 
-i.miss7b <- which(is.na(SBR.full.ori$nSB) & is.na(SBR.full.ori$nTB)& is.na(SBR.full.ori$nLB) & !is.na(SBR.full.ori$SBR) & SBR.full.ori$SBR>0 & !is.na(SBR.full.ori$WPP_LB)) & SBR.full.ori$source %in% c("survey","admin")
+i.miss7b <- which(is.na(SBR.full.ori$nSB) & is.na(SBR.full.ori$nTB)& is.na(SBR.full.ori$nLB) & !is.na(SBR.full.ori$SBR) & SBR.full.ori$SBR>0 & !is.na(SBR.full.ori$WPP_LB) & SBR.full.ori$source %in% c("survey","admin"))
 i.miss7b.replace <- SBR.full.ori$WPP_LB * (SBR.full.ori$SBR/1000)/(1-(SBR.full.ori$SBR/1000))
 SBR.full.ori$nSB[i.miss7b] <- i.miss7b.replace[i.miss7b]
 
