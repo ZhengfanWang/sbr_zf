@@ -15,8 +15,8 @@ sbr2018 <- readRDS("output/fullset.rds")
 #sbr2018 <- right_join(def_adj_output,sbr2018,by = c("definition_rv","lmic"))
 #apply definitional adjustment to UPMIC 
 sbr2018$lmic[sbr2018$icgroup %in% c("Upper middle income")] <- 0
+#sbr2018$lmic[sbr2018$icgroup %in% c("Upper middle income")] <- 1
 sbr2018 <- right_join(def_adj_output,sbr2018,by = c("definition_rv","lmic"))
-sbr2018$lmic[sbr2018$icgroup %in% c("Upper middle income")] <- 1
 
 
 
