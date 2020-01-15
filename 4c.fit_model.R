@@ -7,7 +7,7 @@
 # 4. base model without validation "nhs_val.rds"
 
 #example
-stan.data <- readRDS("input/hs_val.rds")
+stan.data <- readRDS("output/stan_data/hs_val20_1.rds")
 
 library(rstan)
 options(mc.cores = parallel::detectCores())
@@ -21,7 +21,7 @@ rstan_options(auto_write = TRUE)
 
 # and the setting for the stan model:chains = 4,
 # control=list(adapt_delta=0.99, max_treedepth=15
-fit<- rstan::stan(file= "mod/reg_hs.stan",data=stan.data,chains = 4,
+fit<- rstan::stan(file= "mod/reg_hs_t.stan",data=stan.data,chains = 1,
                   control=list(adapt_delta=0.99, max_treedepth=15))
 
 saveRDS(fit,file = "rdsoutput/reg_hs_val.rds")

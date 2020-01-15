@@ -1,7 +1,10 @@
 
-hs <- T
+hs <- F
 do.validation <- F
-save.to <- "output/stan_data/hs_nval.rds"
+laocv <- F
+set.seed(5)
+l20ocv <- F
+save.to <- "output/stan_data/base_nval.rds"
 #------------------------------ input -------------------------------------------#
 endyear <- 2020
 estyears <- seq(2000,endyear)
@@ -86,7 +89,7 @@ stan.data<- list(Y = Y, var_i = var_i, unadj_Y = log(sbr2018$SBR),
 if (!do.validation){
   # all observations are in the training set
   stan.data$getitrain_k <- seq(1, N)
-} else {
+} else if(laocv){
   # this is one particular type of validation, 
   # leaving out the most recent data point in all countries with at least 2 observations
   indiceslastobs <- list()
@@ -96,6 +99,8 @@ if (!do.validation){
     }
   }
   stan.data$getitrain_k <- seq(1,N)[!is.element(seq(1,N), unlist(indiceslastobs))]
+} else if(l20ocv){
+  stan.data$getitrain_k <- sort(sample(1:N,round(N*0.8)))  
 }
 stan.data$ntrain <- length(stan.data$getitrain_k)
 saveRDS(stan.data,file = save.to)

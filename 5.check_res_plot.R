@@ -1,178 +1,94 @@
 
-
 library(rstan)
 
-#setwd("E:/doc/research/birth rate/SBR2018")
+fit <- readRDS(file = "rdsoutput/reg_hs_nval_t.rds")
+stan.data <- readRDS(file = "output/stan_data/hs_nval.rds")
 
-fit <- readRDS(file = "simulation/rdsoutput/exratio_base_model_standardize.rds")
-stan.data <- readRDS(file = "output/stan.data.exratio.rds")
-
-
-print(fit,pars = c("beta","beta_dt","beta_r","rho","sigma_ar","sigma_j"))
 
 array <- rstan::extract(fit)
-array$mu_ct[,,1]
-
 mu_ct <- array$mu_ct + array$delta_ct
+numcun <- max(stan.data$getc_i)
+numyear <- max(stan.data$gett_i)
+estyears <- seq(2000,2020)
 
 muhat <-c()
-for(c in 1:195){
-  for(t in 1:19){
+for(c in 1:numcun){
+  for(t in 1:numyear){
     muhat <- rbind(muhat,quantile(mu_ct[,c,t],c(.5)))
   }
 }
 
-estyears <- seq(2000,2018)
-year <- rep(estyears,times=195)
+
+year <- rep(estyears,times=numcun)
 countryiso <- countryRegionList$iso
-iso <- rep(countryiso,each=19)
-muhat <- data.frame(muhat,year,iso)
+iso <- rep(countryiso,each=numyear)
+muhat <- data.frame(est = muhat,year = numyear,iso)
 
-muhat
-
-
-stan.data$getc
 
 ###############################################
 
 
-logadj.sbr <- stan.data$Y
-var.sbr <- stan.data$var_i
+sd <- apply(array$sigma_i,2,median)
+error <- apply(array$prep,2,median)-stan.data$Y
 
-for(i in 1:stan.data$N){
-  
-  if(stan.data$getd_i[i]==2) {logadj.sbr[i] = logadj.sbr[i] + 0.07
-  var.sbr[i] = var.sbr[i] + 0.09} 
-  if(stan.data$getd_i[i]==3) {logadj.sbr[i] = logadj.sbr[i] - 0.38
-  var.sbr[i] = var.sbr[i] + 0.15}
-  if(stan.data$getd_i[i]==4) {logadj.sbr[i] = logadj.sbr[i] - 0.27
-  var.sbr[i] = var.sbr[i] + 0.12}
-  
-}
-
-for(i in 1:stan.data$N){
-  if(stan.data$getj_i[i]==1) var.sbr[i] = var.sbr[i] + 0.06
-  if(stan.data$getj_i[i]==2) {logadj.sbr[i] = logadj.sbr[i] - 0.22
-  var.sbr[i] = var.sbr[i] + 0.46}
-  if(stan.data$getj_i[i]==3) {logadj.sbr[i] = logadj.sbr[i] + 0.06
-  var.sbr[i] = var.sbr[i] + 0.2}
-}
-
-res.data <- data.frame(year = stan.data$gett_i+1999, country_idx = stan.data$getc_i, logadj.sbr =  logadj.sbr, var.sbr = var.sbr)%>%
+res.data <- data.frame(year = stan.data$gett_i+1999,
+                       country_idx = stan.data$getc_i, 
+                       error =  error, 
+                       sd = sd)%>%
                merge(countryRegionList, by="country_idx")
 
-
-
-resplot <- res.data %>%     merge(muhat,by = c("iso","year"))
-
-res.i <- resplot$logadj.sbr - resplot$X50.
+res.i <- res.data$error
+sd.i <- res.data$sdg
 
 hist(res.i)
-st.res.i <- res.i/sqrt(resplot$var.sbr)
+st.res.i <- res.i/sd.i
 length(st.res.i)
 
 hist(st.res.i)
 ##individual observation function
-getc.i=stan.data$getc_i
-gett.i=stan.data$gett_i
-getr.c=stan.data$getr_c
-getj.i=stan.data$getj_i
-getd.i=stan.data$getd_i
-
+getc.i <- stan.data$getc_i
+gett.i <- stan.data$gett_i
+getr.c <- stan.data$getr_c
+getj.i <- stan.data$getj_i
+getd.i <- stan.data$getd_i
+getr.i <- getr.c[getc.i]
 x.i<-function(varmatrix){
   varname.i<-rep(NA,stan.data$N)
   for (i in 1:stan.data$N) {varname.i[i]<-varmatrix[getc.i[i],gett.i[i]]}
   varname.i
 }
 
-gni.i<-x.i(stan.data$Z1)
-nmr.i<-x.i(stan.data$Z2)
-lbw.i<-x.i(stan.data$Z3)
-anc4.i<-x.i(stan.data$Z4)
-edu.i<-x.i(stan.data$Z5)
-getr.i <- getr.c[getc.i]
+int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
+             "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
+             "csec_sm","pab_sm","pfpr","gdp","mmr")
+varname <- "nmr"
 
-length(gni.i)
+getvar_i <- function(varname,interest_cov = intcov){
+   var.index <- which(varname == int_cov) 
+   var.i <- x.i(stan.data$covar_array[var.index,,])
+   return(var.i)
+}
+
 
 # plot residuals against predictors, yhat, time
-pdf_name3 <- paste0("fig/res_region.pdf")
+pdf_name3 <- paste0("fig/res_plot.pdf")
 pdf(pdf_name3, width = 10, height = 12)
 par(mfrow=c(2,2))
-#plot(res.i~edu.i+anc.i+lbw.i+nmr.i+gni.i, col = getr.i)
-plot(st.res.i~gni.i, col = getr.i, cex=1)
+gni.i <- getvar_i("gni_sm")
+plot(st.res.i~ gni.i, col = getr.i, cex=1)
 curve(predict(loess(st.res.i~gni.i),x), add = T, col = 2, lwd= 3)
 abline(h=0)
-legend("topleft", legend=c("MDG region 1", "MDG region 2", "MDG region 3"),
-       col=c(1:3), pch=1, cex=0.8)
+#legend("topleft", legend=c("SDG region 1", "MDG region 2", "MDG region 3",
+#                           "MDG region 4", "MDG region 5", "MDG region 6"),
+#       col=c(1:6), pch=1, cex=0.8)
 
+nmr.i <- getvar_i("nmr")
 plot(st.res.i~nmr.i, col = getr.i,cex=1)
 curve(predict(loess(st.res.i~nmr.i),x), add = T, col = 2, lwd= 3)
 abline(h=0)
-legend("topleft", legend=c("MDG region 1", "MDG region 2", "MDG region 3"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~lbw.i, col = getr.i,cex=1)
-curve(predict(loess(st.res.i~lbw.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("MDG region 1", "MDG region 2", "MDG region 3"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~anc4.i, col = getr.i,cex=1)
-curve(predict(loess(st.res.i~anc4.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("MDG region 1", "MDG region 2", "MDG region 3"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~edu.i, col = getr.i,cex=1)
-curve(predict(loess(st.res.i~edu.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("MDG region 1", "MDG region 2", "MDG region 3"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~ resplot$logadj.sbr, col = getr.i,cex=1)
-curve(predict(loess(st.res.i ~ resplot$logadj.sbr),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("MDG region 1", "MDG region 2", "MDG region 3"),
-       col=c(1:3), pch=1, cex=0.8)
-
-
-######################################################
-plot(st.res.i~gni.i, col = getd.i, cex=1)
-curve(predict(loess(st.res.i~gni.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("ge28wks", "ge1000g", "ge22wks","ge500g"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~nmr.i, col = getd.i,cex=1)
-curve(predict(loess(st.res.i~nmr.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("ge28wks", "ge1000g", "ge22wks","ge500g"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~lbw.i, col = getd.i,cex=1)
-curve(predict(loess(st.res.i~lbw.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("ge28wks", "ge1000g", "ge22wks","ge500g"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~anc4.i, col = getd.i,cex=1)
-curve(predict(loess(st.res.i~anc4.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("ge28wks", "ge1000g", "ge22wks","ge500g"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~edu.i, col = getd.i,cex=1)
-curve(predict(loess(st.res.i~edu.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("ge28wks", "ge1000g", "ge22wks","ge500g"),
-       col=c(1:3), pch=1, cex=0.8)
-
-plot(st.res.i~ resplot$logadj.sbr, col = getd.i,cex=1)
-curve(predict(loess(st.res.i ~ resplot$logadj.sbr),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-legend("topleft", legend=c("ge28wks", "ge1000g", "ge22wks","ge500g"),
-       col=c(1:3), pch=1, cex=0.8)
-
+#legend("topleft", legend=c("SDG region 1", "MDG region 2", "MDG region 3",
+#                           "MDG region 4", "MDG region 5", "MDG region 6"),
+#       col=c(1:6), pch=1, cex=0.8)
 dev.off()
 
 

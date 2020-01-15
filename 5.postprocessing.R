@@ -1,5 +1,5 @@
 standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/reg_hs_nval.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/base_nval.rds")       #stan fit 
 mcmc.array <- rstan::extract(fit)
 #mcmc.array2 <- rstan::extract(fit2)
 print(fit,pars = c("beta","bias_dt","sigma_j","gamma_r"))
@@ -50,7 +50,7 @@ reg_summ <- as.data.frame(cbind(c("1","2","3","4","5","6"),gamma_r,sd_gamma,ci_g
 colnames(reg_summ) <- c("sdg region","estimates","sd","2.5%","97.%%")
 reg_summ
 
-write.csv(reg_summ,"output/result/HS_region.csv")
+write.csv(reg_summ,"output/result/base_region.csv")
 
 #------------------------------------------------#
 #   country -year estimates and 95% uncertainity  #
