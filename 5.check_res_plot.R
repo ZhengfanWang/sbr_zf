@@ -52,23 +52,14 @@ getr.c <- stan.data$getr_c
 getj.i <- stan.data$getj_i
 getd.i <- stan.data$getd_i
 getr.i <- getr.c[getc.i]
-x.i<-function(varmatrix){
-  varname.i<-rep(NA,stan.data$N)
-  for (i in 1:stan.data$N) {varname.i[i]<-varmatrix[getc.i[i],gett.i[i]]}
-  varname.i
-}
 
+
+# getvar_i function needs the int_cov vector to find the location of variable
 int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
              "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
              "csec_sm","pab_sm","pfpr","gdp","mmr")
-varname <- "nmr"
-
-getvar_i <- function(varname,interest_cov = intcov){
-   var.index <- which(varname == int_cov) 
-   var.i <- x.i(stan.data$covar_array[var.index,,])
-   return(var.i)
-}
-
+#e.g
+nmr.i <- getvar_i("nmr",interest_cov = intcov)
 
 # plot residuals against predictors, yhat, time
 pdf_name3 <- paste0("fig/res_plot.pdf")
