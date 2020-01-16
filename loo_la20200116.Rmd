@@ -1,6 +1,6 @@
 ---
-title: "Model comp: HS model with normal dist and T dist"
-author: "Zhengfan Wang"
+title: "Model comp"
+author: "Zhengfan Wang, edits LA to get just loo"
 output: pdf_document
 ---
 
@@ -8,8 +8,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Out-of-sample validation
-
+Set up
 ```{r message=FALSE, echo=FALSE, warning=FALSE, error=FALSE}
 
 source("0.load_packages.R")
@@ -19,93 +18,16 @@ library("rstan")
 library("rstanarm")
 library("bayesplot")
 library("loo")
-fit.val <- readRDS(file = "rdsoutput/hs_val_t.rds")
-fit.val2 <- readRDS(file = "rdsoutput/reg_hs_val.rds")
-stan.data <- readRDS(file = "output/stan_data/nhs_val.rds")
-
-array <- rstan::extract(fit.val)
-array2 <- rstan::extract(fit.val2)
-# indices of test set
-getitest <- setdiff(seq(1,stan.data$N), stan.data$getitrain_k)
-
-# errors
-pred <- apply(array$prep,2,median)
-pred2 <- apply(array2$prep,2,median)
-
-errors <- stan.data$Y[getitest] - pred[getitest]
-errors2 <- stan.data$Y[getitest] - pred2[getitest]
 ```
 
-```{r message=FALSE, echo=FALSE, warning=FALSE, error=FALSE}
-par(mfrow=c(1,2))
-hist(errors,main = "t dist")
-hist(errors2,main = "normal dist")
-# 
-t1 <- mean(errors)  
-n1 <- mean(errors2) 
-t2 <- mean(abs(errors))
-n2 <- mean(abs(errors2))
-```
-
-```{r message=FALSE, echo=FALSE, warning=FALSE, error=FALSE}
-ntest <- length(getitest)
-# PIT
-pit.j <- rep(NA, ntest)
-pit.j2 <- rep(NA, ntest)
-for (j in 1:ntest){
-  i <- getitest[j]
-  yrepi.s <- array$prep[,i]
-  yrepi.s2 <- array2$prep[,i]
-  pit.j[j] <- mean(yrepi.s <= stan.data$Y[i])
-  pit.j2[j] <- mean(yrepi.s2 <= stan.data$Y[i])
-} 
-par(mfrow=c(1,2))
-hist(pit.j, freq = F, xlab = "PIT-values", main = "Predicting last obs")  # should look uniform
-abline(h=1)  
-hist(pit.j2, freq = F, xlab = "PIT-values", main = "Predicting last obs")  # should look uniform
-abline(h=1)  
-
-
-# coverage follows from pit
-t3 <- mean(pit.j < 0.025) # % below 95% PI
-t4 <- mean(pit.j < 0.05) # % below 90% PI
-t5 <- mean(pit.j < 0.1)
-t6 <- mean(pit.j > 0.975) # % above 95% PI 
-t7 <- mean(pit.j > 0.95) 
-t8 <- mean(pit.j > 0.9)
-
-n3 <- mean(pit.j2 < 0.025) # % below 95% PI
-n4 <- mean(pit.j2 < 0.05) # % below 90% PI
-n5 <- mean(pit.j2 < 0.1)
-n6 <- mean(pit.j2 > 0.975) # % above 95% PI 
-n7 <- mean(pit.j2 > 0.95) 
-n8 <- mean(pit.j2 > 0.9)
-
-c1 <- round(c(t1,n1),digits = 4)
-c2 <- round(c(t2,n2),digits = 4)
-c3 <- round(c(t3,n3),digits = 4)
-c4 <- round(c(t4,n4),digits = 4)
-c5 <- round(c(t5,n5),digits = 4)
-c6 <- round(c(t6,n6),digits = 4)
-c7 <- round(c(t7,n7),digits = 4)
-c8 <- round(c(t8,n8),digits = 4)
-
-sumtab <- data.frame(model = c("t dist" , "normal dist"),
-                     mean_error = c1, mean_abs_error = c2,
-                     below_95_PI = c3, below_90_PI = c4,
-                     below_80_PI = c5, above_80_PI = c8,
-                     above_90_PI = c7, above_95_PI = c6)
-
-sumtab
-```
 
 ## IN-SAMPLE
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE, error=FALSE}
 
 standata <- readRDS(file = "output/stan_data/nhs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/reg_hs_nval_t.rds")       #stan fit 
-fit2 <- readRDS(file = "rdsoutput/reg_hs_nval.rds")
+fit <- readRDS(file = "rdsoutput/reg_hs_nval.rds")       #stan fit for HS model
+fit2 <- readRDS(file = "rdsoutput/reg_hscov_nval.rds")  # fit for covariates from HS model
 chain <- rstan::extract(fit)
 loo1 <- loo(fit, save_psis = TRUE, cores = 4)
 chain2 <- rstan::extract(fit2)
@@ -147,7 +69,7 @@ loo_by_def <- function(def,dat,loo){
 
 ```
 
-The in sample loo validation results of student-t distribution and normal distribution are shown respectively. 
+The in sample loo validation results of HS and HScov are shown respectively. 
 
 ```{r}
 # Pareto K diagnostic values for T distribution model
@@ -165,7 +87,6 @@ ppc_loo_pit_overlay(y, yrep, lw = lw)
 ppc_loo_pit_overlay(y, yrep2, lw = lw2)
 ```
 
-According to the result, the t distribution has a better result. There are just 6 (6 vs 94) bad points and no (0 vs 8) points are very bad
 
 ```{r message=FALSE, echo=FALSE, warning=FALSE, error=FALSE}
 countryidx <- standata$getc_i[which(pareto_k_values(loo1) > 0.7)]
@@ -184,12 +105,12 @@ def2 <- standata$getd_i[which(pareto_k_values(loo2) > 0.7)]
 source2 <- standata$getj_i[which(pareto_k_values(loo2) > 0.7)]
 normalbadpoint <- data.frame(country = countryname2, year = year2, definition=deftype[def2],source = sourcetype[source2])
 ```
-Bad points for model with t distribution:
+Bad points for HS:
 
 ```{r}
 print(tbadpoint)
 ```
-Bad points for model with normal distribution:
+Bad points for HScov:
 
 ```{r}
 print(normalbadpoint)
