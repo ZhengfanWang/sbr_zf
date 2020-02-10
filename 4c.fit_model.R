@@ -20,17 +20,19 @@ rstan_options(auto_write = TRUE)
 #2. "base_t.stan"
 #3. "reg_hs.stan"
 #4. "reg_hs_t.stan"
-# add a new model 
-# 5. "reg_hs_t_2level_int.stan"
+
+# add two new models 
+# 5. "reg_hs_t_2level_int.stan"  t distribution model
+# 6. "reg_hs_2level_int.stan" normal distribution model
 
 # and the setting for the stan model:chains = 4,
 # control=list(adapt_delta=0.99, max_treedepth=15
-fit<- rstan::stan(file= "mod/reg_hs_t.stan",data=stan.data,chains = 1,
+
+fit<- rstan::stan(file= "mod/reg_hs_2level_int.stan",data=stan.data,chains = 1,
                   control=list(adapt_delta=0.99, max_treedepth=15))
 
+#make sure to change the file name to save.
 saveRDS(fit,file = "rdsoutput/reg_hs_val.rds")
-
-
 
 
 # new model test: work
