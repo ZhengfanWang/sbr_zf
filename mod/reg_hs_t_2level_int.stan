@@ -50,11 +50,13 @@ parameters {
   //deviance part
   real<upper=0> bias_dt;
   real<lower=0,upper=5> sigma_j[numsource];
-
-  real<lower=0,upper=5> sigma_c;
+ 
+  real<lower=0> sigma_r;
+  real<lower=0> sigma_c;
 
   //parameters: P spline 2 order
   real<lower=0,upper=3> tau_delta;      // sd for spline coefficients
+  real gamma_w;
   vector[numregion] gamma_r;
   vector[numcountry] gamma_c;
   matrix[H,numcountry] delta_hc;
@@ -108,7 +110,12 @@ model {
     caux ~ inv_gamma(0.5*slab_df,0.5*slab_df);
 
   // P spline
-  gamma_r[] ~ normal(2.5, 2);
+  sigma_r ~ normal(0,1);
+  sigma_c ~ normal(0,1);
+  gamma_w ~ normal(2.5, 2);
+  for(r in 1: numregion){
+  gamma_r[r] ~ normal(gamma_w, sigma_r);
+  }
   for(c in 1:numcountry){
     gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
   }

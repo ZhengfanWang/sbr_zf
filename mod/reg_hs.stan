@@ -106,7 +106,7 @@ model {
     caux ~ inv_gamma(0.5*slab_df,0.5*slab_df);
 
   // P spline
-  gamma_r[] ~ normal(0,1);
+  gamma_r[] ~ normal(2.5,2);
   for(c in 1:numcountry){
     gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
   }
