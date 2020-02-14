@@ -119,7 +119,7 @@ model {
   bias_dt ~ normal(0,5);// source type bias part
   
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)
-  
+  sigma_c ~ normal(0,1);
   //main part
   for(k in 1:ntrain){
     Y[getitrain_k[k]] ~ normal(mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
