@@ -1,10 +1,10 @@
 
-hs <- F
-do.validation <- F
-laocv <- F
-set.seed(5)
-l20ocv <- F
-save.to <- "output/stan_data/base_nval.rds"
+#hs <- T
+#do.validation <- F
+#laocv <- F
+#set.seed(5)
+#l20ocv <- F
+#save.to <- "output/stan_data/hs_nval.rds"
 #------------------------------ input -------------------------------------------#
 endyear <- 2020
 estyears <- seq(2000,endyear)
@@ -26,7 +26,7 @@ covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>%
   dplyr::rename("iso"="iso3") %>% 
   merge(countryRegionList,by="iso") %>% 
   filter(year>=2000) %>% 
-  mutate(gni = log(gni_sm),
+  mutate(gni_sm = log(gni_sm),
          nmr = log(nmr)) %>% 
   arrange(iso,year) 
 covar_array <- create_covar_array(interest_cov = int_cov,estyears = estyears, dataset = covarset)

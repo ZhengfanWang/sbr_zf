@@ -93,7 +93,7 @@ saveRDS(subnat.full, "output/subnat.lit.rv.full.rds")
 #   survey    #
 #-------------#
 ##read survey data
-survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2019-12-11.xlsx", sheet = 1) # read in survey
+survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2020-01-28.xlsx", sheet = 1) # read in survey
 
 survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code",
                                 "year"="ReferenceDate", 

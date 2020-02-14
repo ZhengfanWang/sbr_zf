@@ -1,7 +1,7 @@
 
 library(rstan)
 
-fit <- readRDS(file = "rdsoutput/reg_hs_nval_t.rds")
+fit <- readRDS(file = "rdsoutput/regHS_nval_res.rds")
 stan.data <- readRDS(file = "output/stan_data/hs_nval.rds")
 
 
@@ -44,6 +44,13 @@ hist(res.i)
 st.res.i <- res.i/sd.i
 length(st.res.i)
 
+sdgname <- c("Southern Asia",
+             "Sub-Saharan Africa",
+             "Northern America, Australia and New Zealand, Central Asia and Europe",
+             "Western Asia and Northern Africa ",
+             "Latin America and the Caribbean",
+             "Eastern Asia, South Eastern Asia and Oceania")
+
 hist(st.res.i)
 ##individual observation function
 getc.i <- stan.data$getc_i
@@ -52,7 +59,7 @@ getr.c <- stan.data$getr_c
 getj.i <- stan.data$getj_i
 getd.i <- stan.data$getd_i
 getr.i <- getr.c[getc.i]
-
+region <- sdgname[getr.i]
 
 # getvar_i function needs the int_cov vector to find the location of variable
 int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
@@ -61,25 +68,26 @@ int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
 #e.g
 nmr.i <- getvar_i("nmr",interest_cov = intcov)
 
+
+resplot <- function(var_name){
+  var_i <- getvar_i(var_name)
+  p <- ggplot() + 
+       geom_point(aes(x = var_i,y = st.res.i,colour = region)) +
+       geom_smooth(aes(x = var_i,y = st.res.i),method = "loess",se = F) +
+       scale_x_continuous(name = ifelse(var_name %in% c("gni_sm","nmr"),paste("log",var_name),var_name)) +
+       scale_y_continuous(name = 'standardized residual') +
+       theme(legend.position="bottom")
+       
+  return(p)
+}
+
+
 # plot residuals against predictors, yhat, time
 pdf_name3 <- paste0("fig/res_plot.pdf")
-pdf(pdf_name3, width = 10, height = 12)
-par(mfrow=c(2,2))
-gni.i <- getvar_i("gni_sm")
-plot(st.res.i~ gni.i, col = getr.i, cex=1)
-curve(predict(loess(st.res.i~gni.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-#legend("topleft", legend=c("SDG region 1", "MDG region 2", "MDG region 3",
-#                           "MDG region 4", "MDG region 5", "MDG region 6"),
-#       col=c(1:6), pch=1, cex=0.8)
+pdf(pdf_name3, width = 15, height = 12)
 
-nmr.i <- getvar_i("nmr")
-plot(st.res.i~nmr.i, col = getr.i,cex=1)
-curve(predict(loess(st.res.i~nmr.i),x), add = T, col = 2, lwd= 3)
-abline(h=0)
-#legend("topleft", legend=c("SDG region 1", "MDG region 2", "MDG region 3",
-#                           "MDG region 4", "MDG region 5", "MDG region 6"),
-#       col=c(1:6), pch=1, cex=0.8)
+int_cov %>% lapply(resplot)
+
 dev.off()
 
 

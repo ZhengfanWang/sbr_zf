@@ -6,7 +6,7 @@
 #   load data   #
 #---------------#
 
-admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20191213.xlsx", sheet = 1, startRow = 2) # read in admin data
+admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20200204.xlsx", sheet = 1, startRow = 2) # read in admin data
 
 
 #-----------------------------#
