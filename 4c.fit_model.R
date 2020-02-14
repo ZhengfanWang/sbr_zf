@@ -29,7 +29,7 @@ rstan_options(auto_write = TRUE)
 # control=list(adapt_delta=0.99, max_treedepth=15
 
 fit<- rstan::stan(file= "mod/reg_hs_2level_int.stan",data=stan.data,chains = 4,
-                  warmup = 2000, iter = 3000,
+                  warmup = 2000, iter = 5000,
                   control=list(adapt_delta=0.99, max_treedepth=15))
 
 #make sure to change the file name to save.
