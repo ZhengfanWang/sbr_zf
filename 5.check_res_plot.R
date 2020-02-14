@@ -3,33 +3,33 @@ library(rstan)
 
 fit <- readRDS(file = "rdsoutput/regHS_nval_res.rds")
 stan.data <- readRDS(file = "output/stan_data/hs_nval.rds")
-
+smooth <- T
 
 array <- rstan::extract(fit)
-mu_ct <- array$mu_ct + array$delta_ct
+
+  
 numcun <- max(stan.data$getc_i)
-numyear <- max(stan.data$gett_i)
+numyear <- max(stan.data$yearLength)
 estyears <- seq(2000,2020)
 
-muhat <-c()
-for(c in 1:numcun){
-  for(t in 1:numyear){
-    muhat <- rbind(muhat,quantile(mu_ct[,c,t],c(.5)))
+if(smooth == T){
+  est <- array$prep}else if(smooth == F){
+    est <- array(dim = c(4000,stan.data$ntrain))
+    for(i in 1:stan.data$ntrain){
+      est[,i] <-  array$prep[,i] - 
+        array$delta_ct[,getc.i[i],gett.i[i]] +
+        array$gamma_c[,getc.i[i]]
+    }    
   }
-}
 
 
-year <- rep(estyears,times=numcun)
-countryiso <- countryRegionList$iso
-iso <- rep(countryiso,each=numyear)
-muhat <- data.frame(est = muhat,year = numyear,iso)
 
 
 ###############################################
 
 
 sd <- apply(array$sigma_i,2,median)
-error <- apply(array$prep,2,median)-stan.data$Y
+error <- apply(est,2,median)-stan.data$Y
 
 res.data <- data.frame(year = stan.data$gett_i+1999,
                        country_idx = stan.data$getc_i, 
@@ -83,7 +83,7 @@ resplot <- function(var_name){
 
 
 # plot residuals against predictors, yhat, time
-pdf_name3 <- paste0("fig/res_plot.pdf")
+pdf_name3 <- paste0("fig/res_plot_smooth.pdf")
 pdf(pdf_name3, width = 15, height = 12)
 
 int_cov %>% lapply(resplot)
