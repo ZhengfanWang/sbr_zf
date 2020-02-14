@@ -69,8 +69,9 @@ source("4a.create_model_data.R")
 #---------------------------------------#
 ## input for model
 hs <- T
-do.validation <- T
-save.to <- "output/stan_data/hs_val.rds"
+do.validation <- F
+laocv <- F
+save.to <- "output/stan_data/hs_nval.rds"
 source("4b.creat_stan_data.R")
 #---------------------------------------#
 
