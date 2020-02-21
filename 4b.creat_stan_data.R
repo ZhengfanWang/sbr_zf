@@ -27,7 +27,8 @@ covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>%
   merge(countryRegionList,by="iso") %>% 
   filter(year>=2000) %>% 
   mutate(gni_sm = log(gni_sm),
-         nmr = log(nmr)) %>% 
+         nmr = log(nmr),
+         lbw_sm = log(lbw_sm)) %>% 
   arrange(iso,year) 
 covar_array <- create_covar_array(interest_cov = int_cov,estyears = estyears, dataset = covarset)
 
