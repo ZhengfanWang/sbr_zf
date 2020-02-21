@@ -28,17 +28,20 @@ if(smooth == T){
 ###############################################
 
 
-sd <- apply(array$sigma_i,2,median)
+# minor edit LA: avoid using name "sd"
+stdev <- apply(array$sigma_i,2,median)
 error <- apply(est,2,median)-stan.data$Y
 
 res.data <- data.frame(year = stan.data$gett_i+1999,
                        country_idx = stan.data$getc_i, 
                        error =  error, 
-                       sd = sd)%>%
+                       stdev = stdev)%>%
                merge(countryRegionList, by="country_idx")
 
 res.i <- res.data$error
-sd.i <- res.data$sdg
+# edit LA 2020/2/21, not sure what sdg is? 
+#sd.i <- res.data$sdg
+sd.i <- res.data$stdev
 
 hist(res.i)
 st.res.i <- res.i/sd.i
