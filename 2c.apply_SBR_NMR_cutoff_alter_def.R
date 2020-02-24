@@ -44,8 +44,8 @@ sd_i = sqrt(sbr2018$SE.logsbr^2 + sbr2018$def_sd^2)
 #-----------------------------------------#
 params_cutoff <- readRDS(file = "output/results_cutoff_analysis.rds")
 # params_cutoff is list(mu.hat, delta.hat.sq, sigma.hat.sq)
-#cutoff_prob <- 0.05
-cutoff_prob <- 0.5 #sensitivity analysis
+cutoff_prob <- 0.05
+#cutoff_prob <- 0.5 #sensitivity analysis
 
 ### use observed NMR 
 fsbr <- adj_sbr
@@ -57,7 +57,7 @@ fnmr_obs <- sbr2018$NMR
 defadj_prob_obs_i <- get_probs_sbrnmr(ftb = ftb, fsbr = fsbr, 
                                fnmr = fnmr_obs, 
                                flb = flb, 
-                               params_cutoff)
+                               params_cutoff, include_variance_obs = FALSE) # sens analysis
 defadj_exclude_sbrnmr_obs_i <- (defadj_prob_obs_i < cutoff_prob)
 
 
@@ -69,7 +69,7 @@ defadj_prob_un_i <- get_probs_sbrnmr(ftb = ftb,
                               fsbr = fsbr, 
                               fnmr = fnmr_un,
                               flb = flb_un, 
-                              params_cutoff)
+                              params_cutoff, include_variance_obs = FALSE)# sens analysis
 defadj_exclude_sbrnmr_un_i <- (defadj_prob_un_i < cutoff_prob)
 
 
