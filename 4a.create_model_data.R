@@ -13,7 +13,6 @@ SBR.full <- SBR.full.ori %>% mutate(data_for_model = ifelse(is.na(exclusion_note
 # Overview for num paired obs and obs where need to adj   # 
 #---------------------------------------------------------#
 
-
 SBR.full <- SBR.full  %>% 
   mutate(data_for_model = replace(data_for_model,
                                   (definition_rv %in% c("any","not defined","unknownGA")),0)) %>% 
@@ -22,6 +21,7 @@ SBR.full <- SBR.full  %>%
          definition,SBR,nSB_adj_unknown,adj_sbr_unknown,SE.sbr,SE.logsbr, prop_unknown,nSB,nTB,nLB,WPP_LB,nNM,NMR,
          UN_NMR,rSN,rSN_UN,shmdg2,icgroup,country_idx,exclusion_notes,exclusion_ratio,exclude_col,
          exclusion_notes_full,
+         prob_obs, prob_un, defadj_prob_obs,defadj_prob_un, #adding probabilities for ratio exclusion rules 
          defadj_sbr, defadj_sbr_se,
          data_for_model) %>%
   ## moved this below 
