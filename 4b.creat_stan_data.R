@@ -1,10 +1,6 @@
-
-#hs <- T
-#do.validation <- F
-#laocv <- F
-#set.seed(5)
-#l20ocv <- F
-#save.to <- "output/stan_data/hs_nval.rds"
+hs <- T
+do.validation <- F
+save.to <- "output/stan_data/hs_newCutoff_nval_20200220.rds"
 #------------------------------ input -------------------------------------------#
 endyear <- 2020
 estyears <- seq(2000,endyear)
@@ -15,18 +11,21 @@ estyears <- seq(2000,endyear)
 #-------------------------------#
 covarset.raw <- read.csv("input/covar/sbr_igme_covariates_20191202.csv")
 
-int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm")
+#int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm")
+#use this to get parsamonious HS model
+int_cov <- c("nmr","lbw_sm","anc4_sm","mean_edu_f_sm","urban","csec_sm")
+
+
 if(hs == TRUE){
   int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
                "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
                "csec_sm","pab_sm","pfpr","gdp","mmr")
 }
-
 covarset <- covarset.raw %>% select(c("iso3","year",int_cov)) %>% 
   dplyr::rename("iso"="iso3") %>% 
   merge(countryRegionList,by="iso") %>% 
   filter(year>=2000) %>% 
-  mutate(gni_sm = log(gni_sm),
+  mutate(gni = log(gni_sm),
          nmr = log(nmr),
          lbw_sm = log(lbw_sm)) %>% 
   arrange(iso,year) 
