@@ -5,8 +5,8 @@ full_data <- readRDS("output/sbr.full.rds")
 params_cutoff <- readRDS(file = "output/results_cutoff_analysis.rds")
 # params_cutoff is list(mu.hat, delta.hat.sq, sigma.hat.sq)
 
-#cutoff_prob <- 0.05
-cutoff_prob <- 0.5 #sensitivity analysis 
+cutoff_prob <- 0.05
+#cutoff_prob <- 0.5 #sensitivity analysis 
 cutoff_bound_zerovar <- exp(qnorm(cutoff_prob,params_cutoff$mu.hat,
                                   sqrt(params_cutoff$delta.hat.sq + params_cutoff$sigma.hat.sq)))
                             
@@ -19,7 +19,7 @@ fnmr_obs <- full_data$NMR
 prob_obs_i <- get_probs_sbrnmr(ftb = ftb, fsbr = fsbr, 
                                fnmr = fnmr_obs, 
                                flb = flb, 
-                               params_cutoff)
+                               params_cutoff, include_variance_obs = FALSE)
 exclude_sbrnmr_obs_i <- (prob_obs_i < cutoff_prob)
                             
 # now same for UN nmr for selected obs
@@ -29,7 +29,7 @@ prob_un_i <- get_probs_sbrnmr(ftb = ftb,
                               fsbr = fsbr, 
                               fnmr = fnmr_un,
                               flb = flb_un, 
-                              params_cutoff)
+                              params_cutoff, include_variance_obs = FALSE)
 exclude_sbrnmr_un_i <- (prob_un_i < cutoff_prob)
  
 ## AM: I think something about this isn't working because will return INF if both are missing -- should check later  
