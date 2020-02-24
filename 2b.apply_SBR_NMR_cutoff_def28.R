@@ -5,7 +5,8 @@ full_data <- readRDS("output/sbr.full.rds")
 params_cutoff <- readRDS(file = "output/results_cutoff_analysis.rds")
 # params_cutoff is list(mu.hat, delta.hat.sq, sigma.hat.sq)
 
-cutoff_prob <- 0.05
+#cutoff_prob <- 0.05
+cutoff_prob <- 0.5 #sensitivity analysis 
 cutoff_bound_zerovar <- exp(qnorm(cutoff_prob,params_cutoff$mu.hat,
                                   sqrt(params_cutoff$delta.hat.sq + params_cutoff$sigma.hat.sq)))
                             
