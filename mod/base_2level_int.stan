@@ -93,6 +93,9 @@ model {
   sigma_r ~ normal(0,1);
   sigma_c ~ normal(0,1);
   gamma_w ~ normal(2.5, 2);
+  for(r in 1: numregion){
+  gamma_r[r] ~ normal(gamma_w, sigma_r);
+  }
   for(c in 1:numcountry){
     gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
   }
