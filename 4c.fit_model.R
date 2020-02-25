@@ -28,7 +28,7 @@ rstan_options(auto_write = TRUE)
 # and the setting for the stan model:chains = 4,
 # control=list(adapt_delta=0.99, max_treedepth=15
 
-fit<- rstan::stan(file= "mod/reg_hs_2level_int.stan",data=stan.data,chains = 4,
+fit<- rstan::stan(file= "mod/uncenter_reg_hs_2level_int2.stan",data=stan.data,chains = 4,
                   warmup = 2000, iter = 5000,
                   control=list(adapt_delta=0.99, max_treedepth=15))
 

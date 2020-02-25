@@ -30,8 +30,7 @@ data{
 }
 
 transformed data{
-  real nu_t = 3;
-  real t_scale = 3;
+  real var_admin = 0.0025;
 }
 
 parameters {
@@ -42,10 +41,12 @@ parameters {
   
   real<lower=0,upper=5> sigma_j[numsource];
   
-  real<lower=0,upper=5> sigma_c;
-  
+  real<lower=0> sigma_r;
+  real<lower=0> sigma_c;
+
   //parameters: P spline 2 order
   real<lower=0,upper=3> tau_delta;      // sd for spline coefficients
+  real gamma_w;
   vector[numregion] gamma_r;
   vector[numcountry] gamma_c;
   matrix[H,numcountry] delta_hc;
@@ -72,11 +73,11 @@ transformed parameters {
   for(i in 1:N){
     bias_dt_i[i] = bias_dt*datatype4_i[i];
     
-    sigma_i[i] = sqrt((var_j[1]*datatype1_i[i]+
-                       var_j[2]*datatype2_i[i]+
-                       var_j[3]*datatype3_i[i]+
-                       var_j[4]*datatype4_i[i]+
-                       var_i[i])/t_scale);
+    sigma_i[i] = sqrt(  var_j[1]*datatype1_i[i]+
+                        var_j[2]*datatype2_i[i]+
+                        var_j[3]*datatype3_i[i]+
+                        var_j[4]*datatype4_i[i]+
+                        var_i[i]);
   }
   
   for(c in 1:numcountry){
@@ -89,7 +90,9 @@ transformed parameters {
 model {
   // P spline
   //-----------------------/
-    gamma_r[] ~ normal(2.5,2);
+  sigma_r ~ normal(0,1);
+  sigma_c ~ normal(0,1);
+  gamma_w ~ normal(2.5, 2);
   for(c in 1:numcountry){
     gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
   }
@@ -97,14 +100,13 @@ model {
     delta_hc[h,] ~ normal(0,tau_delta);
   }
   //---------------------/
-    beta_tilde ~ normal(0,1);   // covariates
+  beta_tilde ~ normal(0,1);   // covariates
   bias_dt ~ normal(0,5);// source type bias part
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)
   
   //main part
   for(k in 1:ntrain){
-    Y[getitrain_k[k]] ~ student_t(nu_t,
-                                 mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
+    Y[getitrain_k[k]] ~ normal(mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
                                + bias_dt_i[getitrain_k[k]]
                                + delta_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
                                ,
@@ -115,14 +117,12 @@ model {
 generated quantities{
   vector[N] log_lik;
   vector[N] prep;
-  for (i in 1:N) log_lik[i] = student_t_lpdf(Y[i] | nu_t,
-                                          mu_ct[getc_i[i],gett_i[i]]
+  for (i in 1:N) log_lik[i] = normal_lpdf(Y[i] | mu_ct[getc_i[i],gett_i[i]]
                                           + bias_dt_i[i]
                                           + delta_ct[getc_i[i],gett_i[i]], 
                                           sigma_i[i]);
   
-  for (i in 1:N) prep[i] = student_t_rng(nu_t,
-                                        mu_ct[getc_i[i],gett_i[i]]
+  for (i in 1:N) prep[i] = normal_rng(mu_ct[getc_i[i],gett_i[i]]
                                       + bias_dt_i[i]
                                       + delta_ct[getc_i[i],gett_i[i]], 
                                       sigma_i[i]);             
