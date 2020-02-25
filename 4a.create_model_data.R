@@ -86,7 +86,7 @@ def <- levels(droplevels(SBR.model$definition_rv2))
 source <- levels(droplevels(SBR.model$source))
 record <- 0
 for(c in 1:195){
-  for(t in 2000:2018){
+  for(t in 2000:2020){
     for(s in source){
       i<- which(SBR.model$country_idx == c&
                   SBR.model$year == t&
