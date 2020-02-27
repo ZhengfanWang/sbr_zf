@@ -41,10 +41,12 @@ parameters {
   
   real<lower=0,upper=5> sigma_j[numsource];
   
-  real<lower=0,upper=5> sigma_c;
-  
+  real<lower=0> sigma_r;
+  real<lower=0> sigma_c;
+
   //parameters: P spline 2 order
   real<lower=0,upper=3> tau_delta;      // sd for spline coefficients
+  real gamma_w;
   vector[numregion] gamma_r;
   vector[numcountry] gamma_c;
   matrix[H,numcountry] delta_hc;
@@ -88,7 +90,9 @@ transformed parameters {
 model {
   // P spline
   //-----------------------/
-    gamma_r[] ~ normal(2.5,2);
+  sigma_r ~ normal(0,1);
+  sigma_c ~ normal(0,1);
+  gamma_w ~ normal(2.5, 2);
   for(c in 1:numcountry){
     gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
   }
@@ -96,7 +100,7 @@ model {
     delta_hc[h,] ~ normal(0,tau_delta);
   }
   //---------------------/
-    beta_tilde ~ normal(0,1);   // covariates
+  beta_tilde ~ normal(0,1);   // covariates
   bias_dt ~ normal(0,5);// source type bias part
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)
   
