@@ -47,7 +47,7 @@ SBR.full <- SBR.full %>% mutate(data_for_model=replace(data_for_model,
 ### If 28wks is excluded then excluded all other data from that source (all sources)
 source <- levels(droplevels(SBR.full$source))
 for(c in 1:195){
-  for(t in 2000:2018){
+  for(t in 2000:2020){
     for(s in source){
       i<- which(SBR.full$country_idx == c&
                   SBR.full$year == t&
@@ -86,7 +86,7 @@ def <- levels(droplevels(SBR.model$definition_rv2))
 source <- levels(droplevels(SBR.model$source))
 record <- 0
 for(c in 1:195){
-  for(t in 2000:2018){
+  for(t in 2000:2020){
     for(s in source){
       i<- which(SBR.model$country_idx == c&
                   SBR.model$year == t&
