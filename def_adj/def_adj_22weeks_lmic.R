@@ -32,38 +32,54 @@ jags_data <- list(n = n,
 
 mod_22_lmic <- jags.model(file = "model_subset.txt",
                   data = jags_data,
-                  n.chains = 4,
+                  n.chains = 5,
                   n.adapt = 5000)
 update(mod_22_lmic, 5000)
-samp_22_lmic <- coda.samples(mod_22_lmic, c("mu","sigma","k_s"), n.iter = 100000, thin=5)
-
-autocorr.plot(samp_22_lmic)
-
-gelman.diag(samp_22_lmic, autoburnin = F)
-geweke.diag(samp_22_lmic)
-
-saveRDS(samp_22_lmic, "samp_22_lmic.rds")
-
+samp_22_lmic <- coda.samples(mod_22_lmic, c("mu","sigma","k_s"), n.iter = 100000, thin=10)
+# autocorr.plot(samp_22_lmic) # all fine
+# gelman.diag(samp_22_lmic, autoburnin = F) # good
 summary(samp_22_lmic)
 plot(samp_22_lmic)
 
-#------------------------------------------------#
+summary(samp_22_lmic)$quantiles[1,"50%"]
+summary(samp_22_lmic)$statistics[1,2]
 
-dat.plot <- hq.lmic.def %>%
-  select(iso, country, year, nSB, nLB, nSB28, definition_rv,
-         definition_raw, ori_def28, SBR, SBR28) %>%
-  rename(nsb = nSB, nsb28 = nSB28, lb = nLB, def = definition_rv) %>%
-  mutate(logratio = log(SBR/SBR28))
+save(samp_22_hic, samp_22_lmic, samp_24_hic, file="samp_subset.Rdata")
 
-pdf("logratio_22wks_lmic.pdf",width=11)
-dat.plot %>%
-  ggplot(aes(SBR28, logratio, color = country)) +
-  theme_bw() +
-  geom_point(size=3) +
-  labs(title = "22 weeks LMIC", y = "log(SBR22/SBR28)") +
-  theme(plot.title = element_text(hjust = 0.5, size = 30, face = 'bold'),
-        axis.title.x = element_text(size=20),
-        axis.title.y = element_text(size=20),
-        legend.position = "bottom",
-        legend.title=element_blank())
-dev.off()
+# mod_22_lmic <- jags.model(file = "model_subset.txt",
+#                   data = jags_data,
+#                   n.chains = 4,
+#                   n.adapt = 5000)
+# update(mod_22_lmic, 5000)
+# samp_22_lmic <- coda.samples(mod_22_lmic, c("mu","sigma","k_s"), n.iter = 100000, thin=5)
+# 
+# autocorr.plot(samp_22_lmic)
+# 
+# gelman.diag(samp_22_lmic, autoburnin = F)
+# geweke.diag(samp_22_lmic)
+# 
+# saveRDS(samp_22_lmic, "samp_22_lmic.rds")
+# 
+# summary(samp_22_lmic)
+# plot(samp_22_lmic)
+# 
+# #------------------------------------------------#
+# 
+# dat.plot <- hq.lmic.def %>%
+#   select(iso, country, year, nSB, nLB, nSB28, definition_rv,
+#          definition_raw, ori_def28, SBR, SBR28) %>%
+#   rename(nsb = nSB, nsb28 = nSB28, lb = nLB, def = definition_rv) %>%
+#   mutate(logratio = log(SBR/SBR28))
+# 
+# pdf("logratio_22wks_lmic.pdf",width=11)
+# dat.plot %>%
+#   ggplot(aes(SBR28, logratio, color = country)) +
+#   theme_bw() +
+#   geom_point(size=3) +
+#   labs(title = "22 weeks LMIC", y = "log(SBR22/SBR28)") +
+#   theme(plot.title = element_text(hjust = 0.5, size = 30, face = 'bold'),
+#         axis.title.x = element_text(size=20),
+#         axis.title.y = element_text(size=20),
+#         legend.position = "bottom",
+#         legend.title=element_blank())
+# dev.off()
