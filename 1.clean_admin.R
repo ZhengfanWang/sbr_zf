@@ -178,9 +178,14 @@ notdefine.list <- unique(nd.data$country_idx)
 
 
 
+
 #----------------------#
 #   finialize admin    #
 #----------------------#
+admin.full <- admin.full %>% arrange(iso, year) %>% 
+              select("uniqueID","country","iso","region","year","source","source_name","context","definition","definition_rv",
+                     "SBR","adj_sbr_unknown","nSB_adj_unknown", "prop_unknown","nSB","nTB","nLB","WPP_LB",
+                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes","exclude_col","exclusion_notes_full") 
 
 
 saveRDS(admin.full, "output/admin.full.rds")
