@@ -176,6 +176,18 @@ nd.data <- admin.full %>%  filter(definition=="not defined")
 
 notdefine.list <- unique(nd.data$country_idx)
 
+
+
+#----------------------#
+#   finialize admin    #
+#----------------------#
+
+
+saveRDS(admin.full, "output/admin.full.rds")
+
+
+#----------------------------- OLD CODE -----------------------------#
+
 #-----------------#
 ### FROM ANU: I COMMENTED THIS SECTION OUT SINCE I'VE IMPLEMENTED THESE IN THE DATABASE
 ###hard code 
@@ -337,9 +349,6 @@ notdefine.list <- unique(nd.data$country_idx)
 
 
 
-#----------------------#
-#   finialize admin    #
-#----------------------#
 
 
 #admin.full <- admin.full %>% mutate(region=NA,
@@ -393,8 +402,6 @@ notdefine.list <- unique(nd.data$country_idx)
 #                                   "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes","exclude_col","exclusion_notes_full") 
 
 
-saveRDS(admin.full, "output/admin.full.rds")
-
 
 #########################   1. go to admin_plot.R to get exploratory plot     #############################
 #admin_data_list <- create_list_for_country(admin.full)
@@ -409,7 +416,6 @@ saveRDS(admin.full, "output/admin.full.rds")
 
 
 ###################
-#----------------------------- OLD CODE -----------------------------#
 #
 # admin$definition <- droplevels(admin$definition)
 # table(admin$definition)
