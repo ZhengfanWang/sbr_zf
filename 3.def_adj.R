@@ -8,17 +8,14 @@ hq.lmic.def.ori <- openxlsx::read.xlsx("input/high quality LMIC study data/High 
 SBR.full.ori$lmic[SBR.full.ori$iso == "COK"] <- 1
 
 SBR.full <- SBR.full.ori %>% filter(is.na(exclusion_notes)|
-                                    exclusion_notes %in% c("duplicates, use def 1000g",
-                                                           "duplicates, use BDR data",
-                                                           "duplicates, use ge1000gORge28wks def",
-                                                           "duplicates, use ge500gANDge28wks def")) %>% 
+                                    exclusion_notes %in% c("Duplicate, use different system")) %>% 
                              filter(exclude_sbrnmr==FALSE | is.na(exclude_sbrnmr)) %>%
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge1000g" & lmic == 1, "ge28wks.m")) %>% 
                              mutate(definition_rv2 = replace(definition_rv2, definition_rv == "ge500g" & lmic == 1, "ge22wks.m"))  %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge1000g" & lmic == 1, "ge28wks")) %>% 
                              mutate(definition_rv = replace(definition_rv, definition_rv == "ge500g" & lmic == 1, "ge22wks"))
-SBR.full.lmic <- SBR.full %>% filter(lmic == 1) %>% 
-                              filter(source != "survey")
+# SBR.full.lmic <- SBR.full %>% filter(lmic == 1) %>% 
+#                               filter(source != "survey")
 
 SBR.full.hic <- SBR.full %>% filter(lmic == 0) %>% 
                              filter(source %in% c("admin","subnat.admin")) ## change to exclude HMIS or subnational literatuer as well 
