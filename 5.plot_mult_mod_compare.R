@@ -64,7 +64,7 @@ for(c in 1:standata$numcountry){
 
 
 # Create plot list and add names for two sets of estimates
-comp.list <- compare.plot.list(country_list1,country_list2, c("fit","cov"))
+comp.list <- compare.plot.list(country_list1,country_list2, c("estimates","w/o smooth"))
 
 
 

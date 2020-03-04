@@ -47,9 +47,9 @@ parameters {
   //parameters: P spline 2 order
   real<lower=0,upper=3> tau_delta;      // sd for spline coefficients
   real gamma_w;
-  vector[numregion] gamma_r;
-  vector[numcountry] gamma_c;
-  matrix[H,numcountry] delta_hc;
+  vector[numregion] gamma_r_tilde;
+  vector[numcountry] gamma_c_tilde;
+  matrix[H,numcountry] delta_hc_tilde;
 }
 
 transformed parameters {
@@ -59,6 +59,9 @@ transformed parameters {
   real sigma_i[N];
   matrix[numcountry,yearLength] delta_ct;
   real<lower=0> var_j[numsource];
+  vector[numregion] gamma_r;
+  vector[numcountry] gamma_c;
+  matrix[H,numcountry] delta_hc;
   
   for(j in 1:(numsource)){
     var_j[j]= square(sigma_j[j]);}
@@ -80,6 +83,17 @@ transformed parameters {
                         var_i[i]);
   }
   
+  for(r in 1:numregion){
+    gamma_r[r] = gamma_w + gamma_r_tilde[r] * sigma_r;
+  }
+  for(c in 1:numcountry){
+    gamma_c[c] = gamma_r[getr_c[c]] + gamma_c_tilde[c] * sigma_c;
+  }
+  
+  for(h in 1:H){
+    delta_hc[h,] = delta_hc_tilde[h,] * tau_delta;
+  }
+  
   for(c in 1:numcountry){
     for(t in 1:yearLength){
       delta_ct[c,t] = gamma_c[c]+
@@ -88,21 +102,20 @@ transformed parameters {
 }
 
 model {
-  // P spline
-  //-----------------------/
+  
+    // P spline
   sigma_r ~ normal(0,1);
   sigma_c ~ normal(0,1);
   gamma_w ~ normal(2.5, 2);
-  for(r in 1: numregion){
-  gamma_r[r] ~ normal(gamma_w, sigma_r);
-  }
-  for(c in 1:numcountry){
-    gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
-  }
+  gamma_r_tilde ~ normal(0,1);
+  gamma_c_tilde ~ normal(0,1);
+
+  
   for(h in 1:H){
-    delta_hc[h,] ~ normal(0,tau_delta);
+    delta_hc_tilde[h,] ~ normal(0,1);
   }
-  //---------------------/
+
+
   beta_tilde ~ normal(0,1);   // covariates
   bias_dt ~ normal(0,5);// source type bias part
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)

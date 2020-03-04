@@ -2,8 +2,8 @@
 table(countryRegionList$sdg_name)
 
 library(rstan)
-standata <- readRDS(file = "output/stan_data/nhs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/regHS_nval_res.rds")       #stan fit 
+standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
+fit <- readRDS(file = "rdsoutput/new/tun1.rds")       #stan fit 
 traceplot(fit,pars = c("gamma_r"))
 
 #traceplot
@@ -23,8 +23,10 @@ colnames(reg_summ) <- c("sdg region","estimates","sd","2.5%","97.%%")
 #summary of regional intercept
 reg_summ
 
+gamma_w <- median(mcmc.array$gamma_w)
+sigma_r <- median(mcmc.array$sigma_r)
 x <- seq(-4, 4, length=100)
-hx <- dnorm(x, mean = 2.5, sd = 2)
+hx <- dnorm(x, mean = gamma_w, sd = sigma_r)
 
 plot_region <- function(region){
   plot(density(mcmc.array$gamma_r[,region]),main = paste0(sdgname[region]),type="l",lty=3)
@@ -33,6 +35,8 @@ plot_region <- function(region){
   legend("topright",legend = c("postior","prior"),col=c("black","red"),lty=3)}
 
 # prior and posterior for each regional intercept
+pdf_name <- paste0("fig/region_intercept.pdf")
+pdf(pdf_name, width = 8, height = 5)
 par(mfrow=c(1,2))
 plot_region(1)
 plot_region(2)
@@ -40,4 +44,4 @@ plot_region(3)
 plot_region(4)
 plot_region(5)
 plot_region(6)
-
+dev.off()

@@ -2,7 +2,7 @@
 
 ####################################      input   ########################################
 standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/reg_hs_nval.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/new/tun1.rds")       #stan fit 
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
 ###########################################################################################

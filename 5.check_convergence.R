@@ -1,9 +1,17 @@
-library(rstan)
+fit <- readRDS("rdsoutput/new/tun1.rds")
 
-fit <- readRDS("rdsoutput/reg_hs_nval.rds")
-#fit <- readRDS("rdsoutput/reg_hs_nval_t.rds")
+# check SD parameters
+print(fit,pars = c("sigma_c","sigma_r","sigma_j","tau_delta"))
+traceplot(fit,pars = c("sigma_c","sigma_r","sigma_j","tau_delta"))
 
-print(fit, pars = c("beta","sigma_j","gamma_r","tau_delta"))
-traceplot(fit, pars = c("beta","sigma_j","gamma_r","tau_delta"))
-traceplot(fit, pars = c("tau_delta"))
-          
+# check HS 
+print(fit,pars = c("lambda","tau","caux"))
+traceplot(fit,pars = c("lambda","tau","caux"))
+
+# check mean parameter for intercept
+print(fit,pars = c("gamma_w","gamma_r"))
+traceplot(fit,pars = c("gamma_w","gamma_r"))
+
+# check bates
+print(fit, pars = c("beta"))
+traceplot(fit, pars = c("beta"))

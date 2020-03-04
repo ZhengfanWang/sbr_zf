@@ -74,7 +74,8 @@ transformed parameters {
   real<lower=0> var_j[numsource];
   vector[numregion] gamma_r;
   vector[numcountry] gamma_c;
-   matrix[H,numcountry] delta_hc;
+  matrix[H,numcountry] delta_hc;
+  
    cc = slab_scale * sqrt(caux);
    lambda_tilde = sqrt(cc^2 * square(lambda) ./ (cc^2 + tau^2 *square(lambda)));
    beta = beta_tilde .* lambda_tilde * tau;
