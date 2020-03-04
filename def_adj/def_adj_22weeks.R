@@ -4,19 +4,23 @@ library(R2jags)
 library(tidyverse)
 
 dat_list <- readRDS("def_adj_data_hic.rds")
-dat <- dat_list[[7]] # ge22wks
+dat <- dat_list[[9]] # ge22wks
 names(dat)
 
 res <- dat %>%
-  select(iso, year, region, nSB, nLB, nSB28, definition_rv,
+  select(iso, year, uniqueID, region, nSB, nLB, nSB28, definition_rv,
          definition_raw, ori_def28) %>%
   rename(nsb = nSB, nsb28 = nSB28, lb = nLB, def = definition_rv)
 
-res$nsb28[253] <- 484 # corrected NLD 2014
+# res$nsb28[253] <- 484 # corrected NLD 2014
+head(res)
 
-which(res$nsb < res$nsb28) # none
+res[which(res$nsb < res$nsb28), ]
+which(is.na(res$nsb))
+which(is.na(res$nsb28))
 
-dat2 <- res
+dat2 <- res %>% filter(nsb >= nsb28) 
+which(is.na(dat2$nsb)) # also removes NAs
 
 dat2 %>%
   ggplot(aes(nsb, nsb28, color = iso, shape = def)) +
@@ -28,24 +32,34 @@ jags_data <- list(n = n,
                   nsb28 = dat2$nsb28,
                   nsb = as.integer(dat2$nsb))
 
+mod_22_LA <- jags.model(file = "model_subset.txt",
+                        data = jags_data,
+                        n.chains = 10,
+                        n.adapt = 5000)
+update(mod_22_LA, 5000)
+samp_22_LA <- coda.samples(mod_22_LA, c("mu","sigma","k_s"), n.iter = 50000, thin=20)
+summary(samp_22_LA)
+plot(samp_22_LA)
+summary(samp_22_LA)$quantiles[1,"50%"]
+summary(samp_22_LA)$statistics[1,2]
+# autocorr.plot(samp_22_LA) # no problem
+
 mod_22_hic <- jags.model(file = "model_subset.txt",
                   data = jags_data,
-                  n.chains = 4,
+                  n.chains = 5,
                   n.adapt = 5000)
 update(mod_22_hic, 5000)
-samp_22_hic <- coda.samples(mod_22_hic, c("mu","sigma","k_s"), n.iter = 100000, thin=5)
-autocorr.plot(samp_22_hic)
-
-gelman.diag(samp_22_hic, autoburnin = F)
-geweke.diag(samp_22_hic)
-
+samp_22_hic <- coda.samples(mod_22_hic, c("mu","sigma","k_s"), n.iter = 100000, thin=10)
+# autocorr.plot(samp_22_hic) # also fine
 summary(samp_22_hic)
 plot(samp_22_hic)
-
-saveRDS(samp_22_hic, "samp_22_hic.rds")
-
-summary(samp_22_hic)$statistics[1,1:2]
 summary(samp_22_hic)$quantiles[1,"50%"]
+summary(samp_22_hic)$statistics[1,2]
+
+# gelman.diag(samp_22_hic, autoburnin = F)
+# geweke.diag(samp_22_hic)
+
+save(samp_22_LA, samp_22_hic, file="samp_22.Rdata")
 
 
 #------------------------------------------------#
