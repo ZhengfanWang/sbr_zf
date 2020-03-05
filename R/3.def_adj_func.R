@@ -3,7 +3,7 @@ find_comb_def_adj <- function(data){
   def.28wks <- data %>% filter(definition_rv == "ge28wks") %>% 
     rename("SBR28"="SBR","nSB28"="nSB","ori_def28"="definition_raw") %>% 
     mutate(year = round(year)) %>% 
-    select(iso,year,region,SBR28,nSB28,source,ori_def28) 
+    select(iso,year,region,context, SBR28,nSB28,source,ori_def28) 
   
   def.other <- data %>% filter(definition_rv != "ge28wks") %>% 
     mutate(year = round(year),
@@ -14,7 +14,7 @@ find_comb_def_adj <- function(data){
   for(i in 1:n_comb){
     cache <- def.other%>%
       filter(definition_rv == levels(def.other$definition_rv)[i]) 
-    definition_adj_data_list[[i]] <- merge(cache,def.28wks,by=c("iso","year","source","region"))
+    definition_adj_data_list[[i]] <-   merge(cache,def.28wks,by=c("iso","year","source","region","context"))
   }
   lev <- lev[lapply(definition_adj_data_list,nrow)>0]
   definition_adj_data_list <- definition_adj_data_list[lapply(definition_adj_data_list,nrow)>0]
