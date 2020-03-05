@@ -45,7 +45,7 @@ parameters {
   real<lower=0,upper=3> tau_delta;      // sd for spline coefficients
   vector[numregion] gamma_r;
   vector[numcountry] gamma_c;
-  matrix[H,numcountry] delta_hc;
+  matrix[H,numcountry] delta_hc_tilde;
 }
 
 transformed parameters {
@@ -55,7 +55,8 @@ transformed parameters {
   real sigma_i[N];
   matrix[numcountry,yearLength] delta_ct;
   real<lower=0> var_j[numsource];
-  
+  matrix[H,numcountry] delta_hc;
+    
   for(j in 1:(numsource)){
     var_j[j]= square(sigma_j[j]);}
   
@@ -79,6 +80,10 @@ transformed parameters {
                         var_i[i]);
   }
   
+  for(h in 1:H){
+    delta_hc[h,] = delta_hc_tilde[h,] * tau_delta;
+  }
+  
   for(c in 1:numcountry){
     for(t in 1:yearLength){
       delta_ct[c,t] = gamma_c[c]+
@@ -94,7 +99,7 @@ model {
     gamma_c[c] ~ normal(gamma_r[getr_c[c]],sigma_c);
   }
   for(h in 1:H){
-    delta_hc[h,] ~ normal(0,tau_delta);
+    delta_hc_tilde[h,] ~ normal(0,1);
   }
   //---------------------/
   beta_tilde ~ normal(0,1);   // covariates
@@ -102,6 +107,7 @@ model {
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)
   tau ~ cauchy(0,1);
   lambda_j ~ cauchy(0,1);
+  
   //main part
   for(k in 1:ntrain){
     Y[getitrain_k[k]] ~ normal(mu_ct[getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]]
