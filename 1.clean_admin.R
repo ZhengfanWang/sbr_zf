@@ -1,12 +1,12 @@
 # Clean national admin data 
 #   according to latest specifications and exclusion criteria
-# Last modified: Oct.22, 2019
+# Last modified: Mar. 3, 2020
 
 #---------------#
 #   load data   #
 #---------------#
 
-admin.ori <- openxlsx::read.xlsx("input/Admin_Stillbirth_database_20200204.xlsx", sheet = 1, startRow = 2) # read in admin data
+admin.ori <- openxlsx::read.xlsx(paste0("input/",adminName), sheet = 1, startRow = 2) # read in admin data
 
 
 #-----------------------------#
@@ -61,12 +61,6 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                             mutate(exclusion_notes_full = NA) %>%
                             mutate(source="admin", LB_frac = nLB/WPP_LB, rSN = SBR/NMR, rSN_UN = SBR/UN_NMR,exclusion_notes=NA) %>%
                             mutate(source = replace(source,context=="HMIS-DHIS2","HMIS")) %>% 
-                            # mutate(exclusion_notes = replace(exclusion_notes,
-                            #                                country=="Belgium" & year==2004 & source_name=="EURO-PERISTAT project",
-                            #                               "duplicate observation")) %>%
-                            # mutate(exclusion_notes = replace(exclusion_notes,
-                            #                                country=="Cuba" & year==2003 & definition=="x500g" & source_name=="National Statistical Office",
-                            #                                "duplicate observation")) %>%
                             mutate(exclusion_notes = replace(exclusion_notes, 
                                                              country=="Cyprus" & notes == "national public sector only",
                                                              "Cyprus public sector only")) %>%
@@ -77,15 +71,6 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                                                                   paste(exclusion_notes_full,"excluded by U5MR",sep = ";"),
                                                                  exclusion_notes_full)) %>%   
                             mutate(exclude_col = ifelse(inclusion.U5MR==0 & !is.na(inclusion.U5MR), "excluded by U5MR",NA)) %>%
-                            #mutate(exclusion_notes = replace(exclusion_notes, 
-                            #                                country=="Germany" & year==2014 & Definition_SB == "not defined", 
-                            #                                "not defined makes duplicate")) %>% 
-                            # mutate(exclusion_notes = replace(exclusion_notes,
-                            #                                 (!(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
-                            #                                 "low coverage")) %>%
-                            # mutate(exclusion_notes_full = ifelse((!(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
-                            #                                      paste(exclusion_notes_full,"low coverage",sep = ";"),
-                            #                                      exclusion_notes_full)) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,
                                                             (source=="admin" & !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
                                                             "low coverage")) %>%
@@ -109,6 +94,10 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                             mutate(exclusion_notes_full = ifelse(dq_flag %in% c(3,9,12),
                                                                  paste(exclusion_notes_full,"dq_flag in 3,9,12",sep = ";"),
                                                                  exclusion_notes_full)) %>%
+                            mutate(exclusion_notes = replace(exclusion_notes,dq_flag %in% 15,"Duplicate, use different system")) %>%
+                            mutate(exclusion_notes_full = ifelse(dq_flag %in% 15,
+                                                          paste(exclusion_notes_full,"Duplicate, use different system",sep = ";"),
+                                                          exclusion_notes_full)) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,is.na(SBR),"missing SBR")) %>%
                             mutate(exclusion_notes_full = ifelse(is.na(SBR), 
                                                                  paste(exclusion_notes_full,"missing SBR",sep = ";"),
@@ -140,8 +129,8 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
 ####definition.cleaned:   combine definitions with the same meaning
 definition.cleaned <-  fct_collapse(admin.full$definition,
                                     any = c("any gest age","any gestational age","any weight"),
-                                    unknownBWT = c("unknown birthweight","unknown bwt"),
-                                    unknownGA=c("unknown GA","unknown gestational age"),
+                                    unknownBWT = c("unknown birthweight","unknown bwt", "unknownBW", "unknownBWT"),
+                                    unknownGA=c("unknown GA","unknown gestational age", "unknownGA"),
                                     ge20wks = c("x20wks","x20wks including unknown GA","x5mths"),
                                     ge22wks = c("x22wks"),
                                     ge28wks = c("x28wks","x7mths"),
@@ -187,6 +176,25 @@ nd.data <- admin.full %>%  filter(definition=="not defined")
 
 notdefine.list <- unique(nd.data$country_idx)
 
+
+
+
+
+#----------------------#
+#   finialize admin    #
+#----------------------#
+admin.full <- admin.full %>% mutate(region=NA,
+                                    iso = as.factor(iso)) %>%
+              arrange(iso, year) %>% 
+              select("uniqueID","country","iso","region","year","source","source_name","context","definition","definition_rv",
+                     "SBR","adj_sbr_unknown","nSB_adj_unknown", "prop_unknown","nSB","nTB","nLB","WPP_LB",
+                     "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes","exclude_col","exclusion_notes_full") 
+
+saveRDS(admin.full, "output/admin.full.rds")
+
+
+###################
+#----------------------------- OLD CODE -----------------------------#
 #-----------------#
 ### FROM ANU: I COMMENTED THIS SECTION OUT SINCE I'VE IMPLEMENTED THESE IN THE DATABASE
 ###hard code 
@@ -348,63 +356,7 @@ notdefine.list <- unique(nd.data$country_idx)
 
 
 
-#----------------------#
-#   finialize admin    #
-#----------------------#
 
-
-admin.full <- admin.full %>% mutate(region=NA,
-                                    iso = as.factor(iso)) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,
-                                                             context == "Vital Registration"&year %in% c(2011,2014)&iso=="POL",
-                                                             "duplicates, use BDR data")) %>% 
-                            #mutate(exclusion_notes = replace(exclusion_notes,
-                            #                                context == "Vital Registration"&year==2001&iso=="HRV",
-                            #                                "duplicates, use BDR data")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,
-                                                             context == "Vital Registration"&year%in% 2005:2017&iso=="GEO",
-                                                             "duplicates, use BDR data")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,
-                                                             context == "Vital Registration"&year%in% 2000:2015&iso=="NLD",
-                                                             "duplicates, use BDR data")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,
-                                                             year%in% 2000:2016 & iso=="SRB" & definition_rv == "ge1000g",
-                                                             "duplicates, use ge500gANDge28wks def")) %>% 
-                            #mutate(exclusion_notes = replace(exclusion_notes,
-                            #                                  year%in% 2000:2016 & iso=="CHE" & definition_rv != "ge1000gORge28wks",
-                            #                                  "duplicates, use ge1000gORge28wks def")) %>%
-                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                              iso=="OMN" & definition != "ge1000g",
-                                                              "duplicates, use def 1000g")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes,
-                                                             iso == "SRB" & definition == "ge500gORge28wks",
-                                                             "duplicates, use def 500g")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes, 
-                                                            iso=="DEU" & year==2014 & definition_rv == "ge28wks" & 
-                                                            context == "Vital Registration", 
-                                                            "duplicates, use BDR data")) %>% 
-                            #dupcliate peristat data
-                            mutate(exclusion_notes = replace(exclusion_notes, 
-                                                     iso=="ROU" & year==2010 & definition_rv == "ge1000g" & 
-                                                       source_name == "EURO-PERISTAT project", 
-                                                     "duplicate Peristat, use VR data")) %>% 
-                            mutate(exclusion_notes = replace(exclusion_notes, 
-                                                     iso=="NOR" & year==2015 & definition_rv == "ge1000g" & 
-                                                       source_name == "EURO-PERISTAT project", 
-                                                     "duplicate Peristat, use VR data")) %>%
-                            mutate(exclusion_notes = replace(exclusion_notes, 
-                                                     iso=="IRL" & year==2010 & 
-                                                       source_name == "EURO-PERISTAT project", 
-                                                     "duplicate Peristat, use VR data")) %>%
-                            mutate(exclusion_notes_full = ifelse(grepl("duplicates",exclusion_notes),
-                                                                  paste(exclusion_notes_full,exclusion_notes,sep=";"),exclusion_notes_full)) %>%
-                             arrange(iso, year) %>% 
-                             select("uniqueID","country","iso","region","year","source","source_name","context","definition","definition_rv",
-                                    "SBR","adj_sbr_unknown","nSB_adj_unknown", "prop_unknown","nSB","nTB","nLB","WPP_LB",
-                                    "nNM","NMR","UN_NMR","rSN","rSN_UN","notes","exclusion_notes","exclude_col","exclusion_notes_full") 
-
-
-saveRDS(admin.full, "output/admin.full.rds")
 
 
 #########################   1. go to admin_plot.R to get exploratory plot     #############################
