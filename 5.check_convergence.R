@@ -1,5 +1,6 @@
-fit <- readRDS("rdsoutput/new/tun1.rds")
+fit <- readRDS("rdsoutput/new/lambda_df3.rds")
 
+library(rstan)
 # check SD parameters
 print(fit,pars = c("sigma_c","sigma_r","sigma_j","tau_delta"))
 traceplot(fit,pars = c("sigma_c","sigma_r","sigma_j","tau_delta"))

@@ -1,10 +1,10 @@
 
-hs <- T
-do.validation <- F
-laocv <- F
+#hs <- T
+#do.validation <- F
+#laocv <- F
 #set.seed(5)
 #l20ocv <- F
-save.to <- "output/stan_data/hs_nval.rds"
+#save.to <- "output/stan_data/hs_nval.rds"
 #------------------------------ input -------------------------------------------#
 endyear <- 2020
 estyears <- seq(2000,endyear)

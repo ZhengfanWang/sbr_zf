@@ -2,12 +2,33 @@ library("rstanarm")
 library("bayesplot")
 library("loo")
 standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/reg_hs_nval_t.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/new/base.rds")       #stan fit 
 chain <- rstan::extract(fit)
+log_lik <- extract_log_lik(fit)
 dim(chain$log_lik)
 loo1 <- loo(fit, save_psis = TRUE, cores = 4)
 print(loo1)
 plot(loo1)
+
+fit2 <- readRDS(file = "rdsoutput/new/lambda_df3.rds") 
+chain2 <- rstan::extract(fit2)
+loo2 <- loo(fit2, save_psis = TRUE, cores = 4)
+log_lik2 <- extract_log_lik(fit2)
+
+fit3 <- readRDS(file = "rdsoutput/new/tun1.rds") 
+log_lik3 <- extract_log_lik(fit3)
+loo3 <- loo(fit3, save_psis = TRUE, cores = 4)
+
+fit4 <- readRDS(file = "rdsoutput/new/tau_sigma_j1.rds") 
+log_lik4 <- extract_log_lik(fit4)
+loo4 <- loo(fit4, save_psis = TRUE, cores = 4)
+
+waic(log_lik)
+waic(log_lik2)
+waic(log_lik3)
+waic(log_lik4)
+
+print(loo_compare(loo3,loo2),digits=3)
 
 y <- standata$Y
 yrep <- chain$prep
