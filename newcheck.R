@@ -39,26 +39,29 @@ plot_cov <- function(model,model2,model3,model4,cov){
   lines(density(model4$beta[,cov]),type="l",lty=1,col="green")
   legend("topleft",legend = c("base","cauchy0,1","lambda_df3","tau_j1"),col=c("black","red","blue",'green'),lty=1)}
 
+plot_lambda<- function(model2,model3,model4,cov){
+  int_cov <- c("log_gni_sm","log_nmr","log_lbw_sm","anc4_sm","mean_edu_f_sm",
+               "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
+               "csec_sm","pab_sm","pfpr","gdp","mmr")
+  ymax <- max(c(max(density(model2$lambda[,cov])$y),
+                max(density(model3$lambda[,cov])$y),
+                max(density(model4$lambda[,cov])$y)))
+  plot(0,xlab = "", ylab="",type = "n",main = paste0("lambda_",int_cov[cov]),
+       xlim=c(0, 8), ylim=c(0, ymax))
+  lines(density(model2$lambda[,cov]),type="l",lty=1,col="red")
+  lines(density(model3$lambda[,cov]),type="l",lty=1,col="blue")
+  lines(density(model4$lambda[,cov]),type="l",lty=1,col="green")
+  legend("topright",legend = c("cauchy0,1","lambda_df3","tau_j1"),col=c("red","blue",'green'),lty=1)
 
+}
 pdf_name <- paste0("fig/covariates.pdf")
 pdf(pdf_name, width = 8, height = 5)
 par(mfrow=c(2,2))
 for(i in 1:16){
   plot_cov(base.array,hs.array,lambda.array,tau.array,i)
+  plot_lambda(hs.array,lambda.array,tau.array,i)
 }
 dev.off()
-plot(0,xlab = "", ylab="",type = "n",
-     xlim=c(0,10),ylim = c(0,2))
-for(i in 1:16){
-lines(density(model2$lambda[,i]),col=i)
-lines(density(model2$lambda[,i]),col=i)}
 
-pdf_name <- paste0("fig/lambda.pdf")
-pdf(pdf_name, width = 8, height = 5)
-par(mfrow=c(2,2))
-for(i in 1:16){
-  plot(density(model2$lambda[,i]),type = "l",lty=1,main = paste0(int_cov[i]),xlim=c(0,10))
-}
 
-dev.off()
 
