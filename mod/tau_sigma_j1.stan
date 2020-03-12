@@ -30,13 +30,11 @@ data{
 }
 
 transformed data{
-  real slab_scale = 3;
-  real nu_local = 3;
-  real nu_global =1;
-  real scale_global = 0.333;
-  real slab_df = 3;
-  real nu_t = 3;
-  real t_scale = 3;
+  real slab_scale = 2;
+  real nu_lambda = 3;
+  real nu_tau =1;
+  real scale_tau = 0.0122;
+  real slab_df = 4;
 }
 
 parameters {
@@ -94,7 +92,7 @@ transformed parameters {
                        var_j[2]*datatype2_i[i]+
                        var_j[3]*datatype3_i[i]+
                        var_j[4]*datatype4_i[i]+
-                       var_i[i])/t_scale);
+                       var_i[i]));
   }
   
           for(r in 1:numregion){
@@ -121,8 +119,8 @@ model {
   // mean part
   // hs prior
     beta_tilde ~ normal(0,1);
-    lambda ~ student_t(nu_local, 0 ,1);
-    tau ~ student_t(nu_global,0,scale_global*sigma_j[1]);
+    lambda ~ student_t(nu_lambda, 0 ,1);
+    tau ~ student_t(nu_tau,0,scale_tau*sigma_j[1]);
     caux ~ inv_gamma(0.5*slab_df,0.5*slab_df);
 
   // P spline
