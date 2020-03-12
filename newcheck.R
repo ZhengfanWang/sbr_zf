@@ -109,3 +109,19 @@ for(i in 1:16){
   if(calculate_k(lambda.array,i,sd="median")>0.5)(result[i] <- "out") else(result[i] <- "in")
 }
 result
+
+
+#######################################################
+# addition
+par(mfrow=c(1,2))
+plot(0,xlab = "", ylab="",type = "n",main = paste0(int_cov[cov]),
+     xlim=c(xlim[1], xlim[2]), ylim=c(0, ymax))
+plot(density(hs.array$tau),type="l",lty=1,col = "black",main = "tau")
+lines(density(tau.array$tau),type="l",lty=1,col = "red")
+legend("topright",legend = c("cauchy0,1","tau_j1"),col=c("black","red"),lty=1)
+
+plot(0,xlab = "", ylab="",type = "n",main = "lambda1",
+     xlim=c(0, 15), ylim=c(0, 0.5))
+lines(density(hs.array$lambda[,1]),type="l",lty=1,col = "black")
+lines(density(tau.array$lambda[,1]),type="l",lty=1,col = "red")
+legend("topright",legend = c("cauchy0,1","tau_j1"),col=c("black","red"),lty=1)
