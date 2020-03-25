@@ -28,7 +28,7 @@ if(smooth == T){
 ###############################################
 
 
-# minor edit LA: avoid using name "sd"
+
 stdev <- apply(array$sigma_i,2,median)
 error <- apply(est,2,median)-stan.data$Y
 getitest <- setdiff(seq(1,stan.data$N), stan.data$getitrain_k)
@@ -60,18 +60,18 @@ hist(st.res.i)
 ##individual observation function
 getc.i <- stan.data$getc_i[getitest]
 gett.i <- stan.data$gett_i[getitest]
-getr.c <- stan.data$getr_c[getitest]
+getr.c <- stan.data$getr_c
 getj.i <- stan.data$getj_i[getitest]
 getd.i <- stan.data$getd_i[getitest]
-getr.i <- getr.c[getc.i][getitest]
-region <- sdgname[getr.i][getitest]
+getr.i <- getr.c[stan.data$getc_i[getitest]]
+region <- sdgname[getr.i]
 
 # getvar_i function needs the int_cov vector to find the location of variable
 int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
              "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
              "csec_sm","pab_sm","pfpr","gdp","mmr")
 #e.g
-nmr.i <- getvar_i("nmr",interest_cov = intcov)
+nmr.i <- getvar_i("nmr",interest_cov = int_cov)
 
 
 resplot <- function(var_name){

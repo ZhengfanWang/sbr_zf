@@ -1,6 +1,6 @@
 library(rstan)
-rds.name <- "validation/hs_val_ran20v3_res202000319.rds"
-data.name <- "validation/hs_val_ran20_3.rds"
+rds.name <- "validation/hs_val_ran20_res202000319.rds"
+data.name <- "validation/hs_val_ran20.rds"
 fit <- readRDS(file = paste0("rdsoutput/",rds.name))
 stan.data <- readRDS(file = paste0("output/stan_data/",data.name))
 

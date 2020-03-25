@@ -1,6 +1,7 @@
-getvar_i <- function(varname,interest_cov = intcov){
+getvar_i <- function(varname,interest_cov = int_cov){
   var.index <- which(varname == int_cov) 
   var.i <- x.i(stan.data$covar_array[var.index,,])
+  var.i <- na.omit(var.i)
   return(var.i)
 }
 
