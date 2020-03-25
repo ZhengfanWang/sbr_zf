@@ -18,7 +18,7 @@ country_list2 <- get_chain_result(fit,smooth = FALSE)
 
 # read the standata which fit the model
 standata <- readRDS(file = "output/stan_data/hs_nval.rds")
-
+standata <- standata
 definition_fac <- c("ga28wks","ga22wks","ga24wks","bw1000g","bw500g")
 source_fac <- c("admin","HMIS","subnat LR","survey")
 sbr2018 <- data.frame(logSBR = standata$unadj_Y )

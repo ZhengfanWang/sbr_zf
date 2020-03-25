@@ -81,13 +81,16 @@ par(mfrow=c(1,3))
 for(i in 1:16){
   plot_cov(base.array,hs.array,lambda.array,tau.array,i)
   plot_lambda(hs.array,lambda.array,tau.array,i)
-  plot_K(hs.array,lambda.array,tau.array,i)
+  plot_K(hs.array,lambda.array,tau.array,6)
 }
 dev.off()
 
 model <- lambda.array
 sd <- "min"
 cov <- 1
+
+
+
 calculate_k <- function(model,cov,sd,niter=4000){
   int_cov <- c("log_gni_sm","log_nmr","log_lbw_sm","anc4_sm","mean_edu_f_sm",
                "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
@@ -99,14 +102,14 @@ calculate_k <- function(model,cov,sd,niter=4000){
   k <- 1/(1 + 
           data.nval$N*
           stdv^(-2)*
-          model$lambda[,cov]^2*
+          model$lambda_tilde[,cov]^2*
           model$tau^2)
   sum(k>0.5)/4000
 }
 
 result <- NA
 for(i in 1:16){
-  if(calculate_k(lambda.array,i,sd="median")>0.5)(result[i] <- "out") else(result[i] <- "in")
+  if(calculate_k(hs.array,i,sd="max")>0.5)(result[i] <- "out") else(result[i] <- "in")
 }
 result
 

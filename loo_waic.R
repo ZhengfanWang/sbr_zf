@@ -4,9 +4,9 @@ library("loo")
 standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
 fit <- readRDS(file = "rdsoutput/new/base.rds")       #stan fit 
 chain <- rstan::extract(fit)
-log_lik <- extract_log_lik(fit)
-dim(chain$log_lik)
-loo1 <- loo(fit, save_psis = TRUE, cores = 4)
+log_lik <- extract_log_lik(hs)
+dim(hs.array$log_lik)
+loo1 <- loo(hs, save_psis = TRUE, cores = 4)
 print(loo1)
 plot(loo1)
 

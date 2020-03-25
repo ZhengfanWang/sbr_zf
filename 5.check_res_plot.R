@@ -31,13 +31,15 @@ if(smooth == T){
 # minor edit LA: avoid using name "sd"
 stdev <- apply(array$sigma_i,2,median)
 error <- apply(est,2,median)-stan.data$Y
+getitest <- setdiff(seq(1,stan.data$N), stan.data$getitrain_k)
+ntest <- length(getitest)
 
 res.data <- data.frame(year = stan.data$gett_i+1999,
                        country_idx = stan.data$getc_i, 
                        error =  error, 
                        stdev = stdev)%>%
                merge(countryRegionList, by="country_idx")
-
+res.data<- res.data[getitest,]
 res.i <- res.data$error
 # edit LA 2020/2/21, not sure what sdg is? 
 #sd.i <- res.data$sdg
@@ -56,13 +58,13 @@ sdgname <- c("Southern Asia",
 
 hist(st.res.i)
 ##individual observation function
-getc.i <- stan.data$getc_i
-gett.i <- stan.data$gett_i
-getr.c <- stan.data$getr_c
-getj.i <- stan.data$getj_i
-getd.i <- stan.data$getd_i
-getr.i <- getr.c[getc.i]
-region <- sdgname[getr.i]
+getc.i <- stan.data$getc_i[getitest]
+gett.i <- stan.data$gett_i[getitest]
+getr.c <- stan.data$getr_c[getitest]
+getj.i <- stan.data$getj_i[getitest]
+getd.i <- stan.data$getd_i[getitest]
+getr.i <- getr.c[getc.i][getitest]
+region <- sdgname[getr.i][getitest]
 
 # getvar_i function needs the int_cov vector to find the location of variable
 int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
