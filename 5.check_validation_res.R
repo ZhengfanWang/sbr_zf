@@ -33,9 +33,9 @@ estyears <- seq(2000,2020)
 ###############################################
 
 
-
-stdev <- apply(array$sigma_i,2,median)
 error <- apply(array$prep,2,median)-stan.data$Y
+
+stdev <- apply(array$prep, 2, sd)
 getitest <- getitest <- setdiff(seq(1:stan.data$N),stan.data$getitrain_k)
 
 ntest <- length(getitest)
@@ -65,7 +65,7 @@ for(i in 1:4){
   }
 }
 colnames(inter_5) <- inter_5_name
-int_5_mat <- cbind(cov5,inter_5)
+int_5_mat <- cbind(cov5,inter_5)[getitest,]
 int_5_name <- c(cov_5_name,inter_5_name)
 
 ### 11 unimportant covariates
@@ -83,7 +83,7 @@ for(i in 1:10){
   }
 }
 colnames(inter_11) <- inter_11_name
-int_11_mat <- cbind(cov11,inter_11)
+int_11_mat <- cbind(cov11,inter_11)[getitest,]
 int_11_name <- c(cov_11_name,inter_11_name)
 
 
@@ -96,7 +96,7 @@ res.data_cache <- data.frame(year = stan.data$gett_i+1999,
 
 ncoll <- ncol(res.data_cache)
 
-res.data <- res.data_cache[getitest,]
+res.data <- cbind(res.data_cache[getitest,],int_5_mat,int_11_mat)
 #used for aggregate a few exercise
 #res.data2<-cbind(res.data_cache[getitest,],int_5_mat,int_11_mat)
 #res.data3<-cbind(res.data_cache[getitest,],int_5_mat,int_11_mat)
@@ -145,7 +145,7 @@ resplot2 <- function(var_i,xname){
 
 
 # plot residuals against predictors, yhat, time
-pdf_name3 <- paste0("fig/RES_first5cov_l20_overall.pdf")
+pdf_name3 <- paste0("fig/RES_first5cov_overall_v2.pdf")
 pdf(pdf_name3, width = 15, height = 12)
 for(i in 1:15){
   print(resplot2(res.data[,i+ncoll],int_5_name[i]))
@@ -153,7 +153,7 @@ for(i in 1:15){
 
 dev.off()
 
-pdf_name3 <- paste0("fig/RES_last11cov_l20_overall.pdf")
+pdf_name3 <- paste0("fig/RES_last11cov_overall_v2.pdf")
 pdf(pdf_name3, width = 15, height = 12)
 for(i in 1:66){
   print(resplot2(res.data[,i+ncoll],int_11_name[i]))
