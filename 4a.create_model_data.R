@@ -123,9 +123,10 @@ saveRDS(SBR.full.f,"output/fullset.rds")
 
 ### ZF: duplicates col is used to create duplicates observation table. Anu can reorganize it if you do not want duplicates col in final dataset.
 SBR.model.f<- SBR.model %>% filter(data_for_model==1) %>%
+                            mutate(WPP_coverage = WPP_LB/nLB) %>% 
                             select(uniqueID,iso,country,year,source,shmdg2,lmic,
                                   definition_rv,definition_rv2,definition_raw,definition,
-                                  adj_sbr_unknown,country_idx,SE.logsbr,duplicates) %>% 
+                                  adj_sbr_unknown,country_idx,SE.logsbr,duplicates,WPP_coverage) %>% 
                             mutate(SBR = adj_sbr_unknown) %>% 
                             filter(!(definition_rv == "ge24wks" & lmic == 1))
   

@@ -1,10 +1,10 @@
 
-#hs <- T
-#do.validation <- F
-#laocv <- F
-#set.seed(5)
-#l20ocv <- F
-#save.to <- "output/stan_data/hs_nval.rds"
+hs <- F
+do.validation <- F
+laocv <- F
+set.seed(5)
+l20ocv <- F
+save.to <- "output/stan_data/base_nval.rds"
 #------------------------------ input -------------------------------------------#
 endyear <- 2020
 estyears <- seq(2000,endyear)
@@ -85,7 +85,7 @@ stan.data<- list(Y = Y, var_i = var_i, unadj_Y = log(sbr2018$SBR),
                  N = N, numcountry = max(getc.i), numregion = max(getr.c), estyears = estyears, yearLength = yearLength,
                  numdef = max(getd.i), numcov = length(int_cov), numsource = max(getj.i),
                  B_tk=splines.data$B.tk, K=splines.data$K, D=splines.data$D, Z_th=splines.data$Z.tk,
-                 BG_td = splines.data$BG.td,H=splines.data$H)
+                 BG_td = splines.data$BG.td,H=splines.data$H,wpp_coverage = sbr2018$WPP_coverage*100)
 
 if (!do.validation){
   # all observations are in the training set

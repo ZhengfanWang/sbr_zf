@@ -6,7 +6,7 @@ stan.data <- readRDS(file = "output/stan_data/hs_nval.rds")
 
 array <- rstan::extract(fit)
 
-  numcun <- max(stan.data$getc_i)
+numcun <- max(stan.data$getc_i)
 numyear <- max(stan.data$yearLength)
 estyears <- seq(2000,2020)
 niter <- 12000
@@ -97,17 +97,16 @@ int_11_name <- c(cov_11_name,inter_11_name)
 
 
 
-resplot <- function(var_name){
-  var_i <- getvar_i(var_name)
-  p <- ggplot() + 
-       geom_point(aes(x = var_i,y = st.res.i,colour = region)) +
-       geom_smooth(aes(x = var_i,y = st.res.i,colour = region),method = "loess",span = 0.5,se = F) +
-       scale_x_continuous(name = ifelse(var_name %in% c("gni_sm","nmr"),paste("log",var_name),var_name)) +
-       scale_y_continuous(name = 'standardized residual') +
-       theme(legend.position="bottom")
-       
-  return(p)
-}
+#resplot <- function(var_name){
+#  var_i <- getvar_i(var_name)
+#  p <- ggplot() + 
+#       geom_point(aes(x = var_i,y = st.res.i,colour = region)) +
+#       geom_smooth(aes(x = var_i,y = st.res.i,colour = region),method = "loess",span = 0.5,se = F) +
+#       scale_x_continuous(name = ifelse(var_name %in% c("gni_sm","nmr"),paste("log",var_name),var_name)) +
+#       scale_y_continuous(name = 'standardized residual') +
+#       theme(legend.position="bottom")
+#  return(p)
+#}
 
 resplot2 <- function(var_i,xname){
   p <- ggplot() + 
@@ -135,4 +134,20 @@ pdf(pdf_name3, width = 15, height = 12)
 for(i in 1:66){
   print(resplot2(int_11_mat[,i],int_11_name[i]))
 }
+dev.off()
+
+###################################################################
+##       residual ~  WPP_coverage
+pdf_name3 <- paste0("fig/RES_WPPcov.pdf")
+pdf(pdf_name3, width = 15, height = 12)
+wpp_cov <- stan.data$wpp_coverage[which(!is.na(stan.data$wpp_coverage))]
+wpp_res <- st.res.i[which(!is.na(stan.data$wpp_coverage))]
+source.type <- source[getj.i[which(!is.na(stan.data$wpp_coverage))]]
+p <-  ggplot() + 
+  geom_point(aes(x = wpp_cov,y = wpp_res,colour = source.type)) +
+  #BECAUSE of the outline, I cannot add loess line for it.
+  #geom_smooth(aes(aes(x = wpp_cov,y = wpp_res,colour = source.type)),method = "loess",se = F) +
+  scale_x_continuous(name = 'wpp_coverage') +
+  scale_y_continuous(name = 'standardized residual') 
+p
 dev.off()
