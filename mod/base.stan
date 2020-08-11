@@ -39,11 +39,11 @@ parameters {
   //deviance part
   real<upper=0> bias_dt;
   
-  real<lower=0,upper=5> sigma_j[numsource];
+  real<lower=0> sigma_j[numsource];
   
   real<lower=0> sigma_r;
   real<lower=0> sigma_c;
-
+  
   //parameters: P spline 2 order
   real<lower=0,upper=3> tau_delta;      // sd for spline coefficients
   real gamma_w;
@@ -77,10 +77,10 @@ transformed parameters {
     bias_dt_i[i] = bias_dt*datatype4_i[i];
     
     sigma_i[i] = sqrt(  var_j[1]*datatype1_i[i]+
-                        var_j[2]*datatype2_i[i]+
-                        var_j[3]*datatype3_i[i]+
-                        var_j[4]*datatype4_i[i]+
-                        var_i[i]);
+                          var_j[2]*datatype2_i[i]+
+                          var_j[3]*datatype3_i[i]+
+                          var_j[4]*datatype4_i[i]+
+                          var_i[i]);
   }
   
   for(r in 1:numregion){
@@ -103,17 +103,17 @@ transformed parameters {
 
 model {
   
-    // P spline
+  // P spline
   sigma_r ~ normal(0,1);
   sigma_c ~ normal(0,1);
   gamma_w ~ normal(2.5, 2);
   gamma_r_tilde ~ normal(0,1);
   gamma_c_tilde ~ normal(0,1);
-
+  
   for(h in 1:H){
     delta_hc_tilde[h,] ~ normal(0,1);
   }
-
+  
   beta_tilde ~ normal(0,1);   // covariates
   bias_dt ~ normal(0,5);// source type bias part
   sigma_j ~ normal(0,1);// source type sd trun[0,5] Normal(0,1)
