@@ -72,16 +72,16 @@ admin.full <- admin.ori %>% dplyr::rename("country"="Country",
                                                                  exclusion_notes_full)) %>%   
                             mutate(exclude_col = ifelse(inclusion.U5MR==0 & !is.na(inclusion.U5MR), "excluded by U5MR",NA)) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                            (source=="admin" & !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
+                                                            (source=="admin" & !(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registration")),
                                                             "low coverage")) %>%
                             mutate(exclusion_notes_full = ifelse(source=="admin" &  
                                                                    (!is.na(LB_frac) & !is.na(WPP_LB)) &
                                                                    (!(LB_frac >= 0.8 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
                                                                   paste(exclusion_notes_full,"low coverage",sep = ";"),exclusion_notes_full)) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,
-                                                             (source=="HMIS" & !(LB_frac >= 0.7 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")),
+                                                             (source=="HMIS" & !(LB_frac >= 0.7 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registration")),
                                                              "low coverage")) %>%
-                            mutate(exclusion_notes_full = ifelse(source=="HMIS" & (!(LB_frac >= 0.7 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registation")) & 
+                            mutate(exclusion_notes_full = ifelse(source=="HMIS" & (!(LB_frac >= 0.7 | WPP_LB <= 30000 | country=="Serbia" | context=="Sample Vital Registration")) & 
                                                                    (!is.na(LB_frac) & !is.na(WPP_LB)),
                                                                  paste(exclusion_notes_full,"low coverage",sep = ";"),exclusion_notes_full)) %>%
                             mutate(exclusion_notes = replace(exclusion_notes,
