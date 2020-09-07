@@ -17,7 +17,7 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
                                             "nNM"="nnd",
                                             "notes"="comments",
                                             "source_name"="source_1",
-                                            "UN_NMR"="UNIGME2019_NMR") %>%
+                                            "UN_NMR"="UNIGME2020_NMR") %>%
                       mutate(NMR = as.numeric(paste(nmr)),
                              definition = as.factor(def_revised),
                              context=as.factor(Context.grouped),
@@ -100,7 +100,7 @@ survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code"
                                 "context"="Surveytype", 
                                 "notes"="DataCollection", 
                                 "NMR"="ES_NMR",
-                                "UN_NMR"="UNIGME2019_NMR") %>%
+                                "UN_NMR"="UNIGME2020_NMR") %>%
                               mutate(definition = ifelse(is.na(ES_7pMonths),"ge24wks","ge28wks"),
                                      SE.sbr = ifelse(is.na(ES_7pMonths),SE_6pMonths,SE_7pMonths),
                                      nSB = ifelse(is.na(ES_7pMonths),ES_NSB_6pMonths,ES_NSB_7pMonths),
