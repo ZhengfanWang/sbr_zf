@@ -15,7 +15,7 @@ tb <- hq_data$lb + hq_data$sb
 sbr <- hq_data$sbr
 lb <- hq_data$lb
 nmr <- hq_data$nmr
-
+n <- nrow(hq_data)
 
 
 sd_i <- getsd_logratio(tb, sbr, nmr, lb) # see function in r folder

@@ -1,10 +1,10 @@
 
-hs <- F
+hs <- T
 do.validation <- F
 laocv <- F
 set.seed(5)
 l20ocv <- F
-save.to <- "output/stan_data/base_nval.rds"
+save.to <- "output/stan_data/base_nval_4cov.rds"
 #------------------------------ input -------------------------------------------#
 endyear <- 2020
 estyears <- seq(2000,endyear)
@@ -15,7 +15,7 @@ estyears <- seq(2000,endyear)
 #-------------------------------#
 covarset.raw <- read.csv("input/covar/sbr_igme_covariates_20191202.csv")
 
-int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm")
+int_cov <- c("gni_sm","nmr","lbw_sm","mean_edu_f_sm")
 if(hs == TRUE){
   int_cov <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
                "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
@@ -39,7 +39,7 @@ covar_array <- create_covar_array(interest_cov = int_cov,estyears = estyears, da
 def_adj_output <- readRDS("output/def_adj_res.rds")
 
 #data for model result
-sbr2018 <- readRDS("output/data_for_model.rds") 
+sbr2018 <- readRDS("output/data_for_model2020-06-10.rds") 
 definition_fac <- c("ge28wks",paste0(unique(def_adj_output$definition_rv[!is.na(def_adj_output$def_bias)])))
 sbr2018$definition_rv <- factor(sbr2018$definition_rv, levels = definition_fac)
 

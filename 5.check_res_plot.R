@@ -9,15 +9,32 @@ array <- rstan::extract(fit)
 numcun <- max(stan.data$getc_i)
 numyear <- max(stan.data$yearLength)
 estyears <- seq(2000,2020)
+getc_i <- stan.data$getc_i
+getitrain_k <- stan.data$getitrain_k
+gett_i <- stan.data$gett_i
 niter <- 12000
 
 
 ###############################################
+# define error_i
+#1.yhat =  intercept + regression + spline
+#error <- apply(array$prep,2,median)-stan.data$Y
+#stdev <- apply(array$sigma_i, 2, median)
 
-error <- apply(array$prep,2,median)-stan.data$Y
+###############################################
+#2.yhat = intercept + regression + sourcetype bias
+# sd^2 = sd(yhat)^2 + sigma_i^2
+yhat <- matrix(NA,ncol = niter, nrow = stan.data$ntrain)
+for(k in 1:stan.data$ntrain){
+  yhat[k,] <- array$gamma_c[,getc_i[getitrain_k[k]]] +
+              array$mu_ct[,getc_i[getitrain_k[k]],gett_i[getitrain_k[k]]] +
+              array$bias_dt_i[,k]
+}
+error <- stan.data$Y - apply(yhat,1,median) 
+stdev <-  apply(array$sigma_i,2,median)
 
-stdev <- apply(array$prep, 2, sd)
 
+#############################################################
 getitest <- stan.data$getitrain_k
 #getitest <- setdiff(seq(1,stan.data$N), stan.data$getitrain_k)
 ntest <- length(getitest)
@@ -140,6 +157,7 @@ dev.off()
 ##       residual ~  WPP_coverage
 pdf_name3 <- paste0("fig/RES_WPPcov.pdf")
 pdf(pdf_name3, width = 15, height = 12)
+source <- c("admin","HMIS","subnat.lr","survey")
 wpp_cov <- stan.data$wpp_coverage[which(!is.na(stan.data$wpp_coverage))]
 wpp_res <- st.res.i[which(!is.na(stan.data$wpp_coverage))]
 source.type <- source[getj.i[which(!is.na(stan.data$wpp_coverage))]]
@@ -147,7 +165,7 @@ p <-  ggplot() +
   geom_point(aes(x = wpp_cov,y = wpp_res,colour = source.type)) +
   #BECAUSE of the outline, I cannot add loess line for it.
   #geom_smooth(aes(aes(x = wpp_cov,y = wpp_res,colour = source.type)),method = "loess",se = F) +
-  scale_x_continuous(name = 'wpp_coverage') +
+  scale_x_continuous(name = 'wpp_coverage',limits = c(80,130)) +
   scale_y_continuous(name = 'standardized residual') 
 p
 dev.off()

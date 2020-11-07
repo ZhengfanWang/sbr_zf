@@ -2,7 +2,7 @@
 # Last modified: Oct.22.2019
 
 ##read subnational lit review 
-subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_2019-11-22.xlsx", sheet =  3, startRow = 2) # read in subnation data
+subnat_lit_rv.ori <- openxlsx::read.xlsx("input/2019_subnational_lit_rv_2020-03-06.xlsx", sheet =  3, startRow = 2) # read in subnation data
 
 #save(subnat_lit_rv.ori,file = "input/rdata/subnat_lit_rv.ori.rdata")
 subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
@@ -17,7 +17,7 @@ subnat.full <- subnat_lit_rv.ori %>% dplyr::rename("iso"="isocode",
                                             "nNM"="nnd",
                                             "notes"="comments",
                                             "source_name"="source_1",
-                                            "UN_NMR"="UNIGME2020_NMR") %>%
+                                            "UN_NMR"="UNIGME2019_NMR") %>%
                       mutate(NMR = as.numeric(paste(nmr)),
                              definition = as.factor(def_revised),
                              context=as.factor(Context.grouped),
@@ -93,14 +93,14 @@ saveRDS(subnat.full, "output/subnat.lit.rv.full.rds")
 #   survey    #
 #-------------#
 ##read survey data
-survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2020-01-28.xlsx", sheet = 1) # read in survey
+survey.ori <- openxlsx::read.xlsx("input/Survey_Stillbirth_database_2020-03-10.xlsx", sheet = 1) # read in survey
 
 survey.full <- survey.ori %>% dplyr::rename("country"="Country","iso"="ISO3Code",
                                 "year"="ReferenceDate", 
                                 "context"="Surveytype", 
                                 "notes"="DataCollection", 
                                 "NMR"="ES_NMR",
-                                "UN_NMR"="UNIGME2020_NMR") %>%
+                                "UN_NMR"="UNIGME2019_NMR") %>%
                               mutate(definition = ifelse(is.na(ES_7pMonths),"ge24wks","ge28wks"),
                                      SE.sbr = ifelse(is.na(ES_7pMonths),SE_6pMonths,SE_7pMonths),
                                      nSB = ifelse(is.na(ES_7pMonths),ES_NSB_6pMonths,ES_NSB_7pMonths),

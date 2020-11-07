@@ -54,6 +54,13 @@ def_adj_name_hic <- def_adj_hic_res$alter.def
 #the alter def name
 saveRDS(def_adj_list_hic,"output/def_adj_data_hic.rds")
 
+
+
+
+
+######################################################################
+#  
+
 #---------------------------------------------------------#
 # Overview for num paired obs and obs where need to adj   # 
 #---------------------------------------------------------#

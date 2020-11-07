@@ -1,0 +1,23 @@
+model{
+
+### DATA ###
+# nsb = number of still births of alternative definition
+# nsb28 = number of still births of 28wks definition
+# n = number of observations
+ for (i in 1:n){
+    nsb28[i] ~ dbinom(p[i], nsb[i])
+ }
+
+### process model ###
+  for (i in 1:n){
+    logit_p[i] ~ dnorm(mu, tau)
+    p[i] <- ilogit(logit_p[i])
+  }
+  tau <- 1/sigma^2
+  sigma ~ dnorm(0,1)T(0, )
+  mu_tr ~ dunif(0, 1)
+  mu <- logit(mu_tr)
+  logit_p_s ~ dnorm(mu, tau)
+  p_s <- ilogit(logit_p_s)
+  k_s <- -log(p_s)
+}

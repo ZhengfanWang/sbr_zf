@@ -1,9 +1,13 @@
 standata <- readRDS(file = "output/stan_data/hs_nval.rds")     #stan data used for fit model
-fit <- readRDS(file = "rdsoutput/base_nval.rds")       #stan fit 
+fit <- readRDS(file = "rdsoutput/new/regBase_nval_res202000311.rds")       #stan fit 
+fit2 <- readRDS(file = "rdsoutput/new/regHs_nval_res202000311.rds")       #stan fit 
+fit3 <- readRDS(file = "rdsoutput/new/base_cesc.rds")       #stan fit 
 mcmc.array <- rstan::extract(fit)
-#mcmc.array2 <- rstan::extract(fit2)
+mcmc.array2 <- rstan::extract(fit2)
 print(fit,pars = c("beta","bias_dt","sigma_j","gamma_r"))
-#--------------------------------#
+print(fit2,pars = c("beta"))
+print(fit3,pars = c("beta"))
+0.04#--------------------------------#
 #     source type summary table  #
 #--------------------------------#
 source_type <- c("admin","HMIS","subnat LR","survey")
