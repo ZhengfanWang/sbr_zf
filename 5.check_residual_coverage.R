@@ -61,8 +61,7 @@ residuals_autoplot(
   y = "y",
   yhat = "50%"
 )$lbw_sm
-
-# there might be some bugs here. 
+ 
 coverage(data = rv_data,
          y = "y",
          lower = "2.5%",
