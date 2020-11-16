@@ -61,47 +61,58 @@ residuals_autoplot(
   y = "y",
   yhat = "50%"
 )$lbw_sm
- 
+
 coverage(data = rv_data,
          y = "y",
          lower = "2.5%",
          upper = "97.5%")
 
-# rewrite the function here 
-#
-# rv_data %>%
-#  dplyr::mutate(out = as.numeric(y < lower | y > upper)) %>% 
-#  dplyr::select(source, out) %>% 
-#  dplyr::summarise("coverage" = 1 - (sum(out)/nrow(.)))
 
- 
-#rv_data %>%
-#   dplyr::mutate(out = as.numeric(y < lower | y > upper)) %>% 
-#   dplyr::select(source, out) %>% 
-#   dplyr::group_by(source) %>% 
-#   dplyr::summarise("coverage" = 1 - (sum(out)/nrow(.))) 
- 
 
-################ use loo package check in-sample validation ########
+###################
+# The approach to check the PI and calculate the error
+###################
 
-library("rstan")
-library("rstanarm")
-library("bayesplot")
-library("loo")
-fit <- readRDS(file = "rdsoutput/new/base_csec.rds")
-fit2 <- readRDS(file = "rdsoutput/new/tun1.rds")
-loo <- loo(fit, save_psis = TRUE, cores = 4)
-loo2 <- loo(fit2, save_psis = TRUE, cores = 4)
-print(loo)
-plot(loo)
+getitest <- setdiff(seq(1,stan.data$N), stan.data$getitrain_k)
 
-array <- rstan::extract(fit2)
-yrep <- array$prep
-psis <- loo$psis_object
-lw <- weights(psis)
-y <- standata$Y
-color_scheme_set("orange")
-ppc_loo_pit_overlay(y, yrep, lw = lw)
-loo_compare(list(loo, loo2))
+# errors
+pred <- apply(array$prep,2,median)
+errors <- stan.data$Y[getitest] - pred[getitest]
+hist(errors)
+# summarize
+mean(errors)  
+median(errors)  
+mean(abs(errors))
+median(abs(errors))
+
+
+ntest <- length(getitest)
+ntest
+# PIT
+pit.j <- rep(NA, ntest)
+for (j in 1:ntest){
+  i <- getitest[j]
+  yrepi.s <- array$prep[,i]
+  pit.j[j] <- mean(yrepi.s <= stan.data$Y[i])
+} 
+hist(pit.j, freq = F, xlab = "PIT-values", main = "Predicting last obs")  # should look uniform
+abline(h=1)  
+
+p <- 0.1
+qbinom(c(0.1, 0.9), size = ntest, prob = p)/ntest # 80% PI for prop of left out obs in one bin of PIT values with range of p 
+qbinom(c(0.25, 0.75), size = ntest, prob = p)/ntest # 50% PI for prop of left out obs in one bin of PIT values with range of p 
+p <- 0.25
+qbinom(c(0.1, 0.9), size = ntest, prob = p)/ntest # 80% PI for prop of left out obs in one bin of PIT values with range of p 
+qbinom(c(0.25, 0.75), size = ntest, prob = p)/ntest # 50% PI for prop of left out obs in one bin of PIT values with range of p 
+
+# coverage follows from pit
+mean(pit.j < 0.025) # % below 95% PI
+mean(pit.j < 0.05) # % below 90% PI
+mean(pit.j < 0.1)
+mean(pit.j > 0.975) # % above 95% PI 
+mean(pit.j > 0.95) 
+mean(pit.j > 0.9)
+
+
 
 
