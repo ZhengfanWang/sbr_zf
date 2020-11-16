@@ -30,7 +30,7 @@ predictor <- as.data.frame(predictor)
 
 colnames(predictor) <- c("gni_sm","nmr","lbw_sm","anc4_sm","mean_edu_f_sm",
                          "gini_sm","urban","gfr","sab","anc1_sm","abr_sm",
-                         "csec_sm","pab_sm","pfpr","gdp","mmr") #covariates name. need to be change if we select different covariates.
+                         "csec_sm","pab_sm","pfpr","gdp","mmr") #covariates name. need to change if we select different covariates.
 
 total_sd <- apply(array$sigma_i,2,median)
 percent <- t(apply(array$prep,2,quantile,probs = c(0.025,0.1,0.5,0.9,0.975)))
